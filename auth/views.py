@@ -1,20 +1,9 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
+from django.views.decorators.cache import never_cache
 from auth.models import Users
 
 def home(request):
     return render(request, "home.html")
-
-def helloP(request):
-    return render(request, "helloP.html")
-
-def helloD(request):
-    return render(request, "helloD.html")
-
-def helloR(request):
-    return render(request, "helloR.html")
-
-def helloA(request):
-    return render(request, "helloA.html")
 
 def register(request):
     context = {}
@@ -52,20 +41,28 @@ def login(request):
         if user and user.role == "admin":
             request.session["user_id"] = user.id
             request.session["user_name"] = user.name
-            return redirect("auth:helloA")
+            request.session["user_role"] = user.role
+            return redirect("clinic_admin:admin_dashboard")
         elif user and user.role == "doctor":
             request.session["user_id"] = user.id
             request.session["user_name"] = user.name
+            request.session["user_role"] = user.role
             return redirect("auth:helloD")
         elif user and user.role == "receptionist":
             request.session["user_id"] = user.id
             request.session["user_name"] = user.name
+            request.session["user_role"] = user.role
             return redirect("auth:helloR")
         elif user and user.role == "patient":
             request.session["user_id"] = user.id
             request.session["user_name"] = user.name
+            request.session["user_role"] = user.role
             return redirect("auth:helloP")
 
         context["error"] = "Invalid email or password."
 
     return render(request, "login.html", context)
+
+def logout(request):
+    request.session.flush()
+    return redirect("auth:login")
