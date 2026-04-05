@@ -38,6 +38,13 @@
         <span class="h-px bg-slate-200 flex-1"></span>
       </div>
 
+      {% if error %}
+      <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{{ error }}</div>
+      {% endif %}
+      {% if success %}
+      <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ success }}</div>
+      {% endif %}
+
       <form class="space-y-4" method="post" action="{% url 'auth:register' %}">
         {% csrf_token %}
         <div>
@@ -77,4 +84,5 @@
   <h2 class="text-3xl font-extrabold tracking-tight mb-2">Join MediCare</h2>
   <p class="text-white/85 text-lg">Create your account and start managing your healthcare journey today</p>
 </div>
+
 {% endblock %}
