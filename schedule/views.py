@@ -5,23 +5,6 @@ from datetime import datetime, timedelta
 from schedule.models import Schedule
 
 # Create your views here.
-def index(request):
-    return render(request,'admin/admin_dashboard.html')
-
-def doctor_dashboard(request):
-  if not request.user.is_authenticated:
-    return redirect('auth:login')
-  
-  user_name = request.user.username
-  
-  return render(
-      request,
-      "doctor/doctor-dashboard.html",
-      {
-          "user_name": user_name,
-      },
-  )
-
 def doctor_schedule(request):
   if not request.user.is_authenticated:
     return redirect('auth:login')
