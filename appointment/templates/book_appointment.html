@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block title %}Book Appointment | MediCare{% endblock %}
+
+{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+
+{% block content %}
+<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
+        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
+                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
+            </div>
+            <div>
+                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
+                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
+            </div>
+        </div>
+
+        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Patient navigation">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'appointment:patient_dashboard' %}">
+                <span class="material-symbols-outlined text-[19px]">dashboard</span>
+                Dashboard
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'appointment:book_appointment' %}">
+                <span class="material-symbols-outlined text-[19px]">event_available</span>
+                Book Appointment
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'appointment:my_appointments' %}">
+                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
+                My Appointments
+            </a>
+        </nav>
+
+        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
+                <div>
+                    <h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
+                    <p class="m-0 text-xs text-[#9fc7c7]">Patient</p>
+                </div>
+            </div>
+            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
+        <div class="mb-4 flex sm:hidden items-center justify-between">
+            <div class="rounded-full bg-[#dbf5f3] text-[#0b6860] px-3 py-1 text-xs font-semibold tracking-wide">Book Appointment</div>
+            <div class="rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Patient</div>
+        </div>
+
+        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
+            <div class="mb-6">
+                <h2 class="m-0 text-[1.7rem] font-extrabold leading-tight text-[#112234]">Book Appointment</h2>
+                <p class="m-0 mt-1 text-base text-[#6f7b88]">Schedule a visit with your preferred doctor</p>
+            </div>
+
+            <!-- Step indicator -->
+            <div id="steps" class="flex items-center gap-0 mb-8">
+                <div id="step1-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold">
+                    <span>1</span><span>Doctor</span>
+                </div>
+                <div class="flex-1 h-[2px] bg-[#d0dae4] mx-1" id="line1"></div>
+                <div id="step2-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold">
+                    <span>2</span><span>Date &amp; Time</span>
+                </div>
+                <div class="flex-1 h-[2px] bg-[#d0dae4] mx-1" id="line2"></div>
+                <div id="step3-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold">
+                    <span>3</span><span>Confirm</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Select Doctor -->
+            <div id="step1">
+                <h3 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Select a Doctor</h3>
+
+                <!-- Type toggle -->
+                <div class="flex gap-2 mb-5">
+                    <button onclick="setType('in_person', this)" id="btn-in_person"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#31b2a3] bg-[#e0f7f4] text-[#1b8a80] text-sm font-semibold transition">
+                        <span class="material-symbols-outlined text-[17px]">location_on</span>In-Person
+                    </button>
+                    <button onclick="setType('telemedicine', this)" id="btn-telemedicine"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#d0dae4] bg-white text-[#6f7d8a] text-sm font-semibold hover:border-[#31b2a3] transition">
+                        <span class="material-symbols-outlined text-[17px]">videocam</span>Telemedicine
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    {% for doc in doctors %}
+                    <button onclick="selectDoctor({{ doc.pk }}, '{{ doc.get_full_name|default:doc.username }}')"
+                        class="doctor-card w-full flex items-center gap-4 bg-white border-2 border-[#e4ebf0] rounded-[14px] p-4 hover:border-[#31b2a3] hover:bg-[#f0faf9] transition text-left"
+                        data-doctor-id="{{ doc.pk }}">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm shrink-0">
+                            {{ doc.get_full_name|slice:":1"|upper|default:doc.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-[#1b2f44]">Dr. {{ doc.get_full_name|default:doc.username }}</div>
+                        </div>
+                    </button>
+                    {% empty %}
+                        <p class="text-[#81909c] text-sm">No doctors available at the moment.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6">
+                    <button onclick="goStep(2)" id="continue1"
+                        class="w-full py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] opacity-40 cursor-not-allowed transition"
+                        disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Date & Time -->
+            <div id="step2" class="hidden">
+                <h3 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Select Date &amp; Time</h3>
+
+                <div id="date-picker" class="flex gap-2 mb-5 overflow-x-auto pb-1"></div>
+
+                <div id="slots-section" class="hidden">
+                    <p class="text-[#6f7b88] text-sm mb-3 font-medium">Available Slots</p>
+                    <div id="slots" class="flex flex-wrap gap-3 mb-6"></div>
+                </div>
+
+                <div id="no-slots-msg" class="hidden text-[#81909c] text-sm mb-6">No working slots on this day.</div>
+
+                <div class="flex gap-3">
+                    <button onclick="goStep(1)"
+                        class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
+                        Back
+                    </button>
+                    <button onclick="goStep(3)" id="continue2"
+                        class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] opacity-40 cursor-not-allowed transition"
+                        disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Confirm -->
+            <div id="step3" class="hidden">
+                <h3 class="m-0 mb-6 text-[17px] font-bold text-[#1b2f44]">Confirm Appointment</h3>
+
+                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-5 space-y-4 mb-6">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-[#6f7d8a] font-medium">Doctor</span>
+                        <span id="confirm-doctor" class="text-[#1b2f44] font-semibold"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm border-t border-[#ecf0f4] pt-4">
+                        <span class="text-[#6f7d8a] font-medium">Date</span>
+                        <span id="confirm-date" class="text-[#1b2f44] font-semibold"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm border-t border-[#ecf0f4] pt-4">
+                        <span class="text-[#6f7d8a] font-medium">Time</span>
+                        <span id="confirm-time" class="text-[#1b2f44] font-semibold"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm border-t border-[#ecf0f4] pt-4">
+                        <span class="text-[#6f7d8a] font-medium">Type</span>
+                        <span id="confirm-type" class="text-[#1b2f44] font-semibold capitalize"></span>
+                    </div>
+                </div>
+
+                <div id="book-error" class="hidden mb-4 p-3 bg-[#ffebee] text-[#c62828] rounded-[10px] text-sm"></div>
+
+                <div class="flex gap-3">
+                    <button onclick="goStep(2)"
+                        class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
+                        Back
+                    </button>
+                    <button onclick="submitBooking()" id="submit-btn"
+                        class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                        Confirm Booking
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+<script>
+// State
+let state = { doctorId: null, doctorName: '', date: null, startTime: null, endTime: null, type: 'in_person' };
+
+function setType(t, btn) {
+    state.type = t;
+    document.querySelectorAll('[id^="btn-"]').forEach(b => {
+        b.className = b.className.replace('border-[#31b2a3] bg-[#e0f7f4] text-[#1b8a80]', 'border-[#d0dae4] bg-white text-[#6f7d8a]');
+    });
+    btn.className = btn.className.replace('border-[#d0dae4] bg-white text-[#6f7d8a]', 'border-[#31b2a3] bg-[#e0f7f4] text-[#1b8a80]');
+}
+
+function selectDoctor(id, name) {
+    state.doctorId = id; state.doctorName = name;
+    document.querySelectorAll('.doctor-card').forEach(c => {
+        c.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]');
+        c.classList.add('border-[#e4ebf0]');
+    });
+    const card = document.querySelector(`.doctor-card[data-doctor-id="${id}"]`);
+    card.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]');
+    card.classList.remove('border-[#e4ebf0]');
+    const btn = document.getElementById('continue1');
+    btn.disabled = false;
+    btn.classList.remove('opacity-40', 'cursor-not-allowed');
+}
+
+function goStep(n) {
+    [1,2,3].forEach(i => {
+        document.getElementById(`step${i}`).classList.toggle('hidden', i !== n);
+    });
+    // update step indicators
+    const indicators = ['step1-indicator', 'step2-indicator', 'step3-indicator'];
+    indicators.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (idx + 1 < n) {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e0f7f4] text-[#1b8a80] text-sm font-semibold';
+        } else if (idx + 1 === n) {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold';
+        } else {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold';
+        }
+    });
+    if (n === 2) buildDatePicker();
+    if (n === 3) fillConfirm();
+}
+
+function buildDatePicker() {
+    const container = document.getElementById('date-picker');
+    container.innerHTML = '';
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today); d.setDate(today.getDate() + i);
+        const iso = d.toISOString().slice(0,10);
+        const dayName = d.toLocaleDateString('en-US', {weekday:'short'});
+        const dayNum = d.getDate();
+        const mon = d.toLocaleDateString('en-US', {month:'short'});
+        const btn = document.createElement('button');
+        btn.className = 'flex flex-col items-center px-4 py-3 rounded-[12px] border-2 border-[#e4ebf0] bg-white text-[#1b2f44] text-sm font-semibold hover:border-[#31b2a3] hover:bg-[#f0faf9] transition shrink-0 min-w-[64px]';
+        btn.innerHTML = `<span class="text-[#6f7d8a] text-[11px] uppercase tracking-wide">${dayName}</span><span class="text-[1.2rem] font-extrabold leading-none">${dayNum}</span><span class="text-[11px] text-[#81909c]">${mon}</span>`;
+        btn.onclick = () => selectDate(iso, btn);
+        container.appendChild(btn);
+    }
+}
+
+function selectDate(iso, btn) {
+    state.date = iso; state.startTime = null; state.endTime = null;
+    document.querySelectorAll('#date-picker button').forEach(b => {
+        b.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
+        b.classList.add('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+    });
+    btn.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
+    btn.classList.remove('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+    loadSlots(iso);
+}
+
+function loadSlots(date) {
+    document.getElementById('slots-section').classList.add('hidden');
+    document.getElementById('no-slots-msg').classList.add('hidden');
+    document.getElementById('continue2').disabled = true;
+    document.getElementById('continue2').classList.add('opacity-40', 'cursor-not-allowed');
+
+    fetch(`/api/doctors/${state.doctorId}/availability`)
+        .then(r => r.json())
+        .then(schedules => {
+            const daySchedules = schedules.filter(s => s.date === date && s.day_type === 'working');
+            const slotsEl = document.getElementById('slots');
+            slotsEl.innerHTML = '';
+
+            if (!daySchedules.length) {
+                document.getElementById('no-slots-msg').classList.remove('hidden');
+                return;
+            }
+
+            daySchedules.forEach(sched => {
+                generateSlots(sched.start_time, sched.end_time, sched.session_duration).forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
+                    btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start}`;
+                    btn.onclick = () => selectSlot(slot, btn);
+                    slotsEl.appendChild(btn);
+                });
+            });
+
+            document.getElementById('slots-section').classList.remove('hidden');
+        });
+}
+
+function generateSlots(start, end, duration) {
+    const slots = [];
+    let [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    const endMins = eh * 60 + em;
+    while (sh * 60 + sm + duration <= endMins) {
+        const ns = sm + duration;
+        const nh = sh + Math.floor(ns / 60);
+        const nm = ns % 60;
+        slots.push({
+            start: `${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}`,
+            end:   `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`,
+        });
+        sh = nh; sm = nm;
+    }
+    return slots;
+}
+
+function selectSlot(slot, btn) {
+    state.startTime = slot.start + ':00'; state.endTime = slot.end + ':00';
+    document.querySelectorAll('#slots button').forEach(b => {
+        b.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]');
+        b.classList.add('border-[#e4ebf0]', 'bg-white');
+    });
+    btn.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]');
+    btn.classList.remove('border-[#e4ebf0]', 'bg-white');
+    const c2 = document.getElementById('continue2');
+    c2.disabled = false;
+    c2.classList.remove('opacity-40', 'cursor-not-allowed');
+}
+
+function fillConfirm() {
+    document.getElementById('confirm-doctor').textContent = 'Dr. ' + state.doctorName;
+    document.getElementById('confirm-date').textContent = state.date;
+    document.getElementById('confirm-time').textContent = state.startTime.slice(0,5) + ' – ' + state.endTime.slice(0,5);
+    document.getElementById('confirm-type').textContent = state.type.replace('_', ' ');
+}
+
+function submitBooking() {
+    const errEl = document.getElementById('book-error');
+    errEl.classList.add('hidden');
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Booking…';
+
+    fetch('/api/appointments/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            doctor: state.doctorId,
+            date: state.date,
+            start_time: state.startTime,
+            end_time: state.endTime,
+            appointment_type: state.type,
+        }),
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+    .then(({ ok, data }) => {
+        if (ok) {
+            window.location.href = '{% url "appointment:my_appointments" %}';
+        } else {
+            const msg = Object.values(data).flat().join(' ');
+            errEl.textContent = msg;
+            errEl.classList.remove('hidden');
+            btn.disabled = false; btn.textContent = 'Confirm Booking';
+        }
+    });
+}
+</script>
+{% endblock %}
