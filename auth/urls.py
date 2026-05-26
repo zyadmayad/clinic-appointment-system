@@ -1,12 +1,16 @@
-from django.contrib.auth.views import LoginView
 from django.urls import path
 
-from .views import home
+from .views import home, login, register, helloA, helloD, helloR, helloP
 
 app_name = 'auth'
 
 urlpatterns = [
     path('', home, name='home'),
-    path('login/', LoginView.as_view(template_name='login.html'), name='login'),
-    path('register/', LoginView.as_view(template_name='register.html'), name='register'),
+    path('login/', login, name='login'),
+    path('register/', register, name='register'),
+    path('admen/', helloA, name='helloA'),
+    path('doctor/', helloD, name='helloD'),
+    path('receptionist/', helloR, name='helloR'),
+    path('patient/', helloP, name='helloP')
+
 ]
