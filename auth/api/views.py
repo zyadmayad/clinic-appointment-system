@@ -18,7 +18,6 @@ def user_list(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 def user_detail(request, user_id):
     user = get_object_or_404(Users, pk=user_id)
