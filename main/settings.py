@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'dashboards.apps.DashboardsConfig',
     'django_cleanup.apps.CleanupConfig',
     'rest_framework',
+    'schedule.apps.ScheduleConfig',
 ]
 
 MIDDLEWARE = [
