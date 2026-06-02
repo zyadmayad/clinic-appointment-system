@@ -10,22 +10,23 @@ def home(request):
 
 def register(request):
     if request.method == "POST":
-        full_name = (request.POST.get("full_name") or "").strip()
+        username = (request.POST.get("username") or "").strip()
         password = (request.POST.get("password") or "").strip()
         email = (request.POST.get("email") or "").strip().lower()
 
-        if not full_name or not email or not password:
+        if not username or not email or not password:
             return render(request, 'register.html', {"error": "All fields are required"})
         
-        if User.objects.filter(username=email).exists():
+        if User.objects.filter(username__iexact=username).exists():
+            return render(request, 'register.html', {"error": "Username already exists"})
+
+        if User.objects.filter(email__iexact=email).exists():
             return render(request, 'register.html', {"error": "Email already exists"})
 
         user = User.objects.create_user(
-            username=email,
+            username=username,
             password=password,
             email=email,
-            first_name=full_name,
-            last_name="",
         )
 
         profile, _ = Users.objects.get_or_create(user=user, defaults={'role': 'patient'})
@@ -40,15 +41,13 @@ def register(request):
 
 def login(request):
     if request.method == "POST":
-        identifier = (request.POST.get("email") or "").strip()
+        username = (request.POST.get("username") or "").strip()
         password = request.POST.get("password")
 
-        if not identifier or not password:
+        if not username or not password:
             return render(request, 'login.html', {"error": "Invalid credentials"})
 
-        by_email = User.objects.filter(email__iexact=identifier).first()
-        auth_username = by_email.username if by_email else identifier
-        user = authenticate(request, username=auth_username, password=password)
+        user = authenticate(request, username=username, password=password)
 
         if user:
             django_login(request, user)
@@ -58,7 +57,7 @@ def login(request):
 
             request.session['user_id'] = user.id
             request.session['user_role'] = role
-            request.session['user_name'] = user.first_name or user.username
+            request.session['user_name'] = user.username
             request.session['user_email'] = user.email
 
             if IsAdmin().has_permission(request, None):
@@ -71,11 +70,9 @@ def login(request):
                 return redirect('dashboards:receptionist_dashboard')
             
             if IsPatient().has_permission(request, None):
-                return redirect('dashboards:patient_dashboard')
+                return redirect('appointment:patient_dashboard')
             
             return redirect('home')
-            return redirect('appointment:patient_dashboard')
-       
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
 
