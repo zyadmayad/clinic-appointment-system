@@ -73,6 +73,8 @@ def login(request):
                 return redirect('dashboards:patient_dashboard')
             
             return redirect('home')
+            return redirect('appointment:patient_dashboard')
+       
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
 
