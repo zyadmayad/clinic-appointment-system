@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block title %}Receptionist Dashboard | MediCare{% endblock %}
+
+{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+
+{% block content %}
+<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
+    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
+        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
+                <span class="material-symbols-outlined text-[20px]">support_agent</span>
+            </div>
+            <div>
+                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
+                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
+            </div>
+        </div>
+
+        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Receptionist navigation">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'dashboards:reception_home' %}">
+                <span class="material-symbols-outlined text-[19px]">home</span>
+                Dashboard
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:appointments_list' %}">
+                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
+                Appointments
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:checkin_queue' %}">
+                <span class="material-symbols-outlined text-[19px]">airport_shuttle</span>
+                Check-in Queue
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_schedules' %}">
+                <span class="material-symbols-outlined text-[19px]">schedule</span>
+                Doctor Schedules
+            </a>
+        </nav>
+
+        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
+            <div class="flex items-center gap-3">
+                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
+                <div>
+                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
+                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Receptionist</p>
+                </div>
+            </div>
+            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
+        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Receptionist Dashboard</h2>
+                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Manage appointment requests, check-ins, and doctor schedules.</p>
+                </div>
+                <div class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Receptionist</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Total Today</div>
+                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e3f2fd] text-[#1976d2] grid place-items-center">
+                            <span class="material-symbols-outlined text-[17px]">today</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ total_today|default:'0' }}</div>
+                    <div class="mt-1 text-[13px] text-[#81909c]">appointments scheduled</div>
+                </article>
+
+                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Checked In</div>
+                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e0f2f1] text-[#00897b] grid place-items-center">
+                            <span class="material-symbols-outlined text-[17px]">check_circle</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ checked_in|default:'0' }}</div>
+                    <div class="mt-1 text-[13px] text-[#81909c]">patients arrived</div>
+                </article>
+
+                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Awaiting</div>
+                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#fff4e6] text-[#b26b00] grid place-items-center">
+                            <span class="material-symbols-outlined text-[17px]">pending</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ awaiting|default:'0' }}</div>
+                    <div class="mt-1 text-[13px] text-[#81909c]">patients waiting</div>
+                </article>
+
+                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Pending</div>
+                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#fee2e2] text-[#b91c1c] grid place-items-center">
+                            <span class="material-symbols-outlined text-[17px]">report_problem</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ pending_requests_count|default:'0' }}</div>
+                    <div class="mt-1 text-[13px] text-[#81909c]">requests to review</div>
+                </article>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-[1.4fr_1fr] gap-4">
+                <section class="bg-[#fff2f3] border border-[#fed8dd] rounded-[18px] p-5">
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-[1.12rem] font-bold text-[#111f2f]">Pending Appointment Requests</h3>
+                            <p class="mt-2 text-[13px] text-[#6f7b88]">Review new requests and approve or decline appointments.</p>
+                        </div>
+                        <span class="inline-flex rounded-full bg-[#ffe4e8] px-3 py-1 text-[12px] font-semibold text-[#b91c1c]">Priority</span>
+                    </div>
+
+                    {% if pending_requests %}
+                        <ul class="space-y-3">
+                            {% for request in pending_requests %}
+                                <li class="rounded-[14px] border border-[#f5c2cb] bg-white p-4">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm font-semibold text-[#111f2f]">{{ request.patient_name }}</p>
+                                            <p class="mt-1 text-[13px] text-[#6f7b88]">Requested for {{ request.date }} at {{ request.start_time }}</p>
+                                        </div>
+                                        <span class="inline-flex rounded-full bg-[#fdf2f8] px-3 py-1 text-[11px] font-semibold text-[#be185d]">New</span>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap items-center gap-3 text-[13px] text-[#6f7b88]">
+                                        <span>Dr. {{ request.doctor_name }}</span>
+                                        <span class="inline-flex items-center gap-1">- {{ request.appointment_type|capfirst }}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="rounded-[14px] border border-[#f5c2cb] bg-white p-6 text-center text-sm text-[#6f7b88]">
+                            No pending appointment requests at the moment.
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="bg-white border border-[#e4ebf0] rounded-[18px] p-5">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-[1.12rem] font-bold text-[#111f2f]">Ready for Check-in</h3>
+                            <p class="mt-1 text-[13px] text-[#6f7b88]">Patients who can be checked in now.</p>
+                        </div>
+                        <span class="text-[13px] text-[#495c95] font-medium">{{ ready_for_checkin|length }}</span>
+                    </div>
+
+                    {% if ready_for_checkin %}
+                        <div class="space-y-3">
+                            {% for patient in ready_for_checkin %}
+                                <form method="post" action="" class="rounded-[14px] border border-[#e4ebf0] p-4 flex items-center justify-between gap-4">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="appointment_id" value="{{ patient.id }}" />
+                                    <input type="hidden" name="action" value="check_in" />
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-base">{{ patient.initial }}</div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-[#111f2f]">{{ patient.patient_name }}</p>
+                                            <p class="mt-1 text-[13px] text-[#6f7b88]">{{ patient.date }} · {{ patient.start_time }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="inline-flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-2 text-white text-[13px] font-semibold hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                                        Check In
+                                    </button>
+                                </form>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="rounded-[14px] border border-[#e4ebf0] p-6 text-center text-sm text-[#6f7b88]">
+                            No patients are currently ready for check-in.
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
