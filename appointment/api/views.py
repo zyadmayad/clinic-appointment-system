@@ -18,7 +18,7 @@ from appointment.api.serializer import (
 @permission_classes([IsAuthenticated])
 def appointment_list(request):
     if request.method == 'POST':
-        serializer = BookAppointmentSerializer(data=request.data)
+        serializer = BookAppointmentSerializer(data=request.data, context={'patient': request.user})
         if serializer.is_valid():
             data = serializer.validated_data
             appointment = Appointment.objects.create(
