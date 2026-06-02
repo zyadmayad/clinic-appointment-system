@@ -57,7 +57,7 @@ def login(request):
 
             request.session['user_id'] = user.id
             request.session['user_role'] = role
-            request.session['user_name'] = user.first_name or user.username
+            request.session['user_name'] = user.username
             request.session['user_email'] = user.email
 
             if IsAdmin().has_permission(request, None):
