@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block title %}Doctor Schedules | MediCare{% endblock %}
+
+{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+
+{% block content %}
+<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
+    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
+        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
+                <span class="material-symbols-outlined text-[20px]">support_agent</span>
+            </div>
+            <div>
+                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
+                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
+            </div>
+        </div>
+
+        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Receptionist navigation">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:reception_home' %}">
+                <span class="material-symbols-outlined text-[19px]">home</span>
+                Dashboard
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:appointments_list' %}">
+                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
+                Appointments
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:checkin_queue' %}">
+                <span class="material-symbols-outlined text-[19px]">airport_shuttle</span>
+                Check-in Queue
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'dashboards:doctor_schedules' %}">
+                <span class="material-symbols-outlined text-[19px]">schedule</span>
+                Doctor Schedules
+            </a>
+        </nav>
+
+        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
+            <div class="flex items-center gap-3">
+                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
+                <div>
+                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
+                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Receptionist</p>
+                </div>
+            </div>
+            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
+        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Doctor Schedules</h2>
+                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Weekly calendar view for doctor availability and exceptions.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
+                    {% for doctor in doctors %}
+                        <a href="?doctor={{ doctor.id }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition {% if doctor.id == selected_doctor.id %}border-[#31b2a3] bg-[#31b2a3] text-white shadow-[0_10px_24px_-16px_rgba(49,178,163,0.45)]{% else %}border-[#dfe7ed] bg-white text-[#475569] hover:border-[#b1c7d4] hover:bg-[#f8fcfe]{% endif %}">{{ doctor.name }}</a>
+                    {% endfor %}
+                </div>
+
+                <div class="rounded-[22px] border border-[#e4ebf0] bg-white p-5 shadow-[0_25px_80px_-50px_rgba(15,45,75,0.15)]">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-[#64748b]">Weekly Schedule</p>
+                            <h3 class="mt-2 text-[1.6rem] font-extrabold text-[#111f2a]">{{ selected_doctor.name }}</h3>
+                            <p class="mt-1 text-sm text-[#6f7b88]">{{ week_range }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-3">
+                        {% for day in schedule_days %}
+                            <div class="rounded-[20px] border border-[#e7eef4] bg-[#f8fafc] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm font-semibold text-[#111f2a]">{{ day.name }}</p>
+                                        <p class="text-sm text-[#64748b]">{{ day.date }}</p>
+                                    </div>
+                                    <span class="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold {% if day.status == 'Off' %}bg-[#fef3c7] text-[#92400e]{% else %}bg-[#dbeafe] text-[#1d4ed8]{% endif %}">{{ day.status }}</span>
+                                </div>
+                                {% if day.shifts %}
+                                    <div class="mt-4 flex flex-wrap gap-3">
+                                        {% for shift in day.shifts %}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-[#e8f9f2] px-4 py-2 text-sm font-medium text-[#0f5a4f] shadow-sm">
+                                                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                                                {{ shift.time_range }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="mt-4 text-sm text-[#64748b] italic">Day off</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
