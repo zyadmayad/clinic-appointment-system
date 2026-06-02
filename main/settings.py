@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'rest_framework',
     'schedule.apps.ScheduleConfig',
+    'appointment.apps.AppointmentConfig',
 ]
 
 MIDDLEWARE = [
