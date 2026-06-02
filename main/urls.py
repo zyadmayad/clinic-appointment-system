@@ -12,5 +12,6 @@ urlpatterns = [
     path('patient/', include(('appointment.urls', 'appointment'), namespace='appointment')),
     path('api/doctors/', include('schedule.api.urls')),
     path('api/appointments/', include('appointment.api.urls')),
+    path('api/queue/', include('queue_management.urls')),
     path('api/', include('auth.api.urls')),
 ]

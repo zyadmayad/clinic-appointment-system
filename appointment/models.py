@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class Appointment(models.Model):
@@ -9,6 +10,7 @@ class Appointment(models.Model):
         ('checked_in', 'Checked In'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
+        ('no_show', 'No Show'),
     ]
     TYPE_CHOICES = [
         ('in_person', 'In Person'),
@@ -22,7 +24,14 @@ class Appointment(models.Model):
     end_time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='requested')
     appointment_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='in_person')
+    check_in_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def waiting_time(self):
+        if not self.check_in_time:
+            return None
+        return timezone.now() - self.check_in_time
 
     def __str__(self):
         return f"APT-{self.pk:03d} {self.patient} → {self.doctor} on {self.date}"
