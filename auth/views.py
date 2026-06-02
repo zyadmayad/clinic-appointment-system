@@ -62,7 +62,8 @@ def login(request):
 
             if role == 'admin':
                 return redirect('dashboards:admin_dashboard')
-            return redirect('home')
+            return redirect('appointment:patient_dashboard')
+       
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
 
