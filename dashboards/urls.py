@@ -5,4 +5,8 @@ app_name = "dashboards"
 
 urlpatterns = [
     path("admin/", views.admin_dashboard, name="admin_dashboard"),
+    path("doctor/", views.doctor_dashboard, name="doctor_dashboard"),
+    # path("patient/", views.patient_dashboard, name="patient_dashboard"),
+    # path("receptionist/", views.receptionist_dashboard, name="receptionist_dashboard"),
+
 ]
