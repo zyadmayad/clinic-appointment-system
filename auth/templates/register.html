@@ -3,6 +3,7 @@
 {% block show_header %}{% endblock %}
 {% block show_footer %}{% endblock %}
 {% block main_classes %}flex-grow py-8 md:py-10 px-4 sm:px-8 max-w-7xl mx-auto w-full{% endblock %}
+{% load socialaccount %}
 
 {% block content %}
 <div class="rounded-3xl overflow-hidden shadow-[0px_30px_70px_-22px_rgba(11,28,48,0.22)] bg-white grid grid-cols-1 lg:grid-cols-2 min-h-[90vh]">
@@ -22,15 +23,17 @@
       <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Create Account</h1>
       <p class="text-slate-500 mt-2 mb-8 text-lg">Sign up to get started with MediCare</p>
 
-      <button type="button" class="w-full border border-slate-200 py-3.5 rounded-xl flex items-center justify-center gap-3 text-slate-700 font-semibold hover:bg-slate-50 transition-colors">
-        <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5c-.2 1.2-.9 2.3-1.9 3v2.5h3.1c1.8-1.7 2.8-4.2 2.8-7.3z" fill="#4285F4"></path>
-          <path d="M12 22c2.7 0 5-0.9 6.7-2.5l-3.1-2.5c-.9 0.6-2.1 1-3.6 1-2.8 0-5.1-1.9-6-4.4H2.8v2.6C4.5 19.7 8 22 12 22z" fill="#34A853"></path>
-          <path d="M6 13.6c-.2-.6-.3-1.2-.3-1.8s.1-1.3.3-1.8V7.4H2.8C2.3 8.6 2 10 2 11.8s.3 3.2.8 4.4L6 13.6z" fill="#FBBC05"></path>
-          <path d="M12 5.6c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 2.6 14.7 1.6 12 1.6 8 1.6 4.5 3.9 2.8 7.4L6 10c.9-2.6 3.2-4.4 6-4.4z" fill="#EA4335"></path>
-        </svg>
-        Continue with Google
-      </button>
+      <a href="{% provider_login_url 'google' proccess='register' %}">
+        <button type="button" class="w-full border border-slate-200 py-3.5 rounded-xl flex items-center justify-center gap-3 text-slate-700 font-semibold hover:bg-slate-50 transition-colors">
+          <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5c-.2 1.2-.9 2.3-1.9 3v2.5h3.1c1.8-1.7 2.8-4.2 2.8-7.3z" fill="#4285F4"></path>
+            <path d="M12 22c2.7 0 5-0.9 6.7-2.5l-3.1-2.5c-.9 0.6-2.1 1-3.6 1-2.8 0-5.1-1.9-6-4.4H2.8v2.6C4.5 19.7 8 22 12 22z" fill="#34A853"></path>
+            <path d="M6 13.6c-.2-.6-.3-1.2-.3-1.8s.1-1.3.3-1.8V7.4H2.8C2.3 8.6 2 10 2 11.8s.3 3.2.8 4.4L6 13.6z" fill="#FBBC05"></path>
+            <path d="M12 5.6c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 2.6 14.7 1.6 12 1.6 8 1.6 4.5 3.9 2.8 7.4L6 10c.9-2.6 3.2-4.4 6-4.4z" fill="#EA4335"></path>
+          </svg>
+          Continue with Google
+        </button>
+      </a>
 
       <div class="my-6 flex items-center gap-4 text-xs tracking-wide text-slate-400 uppercase font-semibold">
         <span class="h-px bg-slate-200 flex-1"></span>
