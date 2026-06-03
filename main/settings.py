@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'schedule.apps.ScheduleConfig',
     'appointment.apps.AppointmentConfig',
     'queue_management',
+    'slots.apps.SlotsConfig',
     'managements',
 ]
 
