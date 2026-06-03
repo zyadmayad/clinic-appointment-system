@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'schedule.apps.ScheduleConfig',
     'appointment.apps.AppointmentConfig',
-    'queue_management'
+    'queue_management',
+    'managements',
 ]
 
 MIDDLEWARE = [
