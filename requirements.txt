@@ -3,3 +3,4 @@ mysqlclient
 django-environ
 django-cleanup
 djangorestframework
+django-allauth
