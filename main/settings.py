@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auth.apps.AuthConfig',
+    'receptionist.apps.ReceptionistConfig',
     'dashboards.apps.DashboardsConfig',
     'django_cleanup.apps.CleanupConfig',
     'rest_framework',
