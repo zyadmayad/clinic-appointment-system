@@ -88,21 +88,25 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
                         <div class="min-w-[200px] flex items-center justify-between">
                             <p class="m-0 font-semibold text-[#1b2f44]">{{ day_info }}</p>
-                            <button onclick="openEditDayTypeModal('{{ day_info }}')" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition">
+                            <button onclick="markDayOff('{{ day_info }}', {{ slots.0.schedule_id|default:'null' }})" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition" title="Mark this day as off">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            {% for slot in slots %}
-                                {% if slot.day_type == "off" %}
-                                    <span class="text-[#9fc7c7] italic text-sm">Day off</span>
-                                {% else %}
-                                    <button onclick="openExceptionModal({{ slot.schedule_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
-                                        <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                        {{ slot.start }} - {{ slot.end }}
-                                    </button>
-                                {% endif %}
-                            {% endfor %}
+                            {% if slots %}
+                                {% for slot in slots %}
+                                    {% if slot.day_type == "off" %}
+                                        <span class="text-[#9fc7c7] italic text-sm">Day off</span>
+                                    {% else %}
+                                        <button onclick="openExceptionModal({{ slot.slot_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
+                                            <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                            {{ slot.start }} - {{ slot.end }}
+                                        </button>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-[#9fc7c7] italic text-sm">No slots</span>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -114,7 +118,7 @@
 
 <!-- Create Schedule Modal -->
 <div id="scheduleModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
+    <div class="bg-white rounded-[18px] max-w-2xl w-full shadow-2xl">
         <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
             <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Create Schedule</h3>
             <button onclick="closeScheduleModal()" class="text-[#81909c] hover:text-[#1b2f44]">
@@ -122,122 +126,381 @@
             </button>
         </div>
 
-        <form id="scheduleForm" onsubmit="handleScheduleSubmit(event)" class="p-6 space-y-4">
-            <!-- Date -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Date</label>
-                <input type="date" id="scheduleDate" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+        <div class="p-6">
+            <div class="flex items-center gap-0 mb-6">
+                <div id="schedule-step1-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold">
+                    <span>1</span><span>Working Window</span>
+                </div>
+                <div id="schedule-line1" class="flex-1 h-[2px] bg-[#d0dae4] mx-1"></div>
+                <div id="schedule-step2-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold">
+                    <span>2</span><span>Select Slots</span>
+                </div>
             </div>
 
-            <!-- Start Time -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Start Time</label>
-                <input type="time" id="scheduleStartTime" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+            <div id="scheduleError" class="hidden mb-4 bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
+
+            <div id="scheduleStep1">
+                <h4 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Set Working Window</h4>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Date</label>
+                        <input type="date" id="scheduleDate" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Start Time</label>
+                        <input type="time" id="scheduleStartTime" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">End Time</label>
+                        <input type="time" id="scheduleEndTime" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Session Duration (minutes)</label>
+                        <input type="number" id="scheduleDuration" value="30" min="5" step="5" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-6">
+                    <button type="button" onclick="closeScheduleModal()" class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="continueToScheduleSlots()" class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                        Continue
+                    </button>
+                </div>
             </div>
 
-            <!-- End Time -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">End Time</label>
-                <input type="time" id="scheduleEndTime" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-            </div>
+            <div id="scheduleStep2" class="hidden">
+                <h4 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Select Slots</h4>
 
-            <!-- Session Duration -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Session Duration (minutes)</label>
-                <input type="number" id="scheduleDuration" value="30" min="15" step="15" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-            </div>
+                <div class="grid sm:grid-cols-3 gap-3 mb-5 p-4 bg-[#f8fbfc] border border-[#e4ebf0] rounded-[12px]">
+                    <div>
+                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Date</p>
+                        <p id="scheduleSummaryDate" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
+                    </div>
+                    <div>
+                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Window</p>
+                        <p id="scheduleSummaryWindow" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
+                    </div>
+                    <div>
+                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Session</p>
+                        <p id="scheduleSummaryDuration" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
+                    </div>
+                </div>
 
-            <!-- Day Type -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Day Type</label>
-                <select id="scheduleDayType" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                    <option value="working">Working Day</option>
-                    <option value="off">Day Off</option>
-                </select>
-            </div>
+                <p class="m-0 text-sm text-[#6f7b88] mb-3 font-medium">Choose one or more slots to publish for booking.</p>
 
-            <!-- Error Message -->
-            <div id="scheduleError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
+                <div id="scheduleGeneratedSlots" class="flex flex-wrap gap-3 mb-3"></div>
+                <div id="scheduleNoSlots" class="hidden text-[#81909c] text-sm mb-3">No slots were generated. Check time range and session duration.</div>
+                <p id="scheduleSelectedCount" class="m-0 text-sm text-[#5f6d79] mb-6">0 slots selected</p>
 
-            <!-- Submit Button -->
-            <div class="flex gap-3 pt-4">
-                <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                    Create
-                </button>
-                <button type="button" onclick="closeScheduleModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
-                    Cancel
-                </button>
+                <div class="flex gap-3">
+                    <button type="button" onclick="goScheduleStep(1)" class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
+                        Back
+                    </button>
+                    <button id="scheduleSubmitBtn" type="button" onclick="handleScheduleSubmit()" class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] opacity-40 cursor-not-allowed transition" disabled>
+                        Create Selected Slots
+                    </button>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
+let scheduleWizardState = {
+    step: 1,
+    date: '',
+    startTime: '',
+    endTime: '',
+    duration: 30,
+    generatedSlots: [],
+    selectedSlotKeys: new Set()
+};
+
 function openScheduleModal() {
     const modal = document.getElementById('scheduleModal');
     modal.classList.remove('hidden');
+    resetScheduleWizard();
+    goScheduleStep(1);
 }
 
 function closeScheduleModal() {
     const modal = document.getElementById('scheduleModal');
     modal.classList.add('hidden');
-    document.getElementById('scheduleForm').reset();
+    resetScheduleWizard();
+}
+
+function resetScheduleWizard() {
+    scheduleWizardState = {
+        step: 1,
+        date: '',
+        startTime: '',
+        endTime: '',
+        duration: 30,
+        generatedSlots: [],
+        selectedSlotKeys: new Set()
+    };
+
+    document.getElementById('scheduleDate').value = '';
+    document.getElementById('scheduleStartTime').value = '';
+    document.getElementById('scheduleEndTime').value = '';
+    document.getElementById('scheduleDuration').value = '30';
+    document.getElementById('scheduleGeneratedSlots').innerHTML = '';
+    document.getElementById('scheduleNoSlots').classList.add('hidden');
+    document.getElementById('scheduleSelectedCount').textContent = '0 slots selected';
+
+    const submitBtn = document.getElementById('scheduleSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Create Selected Slots';
+    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+
     document.getElementById('scheduleError').classList.add('hidden');
 }
 
-function handleScheduleSubmit(event) {
-    event.preventDefault();
+function goScheduleStep(step) {
+    scheduleWizardState.step = step;
 
+    document.getElementById('scheduleStep1').classList.toggle('hidden', step !== 1);
+    document.getElementById('scheduleStep2').classList.toggle('hidden', step !== 2);
+
+    const indicators = ['schedule-step1-indicator', 'schedule-step2-indicator'];
+    indicators.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (idx + 1 < step) {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e0f7f4] text-[#1b8a80] text-sm font-semibold';
+        } else if (idx + 1 === step) {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold';
+        } else {
+            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold';
+        }
+    });
+
+    const line1 = document.getElementById('schedule-line1');
+    line1.className = step > 1 ? 'flex-1 h-[2px] bg-[#8bd8cf] mx-1' : 'flex-1 h-[2px] bg-[#d0dae4] mx-1';
+}
+
+function continueToScheduleSlots() {
     const date = document.getElementById('scheduleDate').value;
     const startTime = document.getElementById('scheduleStartTime').value;
     const endTime = document.getElementById('scheduleEndTime').value;
-    const duration = document.getElementById('scheduleDuration').value;
-    const dayType = document.getElementById('scheduleDayType').value;
+    const duration = parseInt(document.getElementById('scheduleDuration').value, 10);
 
-    // Validate times
-    if (startTime >= endTime) {
-        showScheduleError('End time must be after start time');
+    if (!date || !startTime || !endTime || Number.isNaN(duration)) {
+        showScheduleError('Please fill all fields before continuing.');
         return;
     }
 
-    // Get the doctor ID from the URL or use a data attribute
-    const doctorId = document.body.getAttribute('data-doctor-id') || '{{ request.user.id }}';
+    if (duration <= 0) {
+        showScheduleError('Session duration must be greater than 0 minutes.');
+        return;
+    }
 
-    const scheduleData = {
-        doctor: parseInt(doctorId),
-        date: date,
-        start_time: startTime,
-        end_time: endTime,
-        session_duration: parseInt(duration),
-        day_type: dayType
-    };
+    if (startTime >= endTime) {
+        showScheduleError('End time must be after start time.');
+        return;
+    }
 
-    // Send to API endpoint
-    fetch(`/api/doctors/${doctorId}/availability`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(scheduleData)
-    })
-    .then(response => {
-        // Check if response is OK (status 200-299)
-        if (response.ok) {
-            return response.json().then(data => {
-                closeScheduleModal();
-                // Reload the page to show the new schedule
-                location.reload();
-            });
-        } else {
-            return response.json().then(data => {
-                showScheduleError(data.message || 'Error creating schedule');
-            });
-        }
-    })
-    .catch(error => {
-        showScheduleError('Error creating schedule: ' + error);
+    scheduleWizardState.date = date;
+    scheduleWizardState.startTime = startTime;
+    scheduleWizardState.endTime = endTime;
+    scheduleWizardState.duration = duration;
+    scheduleWizardState.generatedSlots = generateScheduleSlots(startTime, endTime, duration);
+    scheduleWizardState.selectedSlotKeys = new Set();
+
+    fillScheduleSummary();
+    renderGeneratedScheduleSlots();
+    document.getElementById('scheduleError').classList.add('hidden');
+    goScheduleStep(2);
+}
+
+function generateScheduleSlots(start, end, duration) {
+    const startParts = start.split(':').map(Number);
+    const endParts = end.split(':').map(Number);
+    const fragmentMinutes = 5;
+
+    if (startParts.length !== 2 || endParts.length !== 2 || startParts.some(Number.isNaN) || endParts.some(Number.isNaN)) {
+        return [];
+    }
+
+    const startMins = startParts[0] * 60 + startParts[1];
+    const endMins = endParts[0] * 60 + endParts[1];
+    const slots = [];
+    let cursor = startMins;
+
+    while (cursor + duration <= endMins) {
+        const next = cursor + duration;
+        const sh = Math.floor(cursor / 60);
+        const sm = cursor % 60;
+        const eh = Math.floor(next / 60);
+        const em = next % 60;
+
+        slots.push({
+            start: `${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}`,
+            end: `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`
+        });
+
+        cursor = next + fragmentMinutes;
+    }
+
+    return slots;
+}
+
+function fillScheduleSummary() {
+    const date = new Date(`${scheduleWizardState.date}T00:00:00`);
+    const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
     });
+
+    document.getElementById('scheduleSummaryDate').textContent = formattedDate;
+    document.getElementById('scheduleSummaryWindow').textContent = `${scheduleWizardState.startTime} - ${scheduleWizardState.endTime}`;
+    document.getElementById('scheduleSummaryDuration').textContent = `${scheduleWizardState.duration} minutes`;
+}
+
+function renderGeneratedScheduleSlots() {
+    const slotsWrap = document.getElementById('scheduleGeneratedSlots');
+    const noSlots = document.getElementById('scheduleNoSlots');
+    const submitBtn = document.getElementById('scheduleSubmitBtn');
+
+    slotsWrap.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+
+    if (!scheduleWizardState.generatedSlots.length) {
+        noSlots.classList.remove('hidden');
+        updateScheduleSelectedCount();
+        return;
+    }
+
+    noSlots.classList.add('hidden');
+
+    scheduleWizardState.generatedSlots.forEach((slot) => {
+        const key = `${slot.start}-${slot.end}`;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
+        btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start} - ${slot.end}`;
+        btn.addEventListener('click', () => {
+            toggleScheduleSlotSelection(key, btn);
+        });
+        slotsWrap.appendChild(btn);
+    });
+
+    updateScheduleSelectedCount();
+}
+
+function toggleScheduleSlotSelection(slotKey, button) {
+    if (scheduleWizardState.selectedSlotKeys.has(slotKey)) {
+        scheduleWizardState.selectedSlotKeys.delete(slotKey);
+        button.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
+        button.classList.add('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+    } else {
+        scheduleWizardState.selectedSlotKeys.add(slotKey);
+        button.classList.remove('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+        button.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
+    }
+
+    const submitBtn = document.getElementById('scheduleSubmitBtn');
+    const hasSelection = scheduleWizardState.selectedSlotKeys.size > 0;
+    submitBtn.disabled = !hasSelection;
+
+    if (hasSelection) {
+        submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+    } else {
+        submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+    }
+
+    updateScheduleSelectedCount();
+}
+
+function updateScheduleSelectedCount() {
+    const selectedCount = scheduleWizardState.selectedSlotKeys.size;
+    const label = selectedCount === 1 ? 'slot selected' : 'slots selected';
+    document.getElementById('scheduleSelectedCount').textContent = `${selectedCount} ${label}`;
+}
+
+async function handleScheduleSubmit() {
+    if (!scheduleWizardState.selectedSlotKeys.size) {
+        showScheduleError('Please select at least one slot to create.');
+        return;
+    }
+
+    const submitBtn = document.getElementById('scheduleSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+    submitBtn.textContent = 'Creating...';
+
+    const doctorId = document.body.getAttribute('data-doctor-id') || '{{ request.user.id }}';
+    const selectedSlots = scheduleWizardState.generatedSlots.filter((slot) => {
+        const key = `${slot.start}-${slot.end}`;
+        return scheduleWizardState.selectedSlotKeys.has(key);
+    });
+
+    try {
+        const scheduleData = {
+            doctor: parseInt(doctorId, 10),
+            date: scheduleWizardState.date,
+            start_time: scheduleWizardState.startTime,
+            end_time: scheduleWizardState.endTime,
+            session_duration: scheduleWizardState.duration,
+            day_type: 'working'
+        };
+
+        const scheduleResponse = await fetch(`/api/doctors/${doctorId}/availability`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(scheduleData)
+        });
+
+        if (!scheduleResponse.ok) {
+            throw new Error('Error creating schedule.');
+        }
+
+        const scheduleResult = await scheduleResponse.json();
+        if (!scheduleResult.id) {
+            throw new Error('Schedule created but no schedule id returned.');
+        }
+
+        const slotsPayload = {
+            doctor: parseInt(doctorId, 10),
+            schedule: scheduleResult.id,
+            slots: selectedSlots.map((slot) => ({
+                start_time: slot.start,
+                end_time: slot.end
+            }))
+        };
+
+        const slotResponse = await fetch('/api/slots/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(slotsPayload)
+        });
+
+        if (!slotResponse.ok) {
+            throw new Error('Schedule created, but creating slots failed.');
+        }
+
+        closeScheduleModal();
+        location.reload();
+    } catch (error) {
+        showScheduleError(error.message || 'Error creating schedule and slots.');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        submitBtn.textContent = 'Create Selected Slots';
+    }
 }
 
 function showScheduleError(message) {
@@ -422,12 +685,48 @@ document.getElementById('editDayTypeModal')?.addEventListener('click', function(
                 </button>
             </div>
             
-            <input type="hidden" id="exceptionScheduleId">
+            <input type="hidden" id="exceptionSlotId">
         </div>
     </div>
 </div>
 
 <script>
+function markDayOff(dayInfo, scheduleId) {
+    if (!scheduleId) {
+        alert('No schedule found for this day to mark as off.');
+        return;
+    }
+
+    const confirmed = confirm(`Mark ${dayInfo} as day off?`);
+    if (!confirmed) {
+        return;
+    }
+
+    const doctorId = '{{ request.user.id }}';
+    fetch(`/api/doctors/${doctorId}/exceptions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            schedule: parseInt(scheduleId, 10)
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+            return;
+        }
+        return response.json().then(data => {
+            throw new Error(data.detail || data.message || 'Error marking day as off');
+        });
+    })
+    .catch(error => {
+        alert(error.message || 'Error marking day as off');
+    });
+}
+
 function updateDayType() {
     const workingDayRadio = document.getElementById('workingDay');
     const dayOffRadio = document.getElementById('dayOff');
@@ -447,9 +746,9 @@ function updateDayType() {
 }
 
 // Exception Functions
-function openExceptionModal(scheduleId, timeSlot) {
+function openExceptionModal(slotId, timeSlot) {
     document.getElementById('exceptionModal').classList.remove('hidden');
-    document.getElementById('exceptionScheduleId').value = scheduleId;
+    document.getElementById('exceptionSlotId').value = slotId;
     document.getElementById('exceptionTimeSlot').textContent = timeSlot;
 }
 
@@ -459,20 +758,14 @@ function closeExceptionModal() {
 }
 
 function handleMarkException() {
-    const scheduleId = document.getElementById('exceptionScheduleId').value;
-    const doctorId = '{{ request.user.id }}';
-    
-    const exceptionData = {
-        schedule: parseInt(scheduleId)
-    };
-    
-    fetch(`/api/doctors/${doctorId}/exceptions`, {
-        method: 'POST',
+    const slotId = document.getElementById('exceptionSlotId').value;
+
+    fetch(`/api/slots/${slotId}/delete`, {
+        method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(exceptionData)
+        }
     })
     .then(response => {
         if (response.ok) {

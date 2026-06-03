@@ -1,8 +1,11 @@
 from urllib import request
 
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from datetime import datetime, timedelta
+from appointment.models import Appointment
 from schedule.models import Schedule
+from slots.models import Slot
 
 # Create your views here.
 def doctor_schedule(request):
@@ -18,6 +21,7 @@ def doctor_schedule(request):
   friday = saturday + timedelta(days=6)
   
   schedules = Schedule.objects.filter(doctor_id=id,date__gte=saturday,date__lte=friday).order_by('date', 'start_time')
+  slots = Slot.objects.filter(doctor_id=id, date__gte=saturday, date__lte=friday).order_by('date', 'start_time')
 
   
   schedule_data = {}
@@ -30,20 +34,25 @@ def doctor_schedule(request):
     key = f"{day_name} ({date_str})"
     schedule_data[key] = []
   
-  for schedule in schedules:
-    day_name = day_weekday_map.get(schedule.date.weekday(), 'Unknown')
-    date_str = schedule.date.strftime('%Y-%m-%d')
+  for slot in slots:
+    day_name = day_weekday_map.get(slot.date.weekday(), 'Unknown')
+    date_str = slot.date.strftime('%Y-%m-%d')
     key = f"{day_name} ({date_str})"
-    
-    if schedule.day_type == 'working':
-      schedule_data[key].append({
-          "schedule_id": schedule.id,
-          "start": schedule.start_time.strftime('%H:%M'),
-          "end": schedule.end_time.strftime('%H:%M'),
-          "day_type": "working"
-      })
-    else:
-      schedule_data[key] = [{"day_type": "off"}]
+
+    schedule_data[key].append({
+        "slot_id": slot.id,
+        "schedule_id": slot.schedule_id,
+        "start": slot.start_time.strftime('%H:%M'),
+        "end": slot.end_time.strftime('%H:%M'),
+        "day_type": "working",
+    })
+
+  off_dates = {schedule.date for schedule in schedules if schedule.day_type == 'off'}
+  for off_date in off_dates:
+    day_name = day_weekday_map.get(off_date.weekday(), 'Unknown')
+    date_str = off_date.strftime('%Y-%m-%d')
+    key = f"{day_name} ({date_str})"
+    schedule_data[key] = [{"day_type": "off"}]
 
   return render(
       request,
@@ -61,12 +70,45 @@ def patient_queue(request):
     return redirect('auth:login')
   
   user_name = request.user.username
-  
+  today = timezone.localdate()
+  appointments = Appointment.objects.filter(
+      doctor=request.user,
+      date=today,
+      status='checked_in',
+  ).order_by('check_in_time')
+
+  queue_items = []
+  for appointment in appointments:
+    waiting = appointment.waiting_time
+    if waiting is None:
+      if appointment.status == 'checked_in':
+        waiting_display = f"Scheduled {appointment.start_time.strftime('%H:%M')}"
+      else:
+        waiting_display = 'N/A'
+    else:
+      hours = waiting.days * 24 + waiting.seconds // 3600
+      minutes = (waiting.seconds % 3600) // 60
+      waiting_display = f"{hours}h {minutes}m" if hours else f"{minutes}m"
+
+    patient_name = appointment.patient.get_full_name() or appointment.patient.username
+    queue_items.append({
+      'id': appointment.id,
+      'patient_name': patient_name,
+      'patient_initial': patient_name[:1].upper(),
+      'display_time': appointment.check_in_time.strftime('%H:%M') if appointment.check_in_time else appointment.start_time.strftime('%H:%M'),
+      'waiting_display': waiting_display,
+      'status': appointment.get_status_display(),
+      'start_time': appointment.start_time.strftime('%H:%M'),
+      'end_time': appointment.end_time.strftime('%H:%M'),
+    })
+
   return render(
       request,
       "doctor/patient_queue.html",
       {
           "user_name": user_name,
+          "queue_items": queue_items,
+          "checked_in_count": appointments.count(),
       },
   )
 
