@@ -21,7 +21,7 @@ def patient_dashboard(request):
     completed = appointments.filter(status='completed').count()
     pending = appointments.filter(status='requested').count()
 
-    return render(request, 'patient_dashboard.html', {
+    return render(request, 'patient/patient_dashboard.html', {
         'user_name': user_name,
         'today': today,
         'upcoming_count': upcoming,
@@ -41,7 +41,7 @@ def book_appointment(request):
     doctor_ids = Schedule.objects.filter(day_type='working').values_list('doctor_id', flat=True).distinct()
     doctors = User.objects.filter(id__in=doctor_ids)
 
-    return render(request, 'book_appointment.html', {
+    return render(request, 'patient/book_appointment.html', {
         'user_name': user_name,
         'doctors': doctors,
     })
@@ -60,7 +60,7 @@ def my_appointments(request):
         .order_by('-date', '-start_time')
     )
 
-    return render(request, 'my_appointments.html', {
+    return render(request, 'patient/my_appointments.html', {
         'user_name': user_name,
         'appointments': appointments,
     })

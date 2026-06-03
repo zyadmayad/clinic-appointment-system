@@ -28,14 +28,14 @@ def register(request):
             password=password,
             email=email,
         )
-
+        
         profile, _ = Users.objects.get_or_create(user=user, defaults={'role': 'patient'})
         profile.username = user.username
         profile.email = user.email
         profile.password = user.password
         profile.save(update_fields=['username', 'email', 'password'])
         
-        return redirect('home')
+        return redirect('auth:login')
 
     return render(request, 'register.html')
 
