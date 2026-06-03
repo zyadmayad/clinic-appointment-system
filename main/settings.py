@@ -63,6 +63,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+SOCIALACCOUNT_ADAPTER = "auth.views.SocialAccountAdapter"
+
 LOGIN_URL = 'auth:login'
 LOGOUT_URL = 'auth:logout'
 LOGIN_REDIRECT_URL = 'appointment:patient_dashboard'
