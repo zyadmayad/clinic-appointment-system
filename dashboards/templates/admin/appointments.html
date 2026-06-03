@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block title %}All Appointments | MediCare{% endblock %}
+
+{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+
+{% block content %}
+<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
+	<aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
+		<div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
+			<div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
+				<span class="material-symbols-outlined text-[20px]">stethoscope</span>
+			</div>
+			<div>
+				<h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
+				<p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
+			</div>
+		</div>
+
+		<nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Admin navigation">
+			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:admin_dashboard' %}">
+				<span class="material-symbols-outlined text-[19px]">dashboard</span>
+				Dashboard
+			</a>
+			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'managements:admin_appointments' %}">
+				<span class="material-symbols-outlined text-[19px]">event</span>
+				Appointments
+			</a>
+			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:doctor_schedule' %}">
+				<span class="material-symbols-outlined text-[19px]">calendar_month</span>
+				Doctor Schedules
+			</a>
+			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:user_managements' %}">
+				<span class="material-symbols-outlined text-[19px]">group</span>
+				User Management
+			</a>
+		</nav>
+
+		<div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
+			<div class="flex items-center gap-3">
+				<div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
+				<div>
+					<h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
+					<p class="m-0 text-xs text-[#9fc7c7]">{{ user_role|title }}</p>
+				</div>
+			</div>
+			<a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
+				<span class="material-symbols-outlined text-[18px]">logout</span>
+				Sign Out
+			</a>
+		</div>
+	</aside>
+
+	<section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
+		<div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
+			<div class="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+				<div>
+					<h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">All Appointments</h2>
+					<p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ appointments_count }} appointment{{ appointments_count|pluralize }} found</p>
+				</div>
+				<div class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{{ user_role|title }}</div>
+			</div>
+
+			<form method="get" class="mb-4 grid grid-cols-1 lg:grid-cols-[1fr_210px] gap-3">
+				<label class="relative block" for="id_q">
+					<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8a96a3] text-[20px]">search</span>
+					<input id="id_q" name="q" value="{{ search_query }}" type="text" placeholder="Search by ID, patient or doctor..." class="w-full border border-[#dde6ec] rounded-xl bg-white pl-10 pr-4 py-3.5 text-[#1d2d40] placeholder:text-[#9ba9b8] focus:border-[#24b5aa] focus:ring-4 focus:ring-[#24b5aa]/15" />
+				</label>
+
+				<label class="relative block" for="id_status">
+					<select id="id_status" name="status" class="w-full appearance-none border border-[#dde6ec] rounded-xl bg-white px-4 py-3.5 text-[#1d2d40] focus:border-[#24b5aa] focus:ring-4 focus:ring-[#24b5aa]/15">
+						<option value="all" {% if selected_status == 'all' %}selected{% endif %}>All Statuses</option>
+						{% for value, label in status_options %}
+						<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+						{% endfor %}
+					</select>
+					<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#8a96a3] text-[20px] pointer-events-none">expand_more</span>
+				</label>
+			</form>
+
+			<div class="grid gap-3">
+				{% for appointment in appointments %}
+				<article class="rounded-2xl border border-[#e6edf2] bg-white px-3 sm:px-4 py-3 shadow-[0_8px_24px_-20px_rgba(27,49,73,0.45)]">
+					<div class="flex items-center gap-3 sm:gap-4">
+						<div class="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#28b7aa] to-[#199b8f] text-white font-bold grid place-items-center">{{ appointment.patient_initial }}</div>
+
+						<div class="min-w-0 flex-1">
+							<h3 class="m-0 text-[17px] font-bold text-[#13253a] truncate">{{ appointment.patient_name }}</h3>
+							<p class="m-0 text-[14px] text-[#6f7e8d] truncate">{{ appointment.appointment_type }} · {{ appointment.date }} · {{ appointment.start_time }}-{{ appointment.end_time }}</p>
+						</div>
+
+						<div class="hidden xl:flex items-center gap-1 text-[#8d9aa7] text-[13px]">
+							<span class="material-symbols-outlined text-[17px]">{% if appointment.is_telemedicine %}videocam{% else %}location_on{% endif %}</span>
+							<span>{% if appointment.is_telemedicine %}Virtual{% else %}In Clinic{% endif %}</span>
+						</div>
+
+						<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+							{% if appointment.raw_status == 'checked_in' %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#8edfd4] bg-[#e4faf6] px-2.5 py-1 text-[13px] font-semibold text-[#139987]"><i class="w-1.5 h-1.5 rounded-full bg-[#21b8a7]"></i>{{ appointment.status }}</span>
+							{% elif appointment.raw_status == 'confirmed' %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#a9c9ef] bg-[#ebf4ff] px-2.5 py-1 text-[13px] font-semibold text-[#2e83d5]"><i class="w-1.5 h-1.5 rounded-full bg-[#4594e0]"></i>{{ appointment.status }}</span>
+							{% elif appointment.raw_status == 'requested' %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#f2d098] bg-[#fff5df] px-2.5 py-1 text-[13px] font-semibold text-[#cf8c1d]"><i class="w-1.5 h-1.5 rounded-full bg-[#f0ad38]"></i>{{ appointment.status }}</span>
+							{% elif appointment.raw_status == 'completed' %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#9bd9b6] bg-[#ebfaf2] px-2.5 py-1 text-[13px] font-semibold text-[#2aa568]"><i class="w-1.5 h-1.5 rounded-full bg-[#35bb7a]"></i>{{ appointment.status }}</span>
+							{% elif appointment.raw_status == 'no_show' %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#d4dce4] bg-[#f6f8fa] px-2.5 py-1 text-[13px] font-semibold text-[#738090]"><i class="w-1.5 h-1.5 rounded-full bg-[#9aa4b1]"></i>{{ appointment.status }}</span>
+							{% else %}
+							<span class="inline-flex items-center gap-1 rounded-full border border-[#d4dce4] bg-[#f6f8fa] px-2.5 py-1 text-[13px] font-semibold text-[#738090]"><i class="w-1.5 h-1.5 rounded-full bg-[#9aa4b1]"></i>{{ appointment.status }}</span>
+							{% endif %}
+							<span class="text-[12px] font-semibold text-[#8da0b2]">{{ appointment.appointment_code }}</span>
+						</div>
+					</div>
+				</article>
+				{% empty %}
+				<div class="rounded-2xl border border-dashed border-[#cfdbe4] bg-white py-12 text-center">
+					<p class="m-0 text-[#6f7e8d] text-[15px]">No appointments match your current filters.</p>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}
