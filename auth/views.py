@@ -3,30 +3,6 @@ from django.contrib.auth import logout as django_logout, authenticate, login as 
 from django.contrib.auth.models import User
 from auth.models import Users
 from auth.permissions import IsAdmin, IsDoctor, IsPatient, IsReceptionist
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-
-
-class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    def save_user(self, request, sociallogin, form=None):
-        user = super().save_user(request, sociallogin, form)
-
-        # Create profile row in clinic_auth_users if missing
-        profile, _ = Users.objects.get_or_create(
-            user=user,
-            defaults={
-                "role": "patient",  # remove this if your model no longer has role
-                "username": user.username,
-                "email": user.email,
-                "password": user.password,  # optional; generally avoid duplicating password hash
-            },
-        )
-
-        # Keep profile synced
-        profile.username = user.username
-        profile.email = user.email
-        profile.save(update_fields=["username", "email"])
-
-        return user
 
 def home(request):
     return render(request, "home.html")

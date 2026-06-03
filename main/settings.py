@@ -55,6 +55,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
+        'SCOPE': ['profile', 'email'],
+        'EMAIL_AUTHENTICATION': True,
         'APP': {
             'client_id': env('GOOGLE_CLIENT_ID'),
             'secret': env('GOOGLE_CLIENT_SECRET'),
@@ -63,7 +65,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SOCIALACCOUNT_ADAPTER = "auth.views.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "auth.adapters.SocialAccountAdapter"
 
 LOGIN_URL = 'auth:login'
 LOGOUT_URL = 'auth:logout'
