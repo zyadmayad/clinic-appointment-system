@@ -108,6 +108,17 @@
 
                         <span class="text-[#9aacb8] text-[13px] font-medium">APT-{{ apt.pk|stringformat:"03d" }}</span>
 
+                        {% if apt.status == 'completed' %}
+                        <a
+                            href="{% url 'appointment:appointment_summary' apt.pk %}"
+                            class="inline-flex items-center gap-1 text-[#1976d2] hover:text-[#0d47a1] text-[13px] font-semibold transition"
+                            title="View consultation summary"
+                        >
+                            <span class="material-symbols-outlined text-[17px]">description</span>
+                            Summary
+                        </a>
+                        {% endif %}
+
                         {% if apt.status in "requested,confirmed" %}
                         <button
                             onclick="cancelAppointment({{ apt.pk }}, this)"
