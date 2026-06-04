@@ -19,4 +19,5 @@ urlpatterns = [
     path('api/managements/', include('managements.api.urls')),
     path('api/queue/', include('queue_management.urls')),
     path('api/', include('auth.api.urls')),
+    path("accounts/", include("allauth.urls")),
 ]

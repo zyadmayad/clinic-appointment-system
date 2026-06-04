@@ -11,6 +11,7 @@ from auth.models import Users
 from auth.permissions import IsAdmin
 from schedule.models import Schedule
 
+# Create your views here.
 
 def check_admin(request):
   if not IsAdmin().has_permission(request, None):
