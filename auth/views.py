@@ -61,7 +61,7 @@ def login(request):
             request.session['user_email'] = user.email
 
             if role == 'admin':
-                return redirect('clinic_admin:admin_dashboard')
+                return redirect('dashboards:admin_dashboard')
             return redirect('home')
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
