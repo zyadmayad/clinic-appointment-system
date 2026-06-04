@@ -36,8 +36,10 @@ class BookAppointmentSerializer(serializers.Serializer):
     appointment_type = serializers.ChoiceField(choices=['in_person', 'telemedicine'], default='in_person')
 
     def validate(self, data):
+        patient = self.context.get('patient')
         _validate_slot(data['doctor'], data['date'], data['start_time'], data['end_time'])
-        _check_no_overlap(data['doctor'], data['date'], data['start_time'], data['end_time'])
+        _check_no_doctor_overlap(data['doctor'], data['date'], data['start_time'])
+        _check_no_patient_overlap(patient, data['date'], data['start_time'], data['end_time'])
         return data
 
 
@@ -49,14 +51,17 @@ class RescheduleAppointmentSerializer(serializers.Serializer):
     def validate(self, data):
         appointment = self.context.get('appointment')
         _validate_slot(appointment.doctor, data['date'], data['start_time'], data['end_time'])
-        _check_no_overlap(
-            appointment.doctor, data['date'], data['start_time'], data['end_time'],
+        _check_no_doctor_overlap(
+            appointment.doctor, data['date'], data['start_time'],
+            exclude_id=appointment.pk,
+        )
+        _check_no_patient_overlap(
+            appointment.patient, data['date'], data['start_time'], data['end_time'],
             exclude_id=appointment.pk,
         )
         return data
 
 
-# --- shared validation helpers ---
 
 def _validate_slot(doctor, date, start_time, end_time):
     schedules = Schedule.objects.filter(doctor=doctor, date=date, day_type='working')
@@ -80,7 +85,8 @@ def _validate_slot(doctor, date, start_time, end_time):
     )
 
 
-def _check_no_overlap(doctor, date, start_time, end_time, exclude_id=None):
+def _check_no_doctor_overlap(doctor, date, start_time, exclude_id=None):
+    """Prevent double-booking the same doctor slot."""
     qs = Appointment.objects.filter(
         doctor=doctor,
         date=date,
@@ -92,3 +98,23 @@ def _check_no_overlap(doctor, date, start_time, end_time, exclude_id=None):
 
     if qs.exists():
         raise serializers.ValidationError("This slot is already booked for the doctor.")
+
+
+def _check_no_patient_overlap(patient, date, start_time, end_time, exclude_id=None):
+    """Prevent a patient from booking two appointments at overlapping times."""
+    if patient is None:
+        return
+    qs = Appointment.objects.filter(
+        patient=patient,
+        date=date,
+        start_time__lt=end_time,
+        end_time__gt=start_time,
+    ).exclude(status='cancelled')
+
+    if exclude_id is not None:
+        qs = qs.exclude(pk=exclude_id)
+
+    if qs.exists():
+        raise serializers.ValidationError(
+            "You already have an appointment during this time slot."
+        )
