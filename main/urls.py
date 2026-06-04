@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('auth.urls')),
     path('dashboard/', include(('dashboards.urls', 'dashboards'), namespace='dashboards')),
     path('dashboard/doctor/', include(('schedule.urls', 'schedule'), namespace='schedule')),
+    path('dashboard/doctor/consultations/', include(('consultations.urls', 'consultations'), namespace='consultations')),
     path('doctors/', include(('schedule.urls', 'schedule'), namespace='schedule')),
     path('dashboard/patient/', include(('appointment.urls', 'appointment'), namespace='appointment')),
     path('dashboard/admin/', include(('managements.urls', 'managements'), namespace='managements')),

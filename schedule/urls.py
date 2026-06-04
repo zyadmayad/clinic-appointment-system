@@ -8,5 +8,4 @@ app_name = "schedule"
 urlpatterns = [
 	path('schedule/', views.doctor_schedule, name='doctor_schedule'),
 	path('patient-queue/', views.patient_queue, name='patient_queue'),
-	path('consultation/', views.consultation, name='consultation'),
 ]

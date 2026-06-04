@@ -69,6 +69,7 @@ def doctor_dashboard(request):
       waiting_display = f"{hours}h {minutes}m" if hours else f"{minutes}m"
 
     queue_items.append({
+      'id': appointment.id,
       'patient_name': patient_name,
       'patient_initial': patient_name[:1].upper(),
       'display_time': appointment.check_in_time.strftime('%H:%M') if appointment.check_in_time else appointment.start_time.strftime('%H:%M'),
@@ -82,6 +83,7 @@ def doctor_dashboard(request):
   for appointment in upcoming_appointments:
     patient_name = appointment.patient.get_full_name() or appointment.patient.username
     upcoming_items.append({
+      'id': appointment.id,
       'patient_name': patient_name,
       'start_time': appointment.start_time.strftime('%H:%M'),
       'end_time': appointment.end_time.strftime('%H:%M'),

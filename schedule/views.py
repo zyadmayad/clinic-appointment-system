@@ -1,5 +1,3 @@
-from urllib import request
-
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -14,11 +12,23 @@ def doctor_schedule(request):
   
   user_name = request.user.username
   id = request.user.id
-  
-  # Get current week dates starting from Saturday
-  today = datetime.now().date()
-  saturday = today - timedelta(days=(today.weekday() - 5) % 7)
+
+  # The optional "week" query param can be any date inside the week to show.
+  week_param = request.GET.get('week', '').strip()
+  if week_param:
+    try:
+      anchor_date = datetime.strptime(week_param, '%Y-%m-%d').date()
+    except ValueError:
+      anchor_date = timezone.localdate()
+  else:
+    anchor_date = timezone.localdate()
+
+  # Get week dates starting from Saturday.
+  saturday = anchor_date - timedelta(days=(anchor_date.weekday() - 5) % 7)
   friday = saturday + timedelta(days=6)
+
+  prev_week = saturday - timedelta(days=7)
+  next_week = saturday + timedelta(days=7)
   
   schedules = Schedule.objects.filter(doctor_id=id,date__gte=saturday,date__lte=friday).order_by('date', 'start_time')
   slots = Slot.objects.filter(doctor_id=id, date__gte=saturday, date__lte=friday).order_by('date', 'start_time')
@@ -62,6 +72,9 @@ def doctor_schedule(request):
           "schedule_data": schedule_data,
           "week_start": saturday.strftime('%B %d, %Y'),
           "week_end": friday.strftime('%B %d, %Y'),
+          "selected_week": saturday.strftime('%Y-%m-%d'),
+          "prev_week": prev_week.strftime('%Y-%m-%d'),
+          "next_week": next_week.strftime('%Y-%m-%d'),
       },
   )
 
@@ -109,19 +122,5 @@ def patient_queue(request):
           "user_name": user_name,
           "queue_items": queue_items,
           "checked_in_count": appointments.count(),
-      },
-  )
-
-def consultation(request):
-  if not request.user.is_authenticated:
-    return redirect('auth:login')
-  
-  user_name = request.user.username
-  
-  return render(
-      request,
-      "doctor/consultation.html",
-      {
-          "user_name": user_name,
       },
   )
