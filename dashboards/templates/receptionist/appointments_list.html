@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block title %}Appointments List | MediCare{% endblock %}
+
+{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+
+{% block content %}
+<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
+    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
+        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
+                <span class="material-symbols-outlined text-[20px]">support_agent</span>
+            </div>
+            <div>
+                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
+                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
+            </div>
+        </div>
+
+        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Receptionist navigation">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:reception_home' %}">
+                <span class="material-symbols-outlined text-[19px]">home</span>
+                Dashboard
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'dashboards:appointments_list' %}">
+                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
+                Appointments
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:checkin_queue' %}">
+                <span class="material-symbols-outlined text-[19px]">airport_shuttle</span>
+                Check-in Queue
+            </a>
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_schedules' %}">
+                <span class="material-symbols-outlined text-[19px]">schedule</span>
+                Doctor Schedules
+            </a>
+        </nav>
+
+        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
+            <div class="flex items-center gap-3">
+                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
+                <div>
+                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
+                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Receptionist</p>
+                </div>
+            </div>
+            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
+        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Appointments</h2>
+                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Filter and manage weekly appointment list.</p>
+                </div>
+                <div class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Receptionist</div>
+            </div>
+
+            <form method="get" class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 mb-6">
+                <div class=""></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <select name="status" class="w-full rounded-[14px] border border-[#e4ebf0] bg-white px-4 py-3 text-sm text-[#111f2f]">
+                        <option value="">All statuses</option>
+                        <option value="checked_in" {% if selected_status == 'checked_in' %}selected{% endif %}>Checked In</option>
+                        <option value="confirmed" {% if selected_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="requested" {% if selected_status == 'requested' %}selected{% endif %}>Requested</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <button type="submit" class="rounded-[14px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-3 text-sm font-semibold text-white hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">Apply</button>
+                </div>
+            </form>
+
+            <div class="overflow-x-auto rounded-[18px] border border-[#e4ebf0] bg-white">
+                <table class="min-w-full text-left text-sm text-[#334155]">
+                    <thead class="bg-[#f8fbfd] text-[13px] uppercase tracking-[0.08em] text-[#475569]">
+                        <tr>
+                            <th class="px-6 py-4">Patient</th>
+                            <th class="px-6 py-4">Doctor</th>
+                            <th class="px-6 py-4">Date</th>
+                            <th class="px-6 py-4">Time</th>
+                            <th class="px-6 py-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if appointments %}
+                            {% for appointment in appointments %}
+                                <tr class="border-t border-[#f1f5f9] hover:bg-[#f8fafc] transition">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-[#dbeafe] text-[#1d4ed8] grid place-items-center font-semibold">{{ appointment.patient_initial }}</div>
+                                            <div>
+                                                <p class="font-semibold text-[#0f172a]">{{ appointment.patient_name }}</p>
+                                                <p class="text-[13px] text-[#64748b]">{{ appointment.patient_email }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-[#475569]">{{ appointment.doctor_name }}</td>
+                                    <td class="px-6 py-4 text-[#475569]">{{ appointment.date }}</td>
+                                    <td class="px-6 py-4 text-[#475569]">{{ appointment.start_time }} - {{ appointment.end_time }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold {% if appointment.status == 'checked_in' %}bg-[#d1fae5] text-[#047857]{% elif appointment.status == 'confirmed' %}bg-[#dbeafe] text-[#1d4ed8]{% elif appointment.status == 'requested' %}bg-[#fef3c7] text-[#92400e]{% elif appointment.status == 'completed' %}bg-[#e0f2fe] text-[#0369a1]{% else %}bg-[#fee2e2] text-[#b91c1c]{% endif %}">
+                                            {{ appointment.status|capfirst }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-sm text-[#64748b]">No appointments found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
