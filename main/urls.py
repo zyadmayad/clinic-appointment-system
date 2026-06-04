@@ -9,8 +9,10 @@ urlpatterns = [
     path('dashboard/', include(('dashboards.urls', 'dashboards'), namespace='dashboards')),
     path('dashboard/doctor/', include(('schedule.urls', 'schedule'), namespace='schedule')),
     path('dashboard/patient/', include(('appointment.urls', 'appointment'), namespace='appointment')),
+    path('dashboard/admin/', include(('managements.urls', 'managements'), namespace='managements')),
     path('api/doctors/', include('schedule.api.urls')),
     path('api/appointments/', include('appointment.api.urls')),
+    path('api/managements/', include('managements.api.urls')),
     path('api/queue/', include('queue_management.urls')),
     path('api/', include('auth.api.urls')),
 ]
