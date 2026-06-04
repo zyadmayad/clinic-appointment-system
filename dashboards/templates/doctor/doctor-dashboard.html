@@ -31,7 +31,7 @@
                 <span class="material-symbols-outlined text-[19px]">group</span>
                 Patient Queue
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:consultation' %}">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'consultations:index' %}">
                 <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
                 Consultations
             </a>
@@ -138,10 +138,10 @@
                                         <span class="material-symbols-outlined text-[16px]">check_circle</span>
                                         {{ item.status }}
                                     </span>
-                                    <button class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                                    <a class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition" href="{% url 'consultations:fill' item.id %}">
                                         <span class="material-symbols-outlined text-[18px]">play_circle</span>
                                         Start
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         {% endfor %}
@@ -169,9 +169,15 @@
                                             <span class="material-symbols-outlined text-[16px]">check_circle</span>
                                             {{ item.status }}
                                         </span>
-                                        <button class="inline-flex items-center justify-center px-4 py-1.5 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[8px] hover:bg-[#bbdefb] transition text-sm">
-                                            Confirm
-                                        </button>
+                                        {% if item.status == 'Checked In' %}
+                                            <a class="inline-flex items-center justify-center px-4 py-1.5 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[8px] hover:bg-[#bbdefb] transition text-sm" href="{% url 'consultations:fill' item.id %}">
+                                                Open
+                                            </a>
+                                        {% else %}
+                                            <span class="inline-flex items-center justify-center px-4 py-1.5 bg-[#f3f6f8] text-[#81909c] font-semibold rounded-[8px] text-sm">
+                                                Check-in required
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

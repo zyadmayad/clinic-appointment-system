@@ -31,7 +31,7 @@
                 <span class="material-symbols-outlined text-[19px]">group</span>
                 Patient Queue
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'schedule:consultation' %}">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'consultations:index' %}">
                 <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
                 Consultations
             </a>
@@ -61,134 +61,87 @@
         <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
             <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
-                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">All Appointments</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">7 appointments found</p>
+                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Consultations</h2>
+                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ appointment_items|length }} appointments found</p>
                 </div>
                 <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
             </div>
 
             <!-- Search and Filter -->
-            <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-4">
+            <form method="get" class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-4">
                 <div class="flex flex-col sm:flex-row gap-3 items-center">
                     <div class="flex-1 relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-[#81909c]">search</span>
-                        <input type="text" placeholder="Search by ID, patient or doctor..." class="w-full pl-10 pr-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] placeholder-[#81909c] focus:outline-none focus:border-[#31b2a3]">
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="Search by appointment ID or patient..." class="w-full pl-10 pr-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] placeholder-[#81909c] focus:outline-none focus:border-[#31b2a3]">
                     </div>
-                    <div class="w-full sm:w-auto">
-                        <select class="w-full px-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                            <option>All Statuses</option>
-                            <option>Confirmed</option>
-                            <option>Checked In</option>
-                            <option>Completed</option>
-                            <option>Requested</option>
+                    <div class="w-full sm:w-[200px]">
+                        <select name="status" class="w-full px-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                            <option value="">All Statuses</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[8px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">Apply</button>
                 </div>
-            </div>
+            </form>
 
             <!-- Appointments List -->
             <div class="space-y-3">
-                <!-- Appointment 1 -->
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">A</div>
-                            <div class="flex-1">
-                                <h4 class="m-0 font-semibold text-[#1b2f44]">Sarah Johnson</h4>
-                                <p class="m-0 text-sm text-[#81909c]">General Medicine · 2026-04-04 · 09:00-09:30</p>
+                {% for item in appointment_items %}
+                    <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">{{ item.patient_initial }}</div>
+                                <div class="flex-1">
+                                    <h4 class="m-0 font-semibold text-[#1b2f44]">{{ item.patient_name }}</h4>
+                                    <p class="m-0 text-sm text-[#81909c]">{{ item.appointment.date }} · {{ item.appointment.start_time|time:"H:i" }}-{{ item.appointment.end_time|time:"H:i" }}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap justify-end">
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#00897b] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                Checked In
-                            </span>
-                            <span class="text-[#81909c] text-sm font-semibold">APT-001</span>
-                        </div>
-                    </div>
-                </div>
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                                {% if item.appointment.status == 'completed' %}
+                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e8f5e9] text-[#388e3c] text-[13px] font-semibold rounded-full">
+                                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                        {{ item.appointment.get_status_display }}
+                                    </span>
+                                {% elif item.appointment.status == 'checked_in' %}
+                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#00897b] text-[13px] font-semibold rounded-full">
+                                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                        {{ item.appointment.get_status_display }}
+                                    </span>
+                                {% elif item.appointment.status == 'confirmed' %}
+                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] text-[13px] font-semibold rounded-full">
+                                        <span class="material-symbols-outlined text-[16px]">event_available</span>
+                                        {{ item.appointment.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#fff3cd] text-[#856404] text-[13px] font-semibold rounded-full">
+                                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                        {{ item.appointment.get_status_display }}
+                                    </span>
+                                {% endif %}
 
-                <!-- Appointment 2 -->
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">M</div>
-                            <div class="flex-1">
-                                <h4 class="m-0 font-semibold text-[#1b2f44]">Michael Chen</h4>
-                                <p class="m-0 text-sm text-[#81909c]">General Medicine · 2026-04-04 · 09:30-10:00</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap justify-end">
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                Confirmed
-                            </span>
-                            <span class="text-[#81909c] text-sm font-semibold">APT-002</span>
-                        </div>
-                    </div>
-                </div>
+                                {% if item.appointment.status == 'checked_in' %}
+                                    <a href="{% url 'consultations:fill' item.appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[8px] hover:bg-[#bbdefb] transition text-sm">
+                                        {% if item.consultation %}Edit{% else %}Fill Form{% endif %}
+                                    </a>
+                                {% endif %}
 
-                <!-- Appointment 3 -->
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">E</div>
-                            <div class="flex-1">
-                                <h4 class="m-0 font-semibold text-[#1b2f44]">Emily Davis</h4>
-                                <p class="m-0 text-sm text-[#81909c]">Cardiology · 2026-04-04 · 10:00-10:30</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap justify-end">
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                Confirmed
-                            </span>
-                            <span class="material-symbols-outlined text-[#81909c] text-lg">calendar_today</span>
-                            <span class="text-[#81909c] text-sm font-semibold">APT-003</span>
-                        </div>
-                    </div>
-                </div>
+                                {% if item.consultation %}
+                                    <a href="{% url 'consultations:summary' item.appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
+                                        Summary
+                                    </a>
+                                {% endif %}
 
-                <!-- Appointment 4 -->
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">S</div>
-                            <div class="flex-1">
-                                <h4 class="m-0 font-semibold text-[#1b2f44]">Sarah Johnson</h4>
-                                <p class="m-0 text-sm text-[#81909c]">Dermatology · 2026-04-05 · 14:00-14:30</p>
+                                <span class="text-[#81909c] text-sm font-semibold">APT-{{ item.appointment.id|stringformat:"03d" }}</span>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 flex-wrap justify-end">
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#fff3cd] text-[#856404] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                Requested
-                            </span>
-                            <span class="text-[#81909c] text-sm font-semibold">APT-004</span>
-                        </div>
                     </div>
-                </div>
-
-                <!-- Appointment 5 -->
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">M</div>
-                            <div class="flex-1">
-                                <h4 class="m-0 font-semibold text-[#1b2f44]">Michael Chen</h4>
-                                <p class="m-0 text-sm text-[#81909c]">Cardiology · 2026-03-28 · 11:00-11:30</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap justify-end">
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e8f5e9] text-[#388e3c] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                Completed
-                            </span>
-                            <span class="text-blue-600 text-sm font-semibold cursor-pointer hover:text-blue-800">Summary</span>
-                            <span class="text-[#81909c] text-sm font-semibold">APT-005</span>
-                        </div>
+                {% empty %}
+                    <div class="rounded-[12px] border border-[#ecf0f4] p-6 text-center text-sm text-[#6f7b88] bg-white">
+                        No appointments found for this filter.
                     </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>
