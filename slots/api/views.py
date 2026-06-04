@@ -8,27 +8,12 @@ from schedule.models import Schedule
 @api_view(['GET'])
 def slot_list(request, doctor_id):
     date = request.query_params.get('date')
+    qs = Slot.objects.filter(doctor_id=doctor_id).order_by('date', 'start_time')
     if date:
-        slots = Slot.objects.filter(date=date, doctor_id=doctor_id)
-    else:
-        slots = Slot.objects.filter(doctor_id=doctor_id)    
+        qs = qs.filter(date=date)
 
-    slots_by_date = {}
-    for slot in slots:
-        date = str(slot.date)
-        if date not in slots_by_date:
-            slots_by_date[date] = []
-        slots_by_date[date].append({
-            'start_time': slot.start_time,
-            'end_time': slot.end_time,
-            'status': slot.status,
-        })
-
-    response_data = [
-        {'date': date, 'slots': slots}
-        for date, slots in slots_by_date.items()
-    ]
-    return Response(response_data, status=status.HTTP_200_OK)
+    serializer = SlotSerializer(qs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

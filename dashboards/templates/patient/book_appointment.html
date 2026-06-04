@@ -268,26 +268,37 @@ function loadSlots(date) {
     document.getElementById('continue2').disabled = true;
     document.getElementById('continue2').classList.add('opacity-40', 'cursor-not-allowed');
 
-    fetch(`/api/doctors/${state.doctorId}/availability`)
+    fetch(`/api/slots/${state.doctorId}?date=${encodeURIComponent(date)}`)
         .then(r => r.json())
-        .then(schedules => {
-            const daySchedules = schedules.filter(s => s.date === date && s.day_type === 'working');
+        .then(slots => {
             const slotsEl = document.getElementById('slots');
             slotsEl.innerHTML = '';
 
-            if (!daySchedules.length) {
+            if (!slots.length) {
                 document.getElementById('no-slots-msg').classList.remove('hidden');
                 return;
             }
 
-            daySchedules.forEach(sched => {
-                generateSlots(sched.start_time, sched.end_time, sched.session_duration).forEach(slot => {
-                    const btn = document.createElement('button');
+            slots.forEach(slot => {
+                const isBooked = slot.status === 'booked';
+
+                const btn = document.createElement('button');
+                if (isBooked) {
+                    // booked slot (gray + disabled)
+                    btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-[#f2f5f7] rounded-[10px] text-sm font-semibold text-[#9aa6b2] cursor-not-allowed';
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#9aa6b2]">block</span>${slot.start_time.slice(0,5)}`;
+                } else {
+                    // available slot (clickable)
                     btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
-                    btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start}`;
-                    btn.onclick = () => selectSlot(slot, btn);
-                    slotsEl.appendChild(btn);
-                });
+                    btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start_time.slice(0,5)}`;
+                    btn.onclick = () => selectSlot({
+                        start: slot.start_time.slice(0,5),
+                        end: slot.end_time.slice(0,5),
+                    }, btn);
+                }
+
+                slotsEl.appendChild(btn);
             });
 
             document.getElementById('slots-section').classList.remove('hidden');
