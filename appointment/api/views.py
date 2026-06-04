@@ -70,9 +70,16 @@ def appointment_list(request):
                 except ValueError as e:
                     return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+                slot = Slot.objects.get(
+                    doctor_id=data['doctor'].id,
+                    date=data['date'],
+                    start_time=data['start_time'],
+                    end_time=data['end_time'],
+                )
                 appointment = Appointment.objects.create(
                     patient=request.user,
                     doctor=data['doctor'],
+                    slot=slot,
                     date=data['date'],
                     start_time=data['start_time'],
                     end_time=data['end_time'],
@@ -125,6 +132,8 @@ def appointment_cancel(request, appointment_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
     with transaction.atomic():
+        # lock appointment row to avoid concurrent cancel/confirm/reschedule races
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
         appointment.status = 'cancelled'
         appointment.save(update_fields=['status'])
         _release_slot_if_exists(
@@ -133,6 +142,9 @@ def appointment_cancel(request, appointment_id):
             start_time=appointment.start_time,
             end_time=appointment.end_time,
         )
+        if appointment.slot_id:
+            appointment.slot = None
+            appointment.save(update_fields=['slot'])
     AppointmentHistory.objects.create(appointment=appointment, event='cancelled')
     return Response(AppointmentSerializer(appointment).data)
 
@@ -171,7 +183,7 @@ def appointment_reschedule(request, appointment_id):
 
     with transaction.atomic():
         try:
-            _book_slot_or_400(
+            new_slot = _book_slot_or_400(
                 doctor_id=appointment.doctor_id,
                 date=data['date'],
                 start_time=data['start_time'],
@@ -190,8 +202,9 @@ def appointment_reschedule(request, appointment_id):
         appointment.date = data['date']
         appointment.start_time = data['start_time']
         appointment.end_time = data['end_time']
+        appointment.slot = new_slot
         appointment.status = 'requested'
-        appointment.save(update_fields=['date', 'start_time', 'end_time', 'status'])
+        appointment.save(update_fields=['date', 'start_time', 'end_time', 'slot', 'status'])
 
     AppointmentHistory.objects.create(
         appointment=appointment,
