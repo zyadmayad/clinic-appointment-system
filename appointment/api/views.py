@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -6,12 +7,49 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from appointment.models import Appointment, AppointmentHistory
+from slots.models import Slot
 from appointment.api.serializer import (
     AppointmentSerializer,
     AppointmentHistorySerializer,
     BookAppointmentSerializer,
     RescheduleAppointmentSerializer,
 )
+
+def _book_slot_or_400(*, doctor_id, date, start_time, end_time):
+    """
+    Atomically mark a Slot as booked.
+    Returns the Slot instance, or raises a Response-ready ValueError message.
+    """
+    try:
+        slot = (
+            Slot.objects
+            .select_for_update()
+            .get(
+                doctor_id=doctor_id,
+                date=date,
+                start_time=start_time,
+                end_time=end_time,
+            )
+        )
+    except Slot.DoesNotExist:
+        raise ValueError("Requested slot not found. Please pick a valid slot.")
+
+    if slot.status != 'available':
+        raise ValueError("This slot is already booked.")
+
+    slot.status = 'booked'
+    slot.save(update_fields=['status'])
+    return slot
+
+
+def _release_slot_if_exists(*, doctor_id, date, start_time, end_time):
+    Slot.objects.filter(
+        doctor_id=doctor_id,
+        date=date,
+        start_time=start_time,
+        end_time=end_time,
+        status='booked',
+    ).update(status='available')
 
 
 @api_view(['GET', 'POST'])
@@ -21,16 +59,28 @@ def appointment_list(request):
         serializer = BookAppointmentSerializer(data=request.data, context={'patient': request.user})
         if serializer.is_valid():
             data = serializer.validated_data
-            appointment = Appointment.objects.create(
-                patient=request.user,
-                doctor=data['doctor'],
-                date=data['date'],
-                start_time=data['start_time'],
-                end_time=data['end_time'],
-                appointment_type=data['appointment_type'],
-                status='requested',
-            )
-            AppointmentHistory.objects.create(appointment=appointment, event='booked')
+            with transaction.atomic():
+                try:
+                    _book_slot_or_400(
+                        doctor_id=data['doctor'].id,
+                        date=data['date'],
+                        start_time=data['start_time'],
+                        end_time=data['end_time'],
+                    )
+                except ValueError as e:
+                    return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+                appointment = Appointment.objects.create(
+                    patient=request.user,
+                    doctor=data['doctor'],
+                    date=data['date'],
+                    start_time=data['start_time'],
+                    end_time=data['end_time'],
+                    appointment_type=data['appointment_type'],
+                    status='requested',
+                )
+                AppointmentHistory.objects.create(appointment=appointment, event='booked')
+
             return Response(AppointmentSerializer(appointment).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,8 +124,15 @@ def appointment_cancel(request, appointment_id):
             {'detail': f'Cannot cancel an appointment with status "{appointment.status}".'},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    appointment.status = 'cancelled'
-    appointment.save()
+    with transaction.atomic():
+        appointment.status = 'cancelled'
+        appointment.save(update_fields=['status'])
+        _release_slot_if_exists(
+            doctor_id=appointment.doctor_id,
+            date=appointment.date,
+            start_time=appointment.start_time,
+            end_time=appointment.end_time,
+        )
     AppointmentHistory.objects.create(appointment=appointment, event='cancelled')
     return Response(AppointmentSerializer(appointment).data)
 
@@ -112,11 +169,29 @@ def appointment_reschedule(request, appointment_id):
     old_detail = f"{appointment.date} {appointment.start_time}–{appointment.end_time}"
     new_detail = f"{data['date']} {data['start_time']}–{data['end_time']}"
 
-    appointment.date = data['date']
-    appointment.start_time = data['start_time']
-    appointment.end_time = data['end_time']
-    appointment.status = 'requested'
-    appointment.save()
+    with transaction.atomic():
+        try:
+            _book_slot_or_400(
+                doctor_id=appointment.doctor_id,
+                date=data['date'],
+                start_time=data['start_time'],
+                end_time=data['end_time'],
+            )
+        except ValueError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        _release_slot_if_exists(
+            doctor_id=appointment.doctor_id,
+            date=appointment.date,
+            start_time=appointment.start_time,
+            end_time=appointment.end_time,
+        )
+
+        appointment.date = data['date']
+        appointment.start_time = data['start_time']
+        appointment.end_time = data['end_time']
+        appointment.status = 'requested'
+        appointment.save(update_fields=['date', 'start_time', 'end_time', 'status'])
 
     AppointmentHistory.objects.create(
         appointment=appointment,
