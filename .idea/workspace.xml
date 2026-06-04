@@ -2,26 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1d68db7-f412-4ea2-ab8b-44fe035f0e6e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/django-clinic-appointment-system.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/api/serializer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/api/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/api/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/migrations/0001_initial.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/templates/doctor-dashbord.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scheduling/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/urls.py" afterDir="false" />
     </list>
@@ -48,24 +29,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Django Server.django-clinic-appointment-system.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "ai.playground.ignore.import.keys.banner.in.settings": "true",
-    "django.template.preview.state": "SHOW_EDITOR_AND_PREVIEW",
-    "git-widget-placeholder": "Mohamedfathy",
-    "last_opened_file_path": "C:/Users/moh6m/PyCharmMiscProject/django-clinic-appointment-system",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Django Server.django-clinic-appointment-system.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR_AND_PREVIEW&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Mohamedfathy&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/moh6m/PyCharmMiscProject/django-clinic-appointment-system&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="django-clinic-appointment-system" type="Python.DjangoServer" factoryName="Django server">
       <module name="django-clinic-appointment-system" />
@@ -74,7 +55,6 @@
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="DJANGO_SETTINGS_MODULE" value="main.settings" />
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="" />
@@ -113,6 +93,7 @@
       <workItem from="1775659083252" duration="6914000" />
       <workItem from="1775723023726" duration="8311000" />
       <workItem from="1775741375869" duration="1517000" />
+      <workItem from="1775748909309" duration="223000" />
     </task>
     <servers />
   </component>
