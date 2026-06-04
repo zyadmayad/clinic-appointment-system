@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from slots.models import Slot
 
 
 class Appointment(models.Model):
@@ -19,6 +20,13 @@ class Appointment(models.Model):
 
     patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments_as_patient')
     doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments_as_doctor')
+    slot = models.OneToOneField(
+        Slot,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='appointment',
+    )
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
