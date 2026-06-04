@@ -1,0 +1,5 @@
+Django
+mysqlclient
+django-environ
+django-cleanup
+djangorestframework

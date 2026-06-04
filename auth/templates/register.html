@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Register | Sanctuary Health{% endblock %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block main_classes %}flex-grow py-8 md:py-10 px-4 sm:px-8 max-w-7xl mx-auto w-full{% endblock %}
+
+{% block content %}
+<div class="rounded-3xl overflow-hidden shadow-[0px_30px_70px_-22px_rgba(11,28,48,0.22)] bg-white grid grid-cols-1 lg:grid-cols-2 min-h-[90vh]">
+  <section class="hidden lg:flex items-center justify-center p-14 relative bg-[radial-gradient(circle_at_15%_15%,rgba(42,191,173,0.25),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(17,95,87,0.35),transparent_45%),linear-gradient(145deg,#0f3f41_0%,#115c59_55%,#1a6a65_100%)]">
+    <div class="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.18),transparent_62%)]"></div>
+    <div class="relative text-center max-w-md text-white">
+      <div class="mx-auto mb-8 h-20 w-20 rounded-2xl bg-[#22b7ab] flex items-center justify-center shadow-[0px_16px_35px_-10px_rgba(0,0,0,0.4)]">
+        <span class="material-symbols-outlined text-4xl">stethoscope</span>
+      </div>
+      <h2 class="text-5xl font-extrabold tracking-tight mb-4">Join MediCare</h2>
+      <p class="text-2xl text-white/80 leading-relaxed">Create your account and start managing your healthcare journey today</p>
+    </div>
+  </section>
+
+  <section class="bg-white p-6 sm:p-10 md:p-12 flex items-center">
+    <div class="w-full max-w-xl mx-auto">
+      <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Create Account</h1>
+      <p class="text-slate-500 mt-2 mb-8 text-lg">Sign up to get started with MediCare</p>
+
+      <button type="button" class="w-full border border-slate-200 py-3.5 rounded-xl flex items-center justify-center gap-3 text-slate-700 font-semibold hover:bg-slate-50 transition-colors">
+        <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5c-.2 1.2-.9 2.3-1.9 3v2.5h3.1c1.8-1.7 2.8-4.2 2.8-7.3z" fill="#4285F4"></path>
+          <path d="M12 22c2.7 0 5-0.9 6.7-2.5l-3.1-2.5c-.9 0.6-2.1 1-3.6 1-2.8 0-5.1-1.9-6-4.4H2.8v2.6C4.5 19.7 8 22 12 22z" fill="#34A853"></path>
+          <path d="M6 13.6c-.2-.6-.3-1.2-.3-1.8s.1-1.3.3-1.8V7.4H2.8C2.3 8.6 2 10 2 11.8s.3 3.2.8 4.4L6 13.6z" fill="#FBBC05"></path>
+          <path d="M12 5.6c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 2.6 14.7 1.6 12 1.6 8 1.6 4.5 3.9 2.8 7.4L6 10c.9-2.6 3.2-4.4 6-4.4z" fill="#EA4335"></path>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="my-6 flex items-center gap-4 text-xs tracking-wide text-slate-400 uppercase font-semibold">
+        <span class="h-px bg-slate-200 flex-1"></span>
+        <span>Or sign up with username and email</span>
+        <span class="h-px bg-slate-200 flex-1"></span>
+      </div>
+
+      {% if error %}
+      <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{{ error }}</div>
+      {% endif %}
+      {% if success %}
+      <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ success }}</div>
+      {% endif %}
+
+      <form class="space-y-4" method="post" action="{% url 'auth:register' %}">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1.5" for="id_username">Username</label>
+          <input class="w-full border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 bg-white transition focus:outline-none focus:border-[#24b5aa] focus:ring-4 focus:ring-[#24b5aa]/20" id="id_username" name="username" placeholder="Choose a username" type="text" required />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1.5" for="id_email">Email</label>
+          <input class="w-full border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 bg-white transition focus:outline-none focus:border-[#24b5aa] focus:ring-4 focus:ring-[#24b5aa]/20" id="id_email" name="email" placeholder="Enter your email" type="email" required />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1.5" for="id_password">Password</label>
+          <input class="w-full border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 bg-white transition focus:outline-none focus:border-[#24b5aa] focus:ring-4 focus:ring-[#24b5aa]/20" id="id_password" name="password" placeholder="Create a password" type="password" required />
+        </div>
+
+        <button class="w-full py-3.5 rounded-xl bg-[#1db2a8] hover:bg-[#199f96] text-white font-bold text-lg shadow-[0px_16px_30px_-12px_rgba(29,178,168,0.7)] transition-colors" type="submit">
+          Create Account
+        </button>
+      </form>
+
+      <p class="text-center text-slate-500 mt-7 font-medium">
+        Already have an account?
+        <a class="text-[#1aa69d] hover:text-[#148a82] font-bold" href="{% url 'auth:login' %}">Sign in</a>
+      </p>
+    </div>
+  </section>
+</div>
+
+<div class="lg:hidden rounded-3xl p-8 text-center text-white mt-6 bg-[radial-gradient(circle_at_15%_15%,rgba(42,191,173,0.25),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(17,95,87,0.35),transparent_45%),linear-gradient(145deg,#0f3f41_0%,#115c59_55%,#1a6a65_100%)]">
+  <div class="mx-auto mb-5 h-16 w-16 rounded-2xl bg-[#22b7ab] flex items-center justify-center shadow-[0px_12px_28px_-10px_rgba(0,0,0,0.4)]">
+    <span class="material-symbols-outlined text-3xl">stethoscope</span>
+  </div>
+  <h2 class="text-3xl font-extrabold tracking-tight mb-2">Join MediCare</h2>
+  <p class="text-white/85 text-lg">Create your account and start managing your healthcare journey today</p>
+</div>
+
+{% endblock %}
