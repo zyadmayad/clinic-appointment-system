@@ -2,10 +2,11 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import logout as django_logout, authenticate, login as django_login
 from django.contrib.auth.models import User
 from auth.models import Users
+from auth.permissions import IsAdmin, IsDoctor, IsPatient, IsReceptionist
+
 
 def home(request):
     return render(request, "home.html")
-
 
 def register(request):
     if request.method == "POST":
@@ -60,8 +61,19 @@ def login(request):
             request.session['user_name'] = user.first_name or user.username
             request.session['user_email'] = user.email
 
-            if role == 'admin':
+            if IsAdmin().has_permission(request, None):
                 return redirect('dashboards:admin_dashboard')
+            
+            if IsDoctor().has_permission(request, None):
+                return redirect('dashboards:doctor_dashboard')
+            
+            if IsReceptionist().has_permission(request, None):
+                return redirect('dashboards:receptionist_dashboard')
+            
+            if IsPatient().has_permission(request, None):
+                return redirect('dashboards:patient_dashboard')
+            
+            return redirect('home')
             return redirect('appointment:patient_dashboard')
        
 
