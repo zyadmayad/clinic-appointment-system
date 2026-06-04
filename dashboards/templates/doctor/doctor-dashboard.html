@@ -27,11 +27,11 @@
                 <span class="material-symbols-outlined text-[19px]">schedule</span>
                 My Schedule
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="#">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:patient_queue' %}">
                 <span class="material-symbols-outlined text-[19px]">group</span>
                 Patient Queue
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="#">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:consultation' %}">
                 <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
                 Consultations
             </a>

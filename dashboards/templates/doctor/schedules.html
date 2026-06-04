@@ -27,11 +27,11 @@
                 <span class="material-symbols-outlined text-[19px]">schedule</span>
                 My Schedule
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="#">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:patient_queue' %}">
                 <span class="material-symbols-outlined text-[19px]">group</span>
                 Patient Queue
             </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="#">
+            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:consultation' %}">
                 <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
                 Consultations
             </a>
@@ -62,122 +62,444 @@
             <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
                     <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">My Schedule</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Weekly availability & exceptions</p>
+                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ week_start }} to {{ week_end }}</p>
                 </div>
                 <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
             </div>
 
             <!-- Weekly Schedule Section -->
             <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-6">
-                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[#ecf0f4]">
-                    <span class="material-symbols-outlined text-[#187a70] text-[20px]">calendar_month</span>
-                    <div>
-                        <h3 class="m-0 text-[17px] text-[#1c2d40] font-bold">Weekly Schedule — Dr. {{ user_name }}</h3>
+                <div class="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-[#ecf0f4]">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[#187a70] text-[20px]">calendar_month</span>
+                        <div>
+                            <h3 class="m-0 text-[17px] text-[#1c2d40] font-bold">Weekly Schedule — Dr. {{ user_name }}</h3>
+                        </div>
                     </div>
+                    <button onclick="openScheduleModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition text-sm">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Create Schedule
+                    </button>
                 </div>
 
                 <!-- Days Schedule -->
                 <div class="space-y-4">
-                    <!-- Monday -->
+                    {% for day_info, slots in schedule_data.items %}
                     <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Monday</p>
+                        <div class="min-w-[200px] flex items-center justify-between">
+                            <p class="m-0 font-semibold text-[#1b2f44]">{{ day_info }}</p>
+                            <button onclick="openEditDayTypeModal('{{ day_info }}')" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            {% for slot in schedule_data.Monday %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full">
-                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    {{ slot.start }} - {{ slot.end }}
-                                </span>
+                            {% for slot in slots %}
+                                {% if slot.day_type == "off" %}
+                                    <span class="text-[#9fc7c7] italic text-sm">Day off</span>
+                                {% else %}
+                                    <button onclick="openExceptionModal({{ slot.schedule_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
+                                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                        {{ slot.start }} - {{ slot.end }}
+                                    </button>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
-
-                    <!-- Tuesday -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Tuesday</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% for slot in schedule_data.Tuesday %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full">
-                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    {{ slot.start }} - {{ slot.end }}
-                                </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Wednesday -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Wednesday</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% for slot in schedule_data.Wednesday %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full">
-                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    {{ slot.start }} - {{ slot.end }}
-                                </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Thursday -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Thursday</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% for slot in schedule_data.Thursday %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full">
-                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    {{ slot.start }} - {{ slot.end }}
-                                </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Friday -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Friday</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% for slot in schedule_data.Friday %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full">
-                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    {{ slot.start }} - {{ slot.end }}
-                                </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Saturday -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <div class="min-w-[120px]">
-                            <p class="m-0 font-semibold text-[#1b2f44]">Saturday</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% if schedule_data.Saturday == "off" %}
-                                <span class="text-[#9fc7c7] italic text-sm">Day off</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Schedule Exceptions Section -->
-            <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="material-symbols-outlined text-[#187a70] text-[20px]">warning</span>
-                    <h3 class="m-0 text-[17px] text-[#1c2d40] font-bold">Schedule Exceptions</h3>
-                </div>
-                <div class="text-center py-8 text-[#81909c]">
-                    <p class="m-0">No exceptions scheduled</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </section>
 </div>
+
+<!-- Create Schedule Modal -->
+<div id="scheduleModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
+            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Create Schedule</h3>
+            <button onclick="closeScheduleModal()" class="text-[#81909c] hover:text-[#1b2f44]">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+            </button>
+        </div>
+
+        <form id="scheduleForm" onsubmit="handleScheduleSubmit(event)" class="p-6 space-y-4">
+            <!-- Date -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Date</label>
+                <input type="date" id="scheduleDate" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+            </div>
+
+            <!-- Start Time -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Start Time</label>
+                <input type="time" id="scheduleStartTime" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+            </div>
+
+            <!-- End Time -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">End Time</label>
+                <input type="time" id="scheduleEndTime" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+            </div>
+
+            <!-- Session Duration -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Session Duration (minutes)</label>
+                <input type="number" id="scheduleDuration" value="30" min="15" step="15" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+            </div>
+
+            <!-- Day Type -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Day Type</label>
+                <select id="scheduleDayType" required class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                    <option value="working">Working Day</option>
+                    <option value="off">Day Off</option>
+                </select>
+            </div>
+
+            <!-- Error Message -->
+            <div id="scheduleError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                    Create
+                </button>
+                <button type="button" onclick="closeScheduleModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openScheduleModal() {
+    const modal = document.getElementById('scheduleModal');
+    modal.classList.remove('hidden');
+}
+
+function closeScheduleModal() {
+    const modal = document.getElementById('scheduleModal');
+    modal.classList.add('hidden');
+    document.getElementById('scheduleForm').reset();
+    document.getElementById('scheduleError').classList.add('hidden');
+}
+
+function handleScheduleSubmit(event) {
+    event.preventDefault();
+
+    const date = document.getElementById('scheduleDate').value;
+    const startTime = document.getElementById('scheduleStartTime').value;
+    const endTime = document.getElementById('scheduleEndTime').value;
+    const duration = document.getElementById('scheduleDuration').value;
+    const dayType = document.getElementById('scheduleDayType').value;
+
+    // Validate times
+    if (startTime >= endTime) {
+        showScheduleError('End time must be after start time');
+        return;
+    }
+
+    // Get the doctor ID from the URL or use a data attribute
+    const doctorId = document.body.getAttribute('data-doctor-id') || '{{ request.user.id }}';
+
+    const scheduleData = {
+        doctor: parseInt(doctorId),
+        date: date,
+        start_time: startTime,
+        end_time: endTime,
+        session_duration: parseInt(duration),
+        day_type: dayType
+    };
+
+    // Send to API endpoint
+    fetch(`/api/doctors/${doctorId}/availability`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(scheduleData)
+    })
+    .then(response => {
+        // Check if response is OK (status 200-299)
+        if (response.ok) {
+            return response.json().then(data => {
+                closeScheduleModal();
+                // Reload the page to show the new schedule
+                location.reload();
+            });
+        } else {
+            return response.json().then(data => {
+                showScheduleError(data.message || 'Error creating schedule');
+            });
+        }
+    })
+    .catch(error => {
+        showScheduleError('Error creating schedule: ' + error);
+    });
+}
+
+function showScheduleError(message) {
+    const errorDiv = document.getElementById('scheduleError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close modal when clicking outside
+document.getElementById('scheduleModal')?.addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeScheduleModal();
+    }
+});
+
+// Edit Day Type Modal Functions
+function openEditDayTypeModal(dayInfo) {
+    document.getElementById('editDayTypeModal').classList.remove('hidden');
+    document.getElementById('currentDayInfo').value = dayInfo;
+}
+
+function closeEditDayTypeModal() {
+    document.getElementById('editDayTypeModal').classList.add('hidden');
+    document.getElementById('editDayTypeError').classList.add('hidden');
+}
+
+function handleEditDayType(event) {
+    event.preventDefault();
+    
+    const dayInfo = document.getElementById('currentDayInfo').value;
+    const newDayType = document.getElementById('newDayType').value;
+    
+    // Extract date from dayInfo (format: "Saturday (2026-04-12)")
+    const dateMatch = dayInfo.match(/\((\d{4}-\d{2}-\d{2})\)/);
+    if (!dateMatch) {
+        showEditDayTypeError('Invalid day format');
+        return;
+    }
+    
+    const date = dateMatch[1];
+    const doctorId = '{{ request.user.id }}';
+    
+    const updateData = {
+        doctor: parseInt(doctorId),
+        date: date,
+        day_type: newDayType
+    };
+    
+    // Send to API endpoint
+    fetch(`/api/doctors/${doctorId}/availability`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(updateData)
+    })
+    .then(response => {
+        if (response.ok) {
+            closeEditDayTypeModal();
+            location.reload();
+        } else {
+            return response.json().then(data => {
+                showEditDayTypeError(data.message || 'Error updating day type');
+            });
+        }
+    })
+    .catch(error => {
+        showEditDayTypeError('Error updating day type: ' + error);
+    });
+}
+
+function showEditDayTypeError(message) {
+    const errorDiv = document.getElementById('editDayTypeError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('editDayTypeModal')?.addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeEditDayTypeModal();
+    }
+});
+</script>
+
+<!-- Edit Day Type Modal -->
+<div id="editDayTypeModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
+            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Edit Day Type</h3>
+            <button onclick="closeEditDayTypeModal()" class="text-[#81909c] hover:text-[#1b2f44]">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+            </button>
+        </div>
+
+        <form id="editDayTypeForm" onsubmit="handleEditDayType(event)" class="p-6 space-y-4">
+            <input type="hidden" id="currentDayInfo">
+            
+            <!-- Day Type Selection -->
+            <div>
+                <label class="block text-sm font-semibold text-[#1b2f44] mb-3">Select Day Type</label>
+                <div class="space-y-3">
+                    <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#e4ebf0] rounded-[8px] hover:bg-[#f8fafb] transition">
+                        <input type="radio" name="dayType" value="working" id="workingDay" class="w-4 h-4">
+                        <div>
+                            <p class="m-0 font-semibold text-[#1b2f44]">Working Day</p>
+                            <p class="m-0 text-xs text-[#81909c]">Doctor is available for consultations</p>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#e4ebf0] rounded-[8px] hover:bg-[#f8fafb] transition">
+                        <input type="radio" name="dayType" value="off" id="dayOff" class="w-4 h-4">
+                        <div>
+                            <p class="m-0 font-semibold text-[#1b2f44]">Day Off</p>
+                            <p class="m-0 text-xs text-[#81909c]">Doctor is not available</p>
+                        </div>
+                    </label>
+                </div>
+                <input type="hidden" id="newDayType">
+            </div>
+
+            <!-- Error Message -->
+            <div id="editDayTypeError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="updateDayType()" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                    Update
+                </button>
+                <button type="button" onclick="closeEditDayTypeModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Exception Modal -->
+<div id="exceptionModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
+            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Mark as Exception</h3>
+            <button onclick="closeExceptionModal()" class="text-[#81909c] hover:text-[#1b2f44]">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <div>
+                <p class="text-[12px] font-semibold text-[#81909c] mb-2">SELECTED SCHEDULE</p>
+                <p class="text-[16px] font-semibold text-[#31b2a3]" id="exceptionTimeSlot"></p>
+            </div>
+            
+            <div>
+                <label class="block text-[12px] font-semibold text-[#1b2f44] mb-2">Reason (Optional)</label>
+                <textarea id="exceptionReason" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#31b2a3] resize-none" rows="3" placeholder="Enter reason for marking this slot as an exception..."></textarea>
+            </div>
+            
+            <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
+            
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeExceptionModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
+                    Cancel
+                </button>
+                <button type="button" onclick="handleMarkException()" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                    Mark as Exception
+                </button>
+            </div>
+            
+            <input type="hidden" id="exceptionScheduleId">
+        </div>
+    </div>
+</div>
+
+<script>
+function updateDayType() {
+    const workingDayRadio = document.getElementById('workingDay');
+    const dayOffRadio = document.getElementById('dayOff');
+    
+    if (workingDayRadio.checked) {
+        document.getElementById('newDayType').value = 'working';
+    } else if (dayOffRadio.checked) {
+        document.getElementById('newDayType').value = 'off';
+    } else {
+        showEditDayTypeError('Please select a day type');
+        return;
+    }
+    
+    const form = document.getElementById('editDayTypeForm');
+    const event = new Event('submit');
+    form.dispatchEvent(event);
+}
+
+// Exception Functions
+function openExceptionModal(scheduleId, timeSlot) {
+    document.getElementById('exceptionModal').classList.remove('hidden');
+    document.getElementById('exceptionScheduleId').value = scheduleId;
+    document.getElementById('exceptionTimeSlot').textContent = timeSlot;
+}
+
+function closeExceptionModal() {
+    document.getElementById('exceptionModal').classList.add('hidden');
+    document.getElementById('exceptionError').classList.add('hidden');
+}
+
+function handleMarkException() {
+    const scheduleId = document.getElementById('exceptionScheduleId').value;
+    const doctorId = '{{ request.user.id }}';
+    
+    const exceptionData = {
+        schedule: parseInt(scheduleId)
+    };
+    
+    fetch(`/api/doctors/${doctorId}/exceptions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(exceptionData)
+    })
+    .then(response => {
+        if (response.ok) {
+            closeExceptionModal();
+            location.reload();
+        } else {
+            return response.json().then(data => {
+                showExceptionError(data.message || 'Error marking as exception');
+            });
+        }
+    })
+    .catch(error => {
+        showExceptionError('Error marking as exception: ' + error);
+    });
+}
+
+function showExceptionError(message) {
+    const errorDiv = document.getElementById('exceptionError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+document.getElementById('exceptionModal')?.addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeExceptionModal();
+    }
+});
+</script>
+
 {% endblock %}
