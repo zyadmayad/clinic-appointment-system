@@ -141,17 +141,20 @@ def receptionist_doctor_schedules(request):
         day = week_start + timedelta(days=day_offset)
         day_records = schedule_records.filter(date=day)
         if day_records.exists():
+            is_off_day = day_records.filter(day_type='off').exists()
+            working_records = day_records.filter(day_type='working')
             shifts = [{
                 'time_range': f"{record.start_time.strftime('%H:%M')} - {record.end_time.strftime('%H:%M')}",
                 'type': record.get_day_type_display(),
-            } for record in day_records]
-            status = day_records[0].get_day_type_display()
+            } for record in working_records]
+            status = 'Off' if is_off_day else 'Working'
         else:
             shifts = []
             status = 'Off'
         schedule_days.append({
             'name': day.strftime('%A'),
             'date': day.strftime('%b %d'),
+            'iso_date': day.strftime('%Y-%m-%d'),
             'status': status,
             'shifts': shifts,
         })

@@ -30,7 +30,8 @@ def schedule_exception(request, doctor_id):
     print(schedule)
     try:
         schedule_obj = Schedule.objects.get(id=schedule, doctor_id=doctor_id)
-        schedule_obj.delete()
+        schedule_obj.day_type = request.data.get('day_type', 'off')
+        schedule_obj.save()
         serializer = ScheduleSerializer(schedule_obj)   
         return Response(serializer.data, status=status.HTTP_200_OK)
     
