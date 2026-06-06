@@ -18,10 +18,28 @@ def _receptionist_access_denied(request):
     return None
 
 
+def _mark_overdue_confirmed_as_no_show(grace_minutes=15):
+    now_value = timezone.now()
+    if timezone.is_aware(now_value):
+        now_value = timezone.localtime(now_value)
+
+    cutoff = now_value - timedelta(minutes=grace_minutes)
+    cutoff_date = cutoff.date()
+    cutoff_time = cutoff.time().replace(tzinfo=None)
+
+    Appointment.objects.filter(
+        status='confirmed',
+    ).filter(
+        Q(date__lt=cutoff_date) | Q(date=cutoff_date, start_time__lte=cutoff_time)
+    ).update(status='no_show')
+
+
 def receptionist_appointments(request):
     denied = _receptionist_access_denied(request)
     if denied:
         return denied
+
+    _mark_overdue_confirmed_as_no_show()
 
     search_query = request.GET.get('q', '').strip()
     selected_status = request.GET.get('status', '').strip()
@@ -43,6 +61,7 @@ def receptionist_appointments(request):
         patient_name = appointment.patient.get_full_name() or appointment.patient.username
         doctor_name = appointment.doctor.get_full_name() or appointment.doctor.username
         appointment_items.append({
+            'id': appointment.id,
             'patient_name': patient_name,
             'patient_initial': patient_name[:1].upper(),
             'patient_email': appointment.patient.email or '',
@@ -66,6 +85,8 @@ def receptionist_checkin_queue(request):
     denied = _receptionist_access_denied(request)
     if denied:
         return denied
+
+    _mark_overdue_confirmed_as_no_show()
 
     today = timezone.localdate()
 

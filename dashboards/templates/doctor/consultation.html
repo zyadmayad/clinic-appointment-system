@@ -62,34 +62,29 @@
             <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
                     <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Consultations</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ appointment_items|length }} appointments found</p>
+                    <p id="consultationCountText" class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ appointment_items|length }} appointments found</p>
                 </div>
                 <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
             </div>
 
-            <!-- Search and Filter -->
-            <form method="get" class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-4">
-                <div class="flex flex-col sm:flex-row gap-3 items-center">
-                    <div class="flex-1 relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-[#81909c]">search</span>
-                        <input type="text" name="q" value="{{ search_query }}" placeholder="Search by appointment ID or patient..." class="w-full pl-10 pr-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] placeholder-[#81909c] focus:outline-none focus:border-[#31b2a3]">
-                    </div>
-                    <div class="w-full sm:w-[200px]">
-                        <select name="status" class="w-full px-4 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                            <option value="">All Statuses</option>
-                            {% for value, label in status_choices %}
-                                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[8px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">Apply</button>
+            <form id="consultationFilterForm" method="get" class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 mb-6">
+                <div class=""></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="consultationStatusFilter" name="status" class="w-full rounded-[14px] border border-[#e4ebf0] bg-white px-4 py-3 text-sm text-[#111f2f]">
+                        <option value="">All statuses</option>
+                        <option value="checked_in">Checked In</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="requested">Requested</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button type="submit" class="rounded-[14px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-3 text-sm font-semibold text-white hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">Apply</button>
                 </div>
             </form>
 
             <!-- Appointments List -->
-            <div class="space-y-3">
+            <div id="consultationCards" class="space-y-3">
                 {% for item in appointment_items %}
-                    <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
+                    <div data-consultation-card data-appointment-status="{{ item.appointment.status }}" class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">{{ item.patient_initial }}</div>
@@ -142,8 +137,73 @@
                         No appointments found for this filter.
                     </div>
                 {% endfor %}
+
+                {% if appointment_items %}
+                    <div id="consultationFilterEmpty" class="hidden rounded-[12px] border border-[#ecf0f4] p-6 text-center text-sm text-[#6f7b88] bg-white">
+                        No appointments found for this filter.
+                    </div>
+                {% endif %}
             </div>
         </div>
     </section>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const filterForm = document.getElementById('consultationFilterForm');
+    const statusFilter = document.getElementById('consultationStatusFilter');
+    const cards = Array.from(document.querySelectorAll('[data-consultation-card]'));
+    const emptyState = document.getElementById('consultationFilterEmpty');
+    const countText = document.getElementById('consultationCountText');
+
+    function applyStatusFilter(status) {
+        let visibleCount = 0;
+
+        cards.forEach(function (card) {
+            const cardStatus = card.dataset.appointmentStatus || '';
+            const isVisible = !status || cardStatus === status;
+            card.classList.toggle('hidden', !isVisible);
+
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyState) {
+            emptyState.classList.toggle('hidden', visibleCount !== 0);
+        }
+
+        if (countText) {
+            countText.textContent = visibleCount + ' appointments found';
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (status) {
+            params.set('status', status);
+        } else {
+            params.delete('status');
+        }
+
+        const newQuery = params.toString();
+        const newUrl = newQuery ? (window.location.pathname + '?' + newQuery) : window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+    }
+
+    const initialStatus = new URLSearchParams(window.location.search).get('status') || '';
+    if (statusFilter) {
+        statusFilter.value = initialStatus;
+    }
+
+    if (cards.length > 0) {
+        applyStatusFilter(initialStatus);
+    }
+
+    if (filterForm) {
+        filterForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            applyStatusFilter(statusFilter ? statusFilter.value : '');
+        });
+    }
+});
+</script>
 {% endblock %}

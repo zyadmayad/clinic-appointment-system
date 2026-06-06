@@ -32,6 +32,23 @@
                     <span class="material-symbols-outlined text-[19px]">calendar_month</span>
                     My Appointments
                 </a>
+            {% elif is_receptionist %}
+                <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:receptionist_dashboard' %}">
+                    <span class="material-symbols-outlined text-[19px]">home</span>
+                    Dashboard
+                </a>
+                <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'receptionist:appointments_list' %}">
+                    <span class="material-symbols-outlined text-[19px]">calendar_month</span>
+                    Appointments
+                </a>
+                <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'receptionist:checkin_queue' %}">
+                    <span class="material-symbols-outlined text-[19px]">airport_shuttle</span>
+                    Check-in Queue
+                </a>
+                <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'receptionist:doctor_schedules' %}">
+                    <span class="material-symbols-outlined text-[19px]">schedule</span>
+                    Doctor Schedules
+                </a>
             {% else %}
                 <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_dashboard' %}">
                     <span class="material-symbols-outlined text-[19px]">dashboard</span>
@@ -57,7 +74,7 @@
                 <div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
                 <div>
                     <h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p class="m-0 text-xs text-[#9fc7c7]">{% if is_patient %}Patient{% else %}Doctor{% endif %}</p>
+                    <p class="m-0 text-xs text-[#9fc7c7]">{% if is_patient %}Patient{% elif is_receptionist %}Receptionist{% else %}Doctor{% endif %}</p>
                 </div>
             </div>
             <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
@@ -71,21 +88,21 @@
         <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
             <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <a href="{% if is_patient %}{% url 'appointment:my_appointments' %}{% else %}{% url 'consultations:index' %}{% endif %}" class="inline-flex items-center gap-1 text-[#4d6478] hover:text-[#1b2f44] transition text-sm">
+                    <a href="{% if is_patient %}{% url 'appointment:my_appointments' %}{% elif is_receptionist %}{% url 'receptionist:appointments_list' %}{% else %}{% url 'consultations:index' %}{% endif %}" class="inline-flex items-center gap-1 text-[#4d6478] hover:text-[#1b2f44] transition text-sm">
                         <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                        {% if is_patient %}Back to appointments{% else %}Back{% endif %}
+                        {% if is_patient or is_receptionist %}Back to appointments{% else %}Back{% endif %}
                     </a>
                     <h2 class="m-0 mt-1 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Consultation Summary</h2>
                     <p class="m-0 mt-1 text-base text-[#6f7b88]">APT-{{ appointment.id|stringformat:"03d" }}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    {% if not is_patient and appointment.status == 'checked_in' %}
+                    {% if can_edit_consultation %}
                         <a href="{% url 'consultations:fill' appointment.id %}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[10px] hover:bg-[#bbdefb] transition text-sm">
-                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                            Edit
+                            <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                            Edit Consultation
                         </a>
                     {% endif %}
-                    <span class="inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{% if is_patient %}Patient{% else %}Doctor{% endif %}</span>
+                    <span class="inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{% if is_patient %}Patient{% elif is_receptionist %}Receptionist{% else %}Doctor{% endif %}</span>
                 </div>
             </div>
 
@@ -111,16 +128,18 @@
             </div>
 
             <section class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-4">
-                <h3 class="m-0 mb-3 text-[17px] text-[#1c2d40] font-bold">Diagnosis and Notes</h3>
+                <h3 class="m-0 mb-3 text-[17px] text-[#1c2d40] font-bold">{% if can_view_notes %}Diagnosis and Notes{% else %}Diagnosis{% endif %}</h3>
                 <div class="space-y-3">
                     <div>
                         <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Diagnosis</p>
                         <div class="mt-1 px-3 py-2 rounded-[10px] bg-[#f3f6f8] text-[#1b2f44]">{{ consultation.diagnosis|linebreaksbr }}</div>
                     </div>
-                    <div>
-                        <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Clinical Notes</p>
-                        <div class="mt-1 px-3 py-2 rounded-[10px] bg-[#f3f6f8] text-[#1b2f44]">{{ consultation.notes|default:"No notes"|linebreaksbr }}</div>
-                    </div>
+                    {% if can_view_notes %}
+                        <div>
+                            <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Clinical Notes</p>
+                            <div class="mt-1 px-3 py-2 rounded-[10px] bg-[#f3f6f8] text-[#1b2f44]">{{ consultation.notes|default:"No notes"|linebreaksbr }}</div>
+                        </div>
+                    {% endif %}
                 </div>
             </section>
 
