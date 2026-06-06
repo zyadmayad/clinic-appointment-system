@@ -79,23 +79,30 @@
 
                     <div class="mt-6 space-y-3" id="weeklySchedule" data-doctor-id="{{ selected_doctor.id|default:'' }}">
                         {% for day in schedule_days %}
-                            <div class="rounded-[20px] border border-[#e7eef4] bg-[#f8fafc] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                            <div data-day-card class="rounded-[20px] border border-[#e7eef4] bg-[#f8fafc] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <p class="text-sm font-semibold text-[#111f2a]">{{ day.name }}</p>
                                         <p class="text-sm text-[#64748b]">{{ day.date }}</p>
                                     </div>
-                                    <button
-                                        type="button"
-                                        data-day-status-badge
-                                        data-day-exception-btn
-                                        data-day-date="{{ day.iso_date }}"
-                                        onclick="toggleDayException(this, '{{ day.iso_date }}')"
-                                        title="Click to toggle day status"
-                                        class="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition {% if day.status|lower == 'off' %}bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]{% else %}bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe]{% endif %}"
-                                    >
-                                        {{ day.status }}
-                                    </button>
+                                    <div class="inline-flex items-center gap-2">
+                                        <span
+                                            data-day-status-badge
+                                            class="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition {% if day.status|lower == 'exception' %}bg-[#ffedd5] text-[#9a3412]{% elif day.status|lower == 'off' %}bg-[#fef3c7] text-[#92400e]{% else %}bg-[#dbeafe] text-[#1d4ed8]{% endif %}"
+                                        >
+                                            {{ day.status }}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            data-day-exception-btn
+                                            data-day-date="{{ day.iso_date }}"
+                                            onclick="toggleDayException(this, '{{ day.iso_date }}')"
+                                            title="Toggle day exception"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition"
+                                        >
+                                            <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="mt-4 flex flex-wrap gap-3" data-slot-container data-date="{{ day.iso_date }}" data-day-status="{{ day.status|lower }}">
                                     <span class="text-sm text-[#81909c] italic">Loading slots...</span>
@@ -126,7 +133,7 @@
             </div>
 
             <p class="text-sm text-[#334155] leading-relaxed">
-                Marking as exception will set this slot to booked. Choosing not exception will set it to available.
+                Marking as exception will set this slot to exception. Choosing not exception will set it to available.
             </p>
 
             <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
@@ -138,7 +145,7 @@
                 <button type="button" id="setAvailableBtn" onclick="updateSlotStatus('available')" class="flex-1 px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
                     Not Exception
                 </button>
-                <button type="button" id="setBookedBtn" onclick="updateSlotStatus('booked')" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                <button type="button" id="setExceptionBtn" onclick="updateSlotStatus('exception')" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
                     Confirm Exception
                 </button>
             </div>
@@ -184,10 +191,27 @@ function formatTime(timeText) {
     return String(timeText).slice(0, 5);
 }
 
+function formatSlotStatus(status) {
+    if (status === 'booked') {
+        return 'Booked';
+    }
+    if (status === 'exception') {
+        return 'Exception';
+    }
+    return 'Available';
+}
+
 function slotTone(status) {
+    if (status === 'exception') {
+        return {
+            wrapper: 'bg-[#fff7ed] text-[#9a3412] hover:bg-[#ffedd5] border border-[#fed7aa]',
+            icon: 'warning',
+        };
+    }
+
     if (status === 'booked') {
         return {
-            wrapper: 'bg-[#fee2e2] text-[#991b1b] hover:bg-[#fecaca] border border-[#fecaca]',
+            wrapper: 'bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0] border border-[#dbe3eb]',
             icon: 'event_busy',
         };
     }
@@ -213,12 +237,16 @@ function groupSchedulesByDate(schedules) {
         if (!groups[schedule.date]) {
             groups[schedule.date] = {
                 ids: [],
+                hasException: false,
                 hasOff: false,
                 hasWorking: false,
             };
         }
 
         groups[schedule.date].ids.push(schedule.id);
+        if (schedule.day_type === 'exception') {
+            groups[schedule.date].hasException = true;
+        }
         if (schedule.day_type === 'off') {
             groups[schedule.date].hasOff = true;
         }
@@ -231,6 +259,12 @@ function groupSchedulesByDate(schedules) {
 }
 
 function updateDayExceptionButton(button, dayStatus) {
+    if (dayStatus === 'exception') {
+        button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#ffedd5] text-[#9a3412] hover:bg-[#fed7aa]';
+        button.textContent = 'Exception';
+        return;
+    }
+
     if (dayStatus === 'off') {
         button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]';
         button.textContent = 'Off';
@@ -257,6 +291,13 @@ function renderSlots() {
             dayOffLabel.textContent = 'Day off (whole day)';
             container.appendChild(dayOffLabel);
             return;
+        }
+
+        if (dayStatus === 'exception') {
+            const dayExceptionLabel = document.createElement('span');
+            dayExceptionLabel.className = 'text-sm text-[#9a3412] italic';
+            dayExceptionLabel.textContent = 'Day marked as exception';
+            container.appendChild(dayExceptionLabel);
         }
 
         if (!daySlots.length) {
@@ -293,8 +334,26 @@ function openExceptionModal(slot) {
     modalState.status = slot.status;
 
     document.getElementById('exceptionSlotTime').textContent = `${slot.date} | ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}`;
-    document.getElementById('exceptionSlotStatus').textContent = `Current status: ${slot.status === 'booked' ? 'Booked' : 'Available'}`;
+    document.getElementById('exceptionSlotStatus').textContent = `Current status: ${formatSlotStatus(slot.status)}`;
     document.getElementById('exceptionError').classList.add('hidden');
+
+    const setAvailableBtn = document.getElementById('setAvailableBtn');
+    const setExceptionBtn = document.getElementById('setExceptionBtn');
+    const isBooked = slot.status === 'booked';
+
+    [setAvailableBtn, setExceptionBtn].forEach((btn) => {
+        if (!btn) {
+            return;
+        }
+        btn.disabled = isBooked;
+        btn.classList.toggle('opacity-50', isBooked);
+        btn.classList.toggle('cursor-not-allowed', isBooked);
+    });
+
+    if (isBooked) {
+        showExceptionError('Booked slots cannot be changed from this view.');
+    }
+
     document.getElementById('exceptionModal').classList.remove('hidden');
 }
 
@@ -311,9 +370,12 @@ function showExceptionError(message) {
 
 function setModalButtonsLoading(isLoading) {
     const setAvailableBtn = document.getElementById('setAvailableBtn');
-    const setBookedBtn = document.getElementById('setBookedBtn');
+    const setExceptionBtn = document.getElementById('setExceptionBtn');
 
-    [setAvailableBtn, setBookedBtn].forEach((btn) => {
+    [setAvailableBtn, setExceptionBtn].forEach((btn) => {
+        if (!btn) {
+            return;
+        }
         btn.disabled = isLoading;
         btn.classList.toggle('opacity-50', isLoading);
         btn.classList.toggle('cursor-not-allowed', isLoading);
@@ -339,21 +401,46 @@ function syncDayButtonsFromSchedules() {
     buttons.forEach((button) => {
         const dayDate = button.dataset.dayDate;
         const dayData = daySchedulesByDate[dayDate];
-        const dayCard = button.closest('.rounded-[20px]');
+        const dayCard = button.closest('[data-day-card]');
 
         if (!dayData || !dayData.ids.length) {
-            button.disabled = true;
-            button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#f1f5f9] text-[#64748b] opacity-70 cursor-not-allowed';
-            button.textContent = 'Unavailable';
+            button.disabled = false;
+            button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+            button.title = 'Toggle day exception';
+            button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
             return;
         }
 
         button.disabled = false;
-        const dayStatus = dayData.hasOff ? 'off' : 'working';
+        button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+        button.title = 'Toggle day exception';
+        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
+        const dayStatus = dayData.hasException ? 'exception' : (dayData.hasOff ? 'off' : 'working');
         if (dayCard) {
             setDayCardState(dayCard, dayStatus);
         }
     });
+}
+
+async function ensureDayData(dayDate) {
+    let dayData = daySchedulesByDate[dayDate];
+    if (dayData && dayData.ids && dayData.ids.length) {
+        return dayData;
+    }
+
+    const response = await fetch(`/api/doctors/${selectedDoctorId}/availability`);
+    if (!response.ok) {
+        throw new Error('Unable to load day schedules.');
+    }
+
+    const schedules = await response.json();
+    const weekDates = new Set(slotContainers.map((container) => container.dataset.date));
+    const weekSchedules = schedules.filter((schedule) => weekDates.has(schedule.date));
+    daySchedulesByDate = groupSchedulesByDate(weekSchedules);
+    syncDayButtonsFromSchedules();
+
+    dayData = daySchedulesByDate[dayDate];
+    return dayData;
 }
 
 async function toggleDayException(button, dayDate) {
@@ -362,30 +449,35 @@ async function toggleDayException(button, dayDate) {
         return;
     }
 
-    const dayData = daySchedulesByDate[dayDate];
+    let dayData;
+    try {
+        dayData = await ensureDayData(dayDate);
+    } catch (error) {
+        alert(error.message || 'Unable to load day schedule.');
+        return;
+    }
+
     if (!dayData || !dayData.ids.length) {
         alert('No schedule exists for this day.');
         return;
     }
 
-    const currentDayStatus = dayData.hasOff ? 'off' : 'working';
-    const targetDayStatus = currentDayStatus === 'off' ? 'working' : 'off';
+    const currentDayStatus = dayData.hasException ? 'exception' : (dayData.hasOff ? 'off' : 'working');
+    const targetDayStatus = (currentDayStatus === 'exception' || currentDayStatus === 'off') ? 'working' : 'exception';
 
     const confirmed = confirm(
-        targetDayStatus === 'off'
-            ? `${dayDate}: make exception for whole day? All slots will become booked.`
-            : `${dayDate}: remove exception for whole day? All slots will become available.`
+        targetDayStatus === 'exception'
+            ? `${dayDate}: make exception for whole day? Available slots will become exception.`
+            : `${dayDate}: remove day exception? Exception slots will become available.`
     );
     if (!confirmed) {
         return;
     }
 
-    const dayCard = button.closest('.rounded-[20px]');
-    const previousText = button.innerHTML;
-    const previousClass = button.className;
+    const dayCard = button.closest('[data-day-card]');
     button.disabled = true;
     button.classList.add('opacity-70', 'cursor-not-allowed');
-    button.innerHTML = '<span class="material-symbols-outlined text-[15px]">hourglass_empty</span>Updating...';
+    button.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>';
 
     try {
         const exceptionRequests = dayData.ids.map((scheduleId) => {
@@ -409,51 +501,63 @@ async function toggleDayException(button, dayDate) {
             throw new Error(data.detail || data.message || 'Unable to update day exception.');
         }
 
-        const daySlots = weekSlots.filter((slot) => slot.date === dayDate);
-        const targetSlotStatus = targetDayStatus === 'off' ? 'booked' : 'available';
-        const updateRequests = daySlots
-            .filter((slot) => slot.status !== targetSlotStatus)
-            .map((slot) => fetch(`/api/slots/${slot.id}/update`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ status: targetSlotStatus })
-            }));
+        const daySlotsResponse = await fetch(`/api/slots/${selectedDoctorId}?date=${encodeURIComponent(dayDate)}`);
+        if (!daySlotsResponse.ok) {
+            throw new Error('Day status updated, but unable to load slots for sync.');
+        }
+
+        const daySlots = await daySlotsResponse.json();
+        let updateRequests = [];
+
+        if (targetDayStatus === 'exception') {
+            updateRequests = daySlots
+                .filter((slot) => slot.status === 'available')
+                .map((slot) => fetch(`/api/slots/${slot.id}/update`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ status: 'exception' })
+                }));
+        } else {
+            updateRequests = daySlots
+                .filter((slot) => slot.status === 'exception')
+                .map((slot) => fetch(`/api/slots/${slot.id}/update`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ status: 'available' })
+                }));
+        }
 
         if (updateRequests.length) {
             const updateResponses = await Promise.all(updateRequests);
             const failedUpdate = updateResponses.find((response) => !response.ok);
             if (failedUpdate) {
-                throw new Error('Day exception updated, but some slots failed to sync. Please refresh and retry.');
+                throw new Error('Day status updated, but some slot statuses failed to sync. Please refresh and retry.');
             }
         }
 
         daySchedulesByDate[dayDate] = {
             ...dayData,
-            hasOff: targetDayStatus === 'off',
+            hasException: targetDayStatus === 'exception',
+            hasOff: false,
             hasWorking: targetDayStatus === 'working',
         };
-
-        weekSlots = weekSlots.map((slot) => {
-            if (slot.date === dayDate) {
-                return { ...slot, status: targetSlotStatus };
-            }
-            return slot;
-        });
 
         if (dayCard) {
             setDayCardState(dayCard, targetDayStatus);
         }
 
-        renderSlots();
+        await loadSlotsForWeek();
     } catch (error) {
         alert(error.message || 'Unable to update day exception.');
-        button.className = previousClass;
-        button.innerHTML = previousText;
     } finally {
         button.disabled = false;
+        syncDayButtonsFromSchedules();
     }
 }
 
@@ -476,15 +580,26 @@ async function loadDaySchedulesForWeek() {
     } catch (error) {
         const buttons = Array.from(document.querySelectorAll('[data-day-exception-btn]'));
         buttons.forEach((button) => {
-            button.disabled = true;
-            button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#f1f5f9] text-[#64748b] opacity-70 cursor-not-allowed';
-            button.textContent = 'Unavailable';
+            button.disabled = false;
+            button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+            button.title = 'Toggle day exception';
+            button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
         });
     }
 }
 
 async function updateSlotStatus(status) {
     if (!modalState.slotId) {
+        return;
+    }
+
+    if (modalState.status === 'booked') {
+        showExceptionError('Booked slots cannot be changed from this view.');
+        return;
+    }
+
+    if (status === modalState.status) {
+        closeExceptionModal();
         return;
     }
 
@@ -512,6 +627,7 @@ async function updateSlotStatus(status) {
             }
             return slot;
         });
+        modalState.status = status;
 
         renderSlots();
         closeExceptionModal();
