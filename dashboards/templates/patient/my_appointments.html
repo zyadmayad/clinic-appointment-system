@@ -119,8 +119,9 @@
                         </a>
                         {% endif %}
 
-                        {% if apt.status in "requested,confirmed" %}
+                        {% if apt.status == 'requested' or apt.status == 'confirmed' %}
                         <button
+                            type="button"
                             onclick="cancelAppointment({{ apt.pk }}, this)"
                             class="inline-flex items-center gap-1 text-[#c62828] hover:text-[#b71c1c] text-[13px] font-semibold transition"
                             title="Cancel appointment"
@@ -150,17 +151,50 @@
 <script>
 function cancelAppointment(id, btn) {
     if (!confirm('Cancel this appointment?')) return;
+    const prev = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-pulse">hourglass_empty</span> Cancelling…';
+
+    function showCancelError(msg) {
+        alert(msg || 'Could not cancel.');
+        btn.disabled = false;
+        btn.innerHTML = prev;
+    }
+
+    function detailFromPayload(data) {
+        if (!data || typeof data !== 'object') return null;
+        const d = data.detail;
+        if (typeof d === 'string') return d;
+        if (Array.isArray(d)) return d.join(' ');
+        if (d && typeof d === 'object') {
+            return Object.values(d).flat().map(String).join(' ');
+        }
+        return null;
+    }
+
     fetch(`/api/appointments/${id}/cancel/`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}',
             'Content-Type': 'application/json',
         },
     })
-    .then(r => {
-        if (r.ok) { location.reload(); }
-        else { r.json().then(d => alert(d.detail || 'Could not cancel.')); }
-    });
+    .then(async (r) => {
+        if (r.ok) {
+            location.reload();
+            return;
+        }
+        let msg = 'Could not cancel.';
+        try {
+            const data = await r.json();
+            msg = detailFromPayload(data) || msg;
+        } catch (e) {
+            msg = r.statusText || msg;
+        }
+        showCancelError(msg);
+    })
+    .catch(() => showCancelError('Network error. Try again.'));
 }
 </script>
 {% endblock %}
