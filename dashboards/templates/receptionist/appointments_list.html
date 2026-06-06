@@ -85,6 +85,7 @@
                             <th class="px-6 py-4">Date</th>
                             <th class="px-6 py-4">Time</th>
                             <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,6 +108,15 @@
                                         <span class="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold {% if appointment.status == 'checked_in' %}bg-[#d1fae5] text-[#047857]{% elif appointment.status == 'confirmed' %}bg-[#dbeafe] text-[#1d4ed8]{% elif appointment.status == 'requested' %}bg-[#fef3c7] text-[#92400e]{% elif appointment.status == 'completed' %}bg-[#e0f2fe] text-[#0369a1]{% else %}bg-[#fee2e2] text-[#b91c1c]{% endif %}">
                                             {{ appointment.status|capfirst }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {% if appointment.raw_status == 'completed' %}
+                                            <a href="{% url 'consultations:summary' appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
+                                                Summary
+                                            </a>
+                                        {% else %}
+                                            <span class="text-[#94a3b8] text-sm">-</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
