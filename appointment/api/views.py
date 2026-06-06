@@ -65,20 +65,46 @@ def appointment_list(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def appointment_cancel(request, appointment_id):
-    appointment = get_object_or_404(Appointment, pk=appointment_id, patient=request.user)
-
-    if appointment.status not in ('requested', 'confirmed'):
-        return Response(
-            {'detail': f'Cannot cancel an appointment with status "{appointment.status}".'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
     with transaction.atomic():
-        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+        appointment = (
+            Appointment.objects.select_for_update()
+            .filter(pk=appointment_id, patient=request.user)
+            .first()
+        )
+        if not appointment:
+            return Response({'detail': 'Appointment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if appointment.status == 'cancelled':
+            return Response({'detail': 'This appointment is already cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
+        if appointment.status == 'checked_in':
+            return Response(
+                {
+                    'detail': 'You cannot cancel after you have checked in. Please speak to reception if you need to change your visit.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if appointment.status in ('completed', 'no_show'):
+            return Response(
+                {'detail': f'Cannot cancel an appointment with status "{appointment.status}".'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if appointment.status not in ('requested', 'confirmed'):
+            return Response(
+                {'detail': f'Cannot cancel an appointment with status "{appointment.status}".'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        slot_id = appointment.slot_id
+        fallback_release = slot_kwargs(appointment) if not slot_id else None
+
         appointment.status = 'cancelled'
         appointment.slot = None
         appointment.save(update_fields=['status', 'slot'])
-        release_slot(**slot_kwargs(appointment))
+
+        if slot_id:
+            release_slot(slot_id=slot_id)
+        else:
+            release_slot(**fallback_release)
 
     AppointmentHistory.objects.create(appointment=appointment, event='cancelled')
     return Response(AppointmentSerializer(appointment).data)
