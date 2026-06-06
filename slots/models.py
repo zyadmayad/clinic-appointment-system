@@ -9,6 +9,7 @@ class Slot(models.Model):
 	STATUS_CHOICES = [
 		('available', 'Available'),
 		('booked', 'Booked'),
+		('exception', 'Exception'),
 	]
 
 	doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='slots')

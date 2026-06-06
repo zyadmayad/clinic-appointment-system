@@ -112,20 +112,20 @@
                 <!-- Days Schedule -->
                 <div class="space-y-4">
                     {% for day_info, slots in schedule_data.items %}
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]" data-day-row data-day-info="{{ day_info }}">
                         <div class="min-w-[200px] flex items-center justify-between">
                             <p class="m-0 font-semibold text-[#1b2f44]">{{ day_info }}</p>
-                            <button onclick="markDayOff('{{ day_info }}', {{ slots.0.schedule_id|default:'null' }})" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition" title="Mark this day as off">
+                            <button type="button" data-day-action onclick="markDayException('{{ day_info }}', {{ slots.0.schedule_id|default:'null' }})" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition" title="Toggle day exception">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
                         </div>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-2" data-day-slots>
                             {% if slots %}
                                 {% for slot in slots %}
                                     {% if slot.day_type == "off" %}
                                         <span class="text-[#9fc7c7] italic text-sm">Day off</span>
                                     {% else %}
-                                        <button onclick="openExceptionModal({{ slot.slot_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
+                                        <button type="button" data-slot-action data-slot-id="{{ slot.slot_id }}" data-slot-time="{{ slot.start }} - {{ slot.end }}" onclick="openExceptionModal({{ slot.slot_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
                                             <span class="material-symbols-outlined text-[16px]">schedule</span>
                                             {{ slot.start }} - {{ slot.end }}
                                         </button>
@@ -684,7 +684,7 @@ document.getElementById('editDayTypeModal')?.addEventListener('click', function(
 <div id="exceptionModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
         <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
-            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Mark as Exception</h3>
+            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Slot Exception</h3>
             <button onclick="closeExceptionModal()" class="text-[#81909c] hover:text-[#1b2f44]">
                 <span class="material-symbols-outlined text-[24px]">close</span>
             </button>
@@ -694,64 +694,328 @@ document.getElementById('editDayTypeModal')?.addEventListener('click', function(
             <div>
                 <p class="text-[12px] font-semibold text-[#81909c] mb-2">SELECTED SCHEDULE</p>
                 <p class="text-[16px] font-semibold text-[#31b2a3]" id="exceptionTimeSlot"></p>
+                <p class="text-sm text-[#64748b] mt-1" id="exceptionCurrentStatus"></p>
             </div>
-            
-            <div>
-                <label class="block text-[12px] font-semibold text-[#1b2f44] mb-2">Reason (Optional)</label>
-                <textarea id="exceptionReason" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#31b2a3] resize-none" rows="3" placeholder="Enter reason for marking this slot as an exception..."></textarea>
-            </div>
-            
+
             <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
             
             <div class="flex gap-3 pt-4">
                 <button type="button" onclick="closeExceptionModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
                     Cancel
                 </button>
-                <button type="button" onclick="handleMarkException()" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                    Mark as Exception
+                <button type="button" id="setSlotAvailableBtn" onclick="handleMarkException('available')" class="flex-1 px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
+                    Not Exception
+                </button>
+                <button type="button" id="setSlotExceptionBtn" onclick="handleMarkException('exception')" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                    Mark Exception
                 </button>
             </div>
             
             <input type="hidden" id="exceptionSlotId">
+            <input type="hidden" id="exceptionSlotStatus">
         </div>
     </div>
 </div>
 
 <script>
-function markDayOff(dayInfo, scheduleId) {
-    if (!scheduleId) {
-        alert('No schedule found for this day to mark as off.');
+const doctorScheduleState = {
+    doctorId: parseInt('{{ request.user.id }}', 10),
+    schedulesByDate: {},
+    slotStatusById: {},
+};
+
+function parseDateFromDayInfo(dayInfo) {
+    const dateMatch = String(dayInfo || '').match(/\((\d{4}-\d{2}-\d{2})\)/);
+    return dateMatch ? dateMatch[1] : null;
+}
+
+function formatSlotStatus(status) {
+    if (status === 'booked') {
+        return 'Booked';
+    }
+    if (status === 'exception') {
+        return 'Exception';
+    }
+    return 'Available';
+}
+
+function styleDayActionButton(button, dayType) {
+    if (!button) {
         return;
     }
 
-    const confirmed = confirm(`Mark ${dayInfo} as day off?`);
-    if (!confirmed) {
+    const baseClass = 'inline-flex items-center justify-center w-8 h-8 rounded-full transition';
+
+    if (dayType === 'exception') {
+        button.className = `${baseClass} bg-[#fff7ed] text-[#c2410c] hover:bg-[#ffedd5]`;
+        button.title = 'Day is exception. Click to set it back to working.';
+        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>';
         return;
     }
 
-    const doctorId = '{{ request.user.id }}';
-    fetch(`/api/doctors/${doctorId}/exceptions`, {
-        method: 'POST',
+    if (dayType === 'off') {
+        button.className = `${baseClass} bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]`;
+        button.title = 'Day is off. Click to set it back to working.';
+        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">event_busy</span>';
+        return;
+    }
+
+    button.className = `${baseClass} hover:bg-[#e0f2f1] text-[#187a70]`;
+    button.title = 'Mark this day as exception';
+    button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit</span>';
+}
+
+function styleSlotButton(button, slotStatus) {
+    if (!button) {
+        return;
+    }
+
+    const timeLabel = button.dataset.slotTime || button.textContent.trim();
+    const baseClass = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full transition';
+
+    if (slotStatus === 'exception') {
+        button.className = `${baseClass} bg-[#fff7ed] text-[#9a3412] hover:bg-[#ffedd5] cursor-pointer`;
+        button.innerHTML = `<span class="material-symbols-outlined text-[16px]">warning</span>${timeLabel}`;
+        button.title = 'Exception slot';
+        return;
+    }
+
+    if (slotStatus === 'booked') {
+        button.className = `${baseClass} bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] cursor-not-allowed`;
+        button.innerHTML = `<span class="material-symbols-outlined text-[16px]">event_busy</span>${timeLabel}`;
+        button.title = 'Booked slot';
+        return;
+    }
+
+    button.className = `${baseClass} bg-[#e0f2f1] text-[#0fa39a] hover:bg-[#c8e6e5] cursor-pointer`;
+    button.innerHTML = `<span class="material-symbols-outlined text-[16px]">schedule</span>${timeLabel}`;
+    button.title = 'Available slot';
+}
+
+function getDayType(dayData) {
+    if (!dayData || !dayData.ids.length) {
+        return 'off';
+    }
+    if (dayData.hasException) {
+        return 'exception';
+    }
+    if (dayData.hasOff) {
+        return 'off';
+    }
+    return 'working';
+}
+
+function applyDayStatusesToUI() {
+    const dayRows = Array.from(document.querySelectorAll('[data-day-row]'));
+    dayRows.forEach((row) => {
+        const dayInfo = row.dataset.dayInfo;
+        const date = parseDateFromDayInfo(dayInfo);
+        const dayData = doctorScheduleState.schedulesByDate[date];
+        const dayType = getDayType(dayData);
+        const dayActionButton = row.querySelector('[data-day-action]');
+        styleDayActionButton(dayActionButton, dayType);
+    });
+}
+
+function applySlotStatusesToUI() {
+    const slotButtons = Array.from(document.querySelectorAll('[data-slot-action][data-slot-id]'));
+    slotButtons.forEach((button) => {
+        const slotId = parseInt(button.dataset.slotId, 10);
+        const slotStatus = doctorScheduleState.slotStatusById[slotId] || 'available';
+        button.dataset.slotStatus = slotStatus;
+        styleSlotButton(button, slotStatus);
+    });
+}
+
+function buildSchedulesByDate(schedules) {
+    return schedules.reduce((groups, schedule) => {
+        if (!groups[schedule.date]) {
+            groups[schedule.date] = {
+                ids: [],
+                hasException: false,
+                hasOff: false,
+                hasWorking: false,
+            };
+        }
+
+        groups[schedule.date].ids.push(schedule.id);
+        if (schedule.day_type === 'exception') {
+            groups[schedule.date].hasException = true;
+        }
+        if (schedule.day_type === 'off') {
+            groups[schedule.date].hasOff = true;
+        }
+        if (schedule.day_type === 'working') {
+            groups[schedule.date].hasWorking = true;
+        }
+
+        return groups;
+    }, {});
+}
+
+async function fetchAvailabilityForDoctor() {
+    const response = await fetch(`/api/doctors/${doctorScheduleState.doctorId}/availability`);
+    if (!response.ok) {
+        throw new Error('Unable to load doctor availability.');
+    }
+    return response.json();
+}
+
+async function fetchSlotsForWeek() {
+    const weekDates = new Set(
+        Array.from(document.querySelectorAll('[data-day-row]'))
+            .map((row) => parseDateFromDayInfo(row.dataset.dayInfo))
+            .filter(Boolean)
+    );
+
+    const response = await fetch(`/api/slots/${doctorScheduleState.doctorId}`);
+    if (!response.ok) {
+        throw new Error('Unable to load doctor slots.');
+    }
+
+    const slots = await response.json();
+    return slots.filter((slot) => weekDates.has(slot.date));
+}
+
+async function syncDoctorScheduleState() {
+    try {
+        const [schedules, slots] = await Promise.all([
+            fetchAvailabilityForDoctor(),
+            fetchSlotsForWeek(),
+        ]);
+
+        doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
+        doctorScheduleState.slotStatusById = slots.reduce((acc, slot) => {
+            acc[slot.id] = slot.status;
+            return acc;
+        }, {});
+
+        applyDayStatusesToUI();
+        applySlotStatusesToUI();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function setDayActionLoading(button, isLoading) {
+    if (!button) {
+        return;
+    }
+
+    button.disabled = isLoading;
+    button.classList.toggle('opacity-70', isLoading);
+    button.classList.toggle('cursor-not-allowed', isLoading);
+    if (isLoading) {
+        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>';
+    }
+}
+
+async function patchSlotStatus(slotId, status) {
+    const response = await fetch(`/api/slots/${slotId}/update`, {
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
-        body: JSON.stringify({
-            schedule: parseInt(scheduleId, 10)
-        })
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
+        body: JSON.stringify({ status })
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || data.message || 'Failed to update slot status.');
+    }
+}
+
+async function markDayException(dayInfo, scheduleId) {
+    const date = parseDateFromDayInfo(dayInfo);
+    if (!date) {
+        alert('Invalid day format.');
+        return;
+    }
+
+    let dayData = doctorScheduleState.schedulesByDate[date];
+    if (!dayData || !dayData.ids.length) {
+        try {
+            const schedules = await fetchAvailabilityForDoctor();
+            doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
+            dayData = doctorScheduleState.schedulesByDate[date];
+        } catch (error) {
+            alert(error.message || 'Unable to read day schedule.');
             return;
         }
-        return response.json().then(data => {
-            throw new Error(data.detail || data.message || 'Error marking day as off');
-        });
-    })
-    .catch(error => {
-        alert(error.message || 'Error marking day as off');
-    });
+    }
+
+    if (!dayData || !dayData.ids.length) {
+        alert('No schedule exists for this day.');
+        return;
+    }
+
+    const currentDayType = getDayType(dayData);
+    const targetDayType = (currentDayType === 'exception' || currentDayType === 'off') ? 'working' : 'exception';
+    const confirmMessage = targetDayType === 'exception'
+        ? `Mark ${dayInfo} as exception? Available slots will become exception.`
+        : `Remove exception on ${dayInfo}? Exception slots will become available.`;
+
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    const dayActionButton = Array.from(document.querySelectorAll('[data-day-row]'))
+        .find((row) => row.dataset.dayInfo === dayInfo)
+        ?.querySelector('[data-day-action]');
+    setDayActionLoading(dayActionButton, true);
+
+    try {
+        const scheduleIds = scheduleId ? [parseInt(scheduleId, 10)] : dayData.ids;
+        const uniqueScheduleIds = Array.from(new Set(scheduleIds.filter(Boolean)));
+
+        const scheduleRequests = uniqueScheduleIds.map((id) => fetch(`/api/doctors/${doctorScheduleState.doctorId}/exceptions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                schedule: id,
+                day_type: targetDayType,
+            })
+        }));
+
+        const scheduleResponses = await Promise.all(scheduleRequests);
+        const failedScheduleResponse = scheduleResponses.find((response) => !response.ok);
+        if (failedScheduleResponse) {
+            const data = await failedScheduleResponse.json().catch(() => ({}));
+            throw new Error(data.detail || data.message || 'Unable to update day status.');
+        }
+
+        const slotResponse = await fetch(`/api/slots/${doctorScheduleState.doctorId}?date=${encodeURIComponent(date)}`);
+        if (!slotResponse.ok) {
+            throw new Error('Day status updated, but unable to read slots for sync.');
+        }
+
+        const daySlots = await slotResponse.json();
+        let updates = [];
+        if (targetDayType === 'exception') {
+            updates = daySlots
+                .filter((slot) => slot.status === 'available')
+                .map((slot) => patchSlotStatus(slot.id, 'exception'));
+        } else {
+            updates = daySlots
+                .filter((slot) => slot.status === 'exception')
+                .map((slot) => patchSlotStatus(slot.id, 'available'));
+        }
+
+        if (updates.length) {
+            await Promise.all(updates);
+        }
+
+        await syncDoctorScheduleState();
+    } catch (error) {
+        alert(error.message || 'Error updating day exception.');
+    } finally {
+        setDayActionLoading(dayActionButton, false);
+        applyDayStatusesToUI();
+    }
 }
 
 function updateDayType() {
@@ -773,10 +1037,35 @@ function updateDayType() {
 }
 
 // Exception Functions
-function openExceptionModal(slotId, timeSlot) {
+async function openExceptionModal(slotId, timeSlot) {
     document.getElementById('exceptionModal').classList.remove('hidden');
     document.getElementById('exceptionSlotId').value = slotId;
+    document.getElementById('exceptionSlotStatus').value = '';
     document.getElementById('exceptionTimeSlot').textContent = timeSlot;
+    document.getElementById('exceptionCurrentStatus').textContent = 'Loading status...';
+    document.getElementById('exceptionError').classList.add('hidden');
+
+    setExceptionActionButtonsDisabled(true);
+
+    try {
+        const response = await fetch(`/api/slots/${slotId}`);
+        if (!response.ok) {
+            throw new Error('Unable to load slot details.');
+        }
+
+        const slot = await response.json();
+        document.getElementById('exceptionSlotStatus').value = slot.status;
+        document.getElementById('exceptionCurrentStatus').textContent = `Current status: ${formatSlotStatus(slot.status)}`;
+
+        const lockButtons = slot.status === 'booked';
+        setExceptionActionButtonsDisabled(lockButtons);
+        if (lockButtons) {
+            showExceptionError('Booked slots cannot be changed from this view.');
+        }
+    } catch (error) {
+        showExceptionError(error.message || 'Unable to load slot details.');
+        setExceptionActionButtonsDisabled(true);
+    }
 }
 
 function closeExceptionModal() {
@@ -784,29 +1073,66 @@ function closeExceptionModal() {
     document.getElementById('exceptionError').classList.add('hidden');
 }
 
-function handleMarkException() {
-    const slotId = document.getElementById('exceptionSlotId').value;
+function setExceptionButtonsLoading(isLoading) {
+    const availableBtn = document.getElementById('setSlotAvailableBtn');
+    const exceptionBtn = document.getElementById('setSlotExceptionBtn');
 
-    fetch(`/api/slots/${slotId}/delete`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
+    [availableBtn, exceptionBtn].forEach((button) => {
+        if (!button) {
+            return;
         }
-    })
-    .then(response => {
-        if (response.ok) {
-            closeExceptionModal();
-            location.reload();
-        } else {
-            return response.json().then(data => {
-                showExceptionError(data.message || 'Error marking as exception');
-            });
-        }
-    })
-    .catch(error => {
-        showExceptionError('Error marking as exception: ' + error);
+        button.disabled = isLoading;
+        button.classList.toggle('opacity-50', isLoading);
+        button.classList.toggle('cursor-not-allowed', isLoading);
     });
+}
+
+function setExceptionActionButtonsDisabled(isDisabled) {
+    const availableBtn = document.getElementById('setSlotAvailableBtn');
+    const exceptionBtn = document.getElementById('setSlotExceptionBtn');
+
+    [availableBtn, exceptionBtn].forEach((button) => {
+        if (!button) {
+            return;
+        }
+        button.disabled = isDisabled;
+        button.classList.toggle('opacity-50', isDisabled);
+        button.classList.toggle('cursor-not-allowed', isDisabled);
+    });
+}
+
+async function handleMarkException(targetStatus) {
+    const slotId = document.getElementById('exceptionSlotId').value;
+    const currentStatus = document.getElementById('exceptionSlotStatus').value;
+
+    if (!slotId) {
+        showExceptionError('No slot selected.');
+        return;
+    }
+
+    if (currentStatus === 'booked') {
+        showExceptionError('Booked slots cannot be changed from this view.');
+        return;
+    }
+
+    if (targetStatus === currentStatus) {
+        closeExceptionModal();
+        return;
+    }
+
+    setExceptionButtonsLoading(true);
+    document.getElementById('exceptionError').classList.add('hidden');
+
+    try {
+        await patchSlotStatus(slotId, targetStatus);
+        doctorScheduleState.slotStatusById[parseInt(slotId, 10)] = targetStatus;
+        applySlotStatusesToUI();
+        closeExceptionModal();
+    } catch (error) {
+        showExceptionError(error.message || 'Error updating slot status.');
+    } finally {
+        setExceptionButtonsLoading(false);
+    }
 }
 
 function showExceptionError(message) {
@@ -820,6 +1146,8 @@ document.getElementById('exceptionModal')?.addEventListener('click', function(ev
         closeExceptionModal();
     }
 });
+
+syncDoctorScheduleState();
 </script>
 
 {% endblock %}
