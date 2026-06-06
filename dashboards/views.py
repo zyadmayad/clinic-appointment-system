@@ -62,8 +62,20 @@ def doctor_dashboard(request):
   profile = Users.objects.filter(user=request.user).only('role').first()
   user_name = request.user.username
   user_role = profile.role
-
   today = timezone.localdate()
+
+  if request.method == 'POST':
+    appointment_id = request.POST.get('appointment_id')
+    action = request.POST.get('action')
+    if appointment_id and action == 'mark_no_show':
+      appointment = Appointment.objects.filter(id=appointment_id,doctor=request.user,status='confirmed',date=today,).first()
+      
+      if appointment:
+        appointment.status = 'no_show'
+        appointment.save()
+
+    return redirect('dashboards:doctor_dashboard')
+
   appointments_today = Appointment.objects.filter(doctor=request.user, date=today)
   checked_in_count = appointments_today.filter(status='checked_in').count()
   confirmed_count = appointments_today.filter(status='confirmed').count()
@@ -148,6 +160,11 @@ def receptionist_dashboard(request):
         appointment.status = 'checked_in'
         appointment.check_in_time = timezone.now()
         appointment.save(update_fields=['status', 'check_in_time'])
+    elif appointment_id and action == 'mark_no_show':
+      appointment = Appointment.objects.filter(id=appointment_id, status='confirmed', date=today).first()
+      if appointment:
+        appointment.status = 'no_show'
+        appointment.save(update_fields=['status'])
     return redirect('dashboards:receptionist_dashboard')
 
   today_appts = Appointment.objects.filter(date=today)
