@@ -175,8 +175,16 @@
                                             </a>
                                         {% else %}
                                             <span class="inline-flex items-center justify-center px-4 py-1.5 bg-[#f3f6f8] text-[#81909c] font-semibold rounded-[8px] text-sm">
-                                                Check-in required
+                                                Awaiting check-in
                                             </span>
+                                            <form method="post" action="" class="inline-flex">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="appointment_id" value="{{ item.id }}" />
+                                                <input type="hidden" name="action" value="mark_no_show" />
+                                                <button type="submit" class="inline-flex items-center justify-center px-4 py-1.5 bg-[#ffebee] text-[#c62828] font-semibold rounded-[8px] hover:bg-[#ffcdd2] transition text-sm">
+                                                    No Show
+                                                </button>
+                                            </form>
                                         {% endif %}
                                     </div>
                                 </div>
