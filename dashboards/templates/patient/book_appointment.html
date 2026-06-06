@@ -131,7 +131,7 @@
                     <div id="slots" class="flex flex-wrap gap-3 mb-6"></div>
                 </div>
 
-                <div id="no-slots-msg" class="hidden text-[#81909c] text-sm mb-6">No working slots on this day.</div>
+                <div id="no-slots-msg" class="hidden text-[#81909c] text-sm mb-6">No available slots on this day.</div>
 
                 <div class="flex gap-3">
                     <button onclick="goStep(1)"
@@ -273,23 +273,21 @@ function loadSlots(date) {
         .then(slots => {
             const slotsEl = document.getElementById('slots');
             slotsEl.innerHTML = '';
+            const visibleSlots = slots.filter(slot => slot.status !== 'exception');
 
-            if (!slots.length) {
+            if (!visibleSlots.length) {
                 document.getElementById('no-slots-msg').classList.remove('hidden');
                 return;
             }
 
-            slots.forEach(slot => {
+            visibleSlots.forEach(slot => {
                 const isBooked = slot.status === 'booked';
-
                 const btn = document.createElement('button');
                 if (isBooked) {
-                    // booked slot (gray + disabled)
                     btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-[#f2f5f7] rounded-[10px] text-sm font-semibold text-[#9aa6b2] cursor-not-allowed';
                     btn.disabled = true;
                     btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#9aa6b2]">block</span>${slot.start_time.slice(0,5)}`;
                 } else {
-                    // available slot (clickable)
                     btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
                     btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start_time.slice(0,5)}`;
                     btn.onclick = () => selectSlot({
