@@ -10,7 +10,7 @@ class Schedule(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     session_duration = models.IntegerField()
-    day_type = models.CharField(choices=[('working', 'Working Day'), ('off', 'Off Day')], max_length=7)
+    day_type = models.CharField(choices=[('working', 'Working Day'), ('off', 'Off Day'), ('exception', 'Exception')],max_length=10, default='working')
 
     def __str__(self):
         return f"{self.doctor} - {self.date} ({self.start_time} to {self.end_time})"
