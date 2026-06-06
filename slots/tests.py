@@ -52,7 +52,18 @@ class SlotUtilsTests(TestCase):
 
 	def test_release_slot_switches_booked_slot_back_to_available(self):
 		slot = self._create_slot(status='booked')
-		release_slot(slot.doctor_id, slot.date, slot.start_time, slot.end_time)
+		release_slot(
+			doctor_id=slot.doctor_id,
+			date=slot.date,
+			start_time=slot.start_time,
+			end_time=slot.end_time,
+		)
+		slot.refresh_from_db()
+		self.assertEqual(slot.status, 'available')
+
+	def test_release_slot_by_slot_id(self):
+		slot = self._create_slot(status='booked')
+		release_slot(slot_id=slot.id)
 		slot.refresh_from_db()
 		self.assertEqual(slot.status, 'available')
 

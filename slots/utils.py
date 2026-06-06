@@ -16,10 +16,18 @@ def book_slot(doctor_id, date, start_time, end_time):
     return slot
 
 
-def release_slot(doctor_id, date, start_time, end_time):
+def release_slot(*, slot_id=None, doctor_id=None, date=None, start_time=None, end_time=None):
+    """Mark a booked slot available again. Prefer slot_id when the appointment still points at a Slot row."""
+    if slot_id is not None:
+        Slot.objects.filter(pk=slot_id, status='booked').update(status='available')
+        return
+    if doctor_id is None or date is None or start_time is None or end_time is None:
+        return
     Slot.objects.filter(
-        doctor_id=doctor_id, date=date,
-        start_time=start_time, end_time=end_time,
+        doctor_id=doctor_id,
+        date=date,
+        start_time=start_time,
+        end_time=end_time,
         status='booked',
     ).update(status='available')
 
