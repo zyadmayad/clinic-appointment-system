@@ -124,6 +124,33 @@
             <div id="step2" class="hidden">
                 <h3 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Select Date &amp; Time</h3>
 
+                <div class="mb-4 rounded-[12px] border border-[#e4ebf0] bg-white p-3 sm:p-4">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" id="week-prev" onclick="shiftPatientWeek(-1)"
+                                class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f6f8] text-[#1b2f44] font-semibold rounded-[8px] hover:bg-[#e4ebf0] transition text-sm">
+                                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                                Previous week
+                            </button>
+                            <button type="button" id="week-next" onclick="shiftPatientWeek(1)"
+                                class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f6f8] text-[#1b2f44] font-semibold rounded-[8px] hover:bg-[#e4ebf0] transition text-sm">
+                                Next week
+                                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                            </button>
+                            <button type="button" onclick="goPatientCurrentWeek()"
+                                class="inline-flex items-center justify-center px-3 py-2 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
+                                This week
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap items-end gap-2">
+                            <label for="week-jump" class="text-xs font-semibold text-[#6f7b88] whitespace-nowrap">Jump to week</label>
+                            <input type="date" id="week-jump" onchange="jumpPatientWeekFromInput(this.value)"
+                                class="px-3 py-2 border border-[#d0dae4] rounded-[8px] text-sm text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
+                        </div>
+                    </div>
+                    <p id="week-range-label" class="m-0 mt-2 text-sm text-[#6f7b88]"></p>
+                </div>
+
                 <div id="date-picker" class="flex gap-2 mb-5 overflow-x-auto pb-1"></div>
 
                 <div id="slots-section" class="hidden">
@@ -188,8 +215,111 @@
 </div>
 
 <script>
-// State
-let state = { doctorId: null, doctorName: '', date: null, startTime: null, endTime: null, type: 'in_person' };
+// State (weeks match doctor schedule: Saturday → Friday)
+const PATIENT_BOOKING_WEEKS_AHEAD = 12;
+
+let state = {
+    doctorId: null,
+    doctorName: '',
+    date: null,
+    startTime: null,
+    endTime: null,
+    type: 'in_person',
+    weekAnchor: null,
+};
+
+function formatISODate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+/** Same rule as schedule.views: week starts Saturday. JS getDay: Sun=0 … Sat=6 */
+function startOfSaturdayWeek(d) {
+    const c = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const w = c.getDay();
+    const daysSinceSat = (w - 6 + 7) % 7;
+    c.setDate(c.getDate() - daysSinceSat);
+    return c;
+}
+
+function addDaysLocal(d, n) {
+    const c = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    c.setDate(c.getDate() + n);
+    return c;
+}
+
+function patientWeekBounds() {
+    const today = new Date();
+    const minStart = startOfSaturdayWeek(today);
+    const maxStart = addDaysLocal(minStart, 7 * (PATIENT_BOOKING_WEEKS_AHEAD - 1));
+    return { today, minStart, maxStart };
+}
+
+function clampPatientWeekAnchor() {
+    const { minStart, maxStart } = patientWeekBounds();
+    if (!state.weekAnchor) {
+        state.weekAnchor = new Date(minStart);
+        return;
+    }
+    if (state.weekAnchor < minStart) state.weekAnchor = new Date(minStart);
+    if (state.weekAnchor > maxStart) state.weekAnchor = new Date(maxStart);
+}
+
+function updateWeekNavDisabled() {
+    const { minStart, maxStart } = patientWeekBounds();
+    const prev = document.getElementById('week-prev');
+    const next = document.getElementById('week-next');
+    if (!prev || !next) return;
+    prev.disabled = state.weekAnchor <= minStart;
+    prev.classList.toggle('opacity-40', prev.disabled);
+    prev.classList.toggle('cursor-not-allowed', prev.disabled);
+    next.disabled = state.weekAnchor >= maxStart;
+    next.classList.toggle('opacity-40', next.disabled);
+    next.classList.toggle('cursor-not-allowed', next.disabled);
+}
+
+function updateWeekRangeLabel() {
+    const el = document.getElementById('week-range-label');
+    const jump = document.getElementById('week-jump');
+    if (!el || !state.weekAnchor) return;
+    const fri = addDaysLocal(state.weekAnchor, 6);
+    const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+    el.textContent = `${state.weekAnchor.toLocaleDateString('en-US', opts)} – ${fri.toLocaleDateString('en-US', opts)}`;
+    if (jump) jump.value = formatISODate(state.weekAnchor);
+}
+
+function shiftPatientWeek(delta) {
+    clampPatientWeekAnchor();
+    state.weekAnchor = addDaysLocal(state.weekAnchor, delta * 7);
+    clampPatientWeekAnchor();
+    state.date = null;
+    state.startTime = null;
+    state.endTime = null;
+    buildDatePicker();
+}
+
+function goPatientCurrentWeek() {
+    state.weekAnchor = patientWeekBounds().minStart;
+    state.date = null;
+    state.startTime = null;
+    state.endTime = null;
+    buildDatePicker();
+}
+
+function jumpPatientWeekFromInput(value) {
+    if (!value) return;
+    const parts = value.split('-').map(Number);
+    if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return;
+    const picked = new Date(parts[0], parts[1] - 1, parts[2]);
+    state.weekAnchor = startOfSaturdayWeek(picked);
+    clampPatientWeekAnchor();
+    state.date = null;
+    state.startTime = null;
+    state.endTime = null;
+    buildDatePicker();
+}
 
 function setType(t, btn) {
     state.type = t;
@@ -200,6 +330,12 @@ function setType(t, btn) {
 }
 
 function selectDoctor(id, name) {
+    if (state.doctorId !== id) {
+        state.weekAnchor = null;
+        state.date = null;
+        state.startTime = null;
+        state.endTime = null;
+    }
     state.doctorId = id; state.doctorName = name;
     document.querySelectorAll('.doctor-card').forEach(c => {
         c.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]');
@@ -233,42 +369,84 @@ function goStep(n) {
     if (n === 3) fillConfirm();
 }
 
+const DATE_PAST_CLASSES = 'flex flex-col items-center px-4 py-3 rounded-[12px] border-2 border-[#eef1f4] bg-[#f7f9fb] text-[#b0bcc8] text-sm font-semibold shrink-0 min-w-[64px] cursor-not-allowed opacity-70';
+const DATE_OPEN_CLASSES = 'flex flex-col items-center px-4 py-3 rounded-[12px] border-2 border-[#e4ebf0] bg-white text-[#1b2f44] text-sm font-semibold hover:border-[#31b2a3] hover:bg-[#f0faf9] transition shrink-0 min-w-[64px]';
+
 function buildDatePicker() {
+    clampPatientWeekAnchor();
+    updateWeekRangeLabel();
+    updateWeekNavDisabled();
+
     const container = document.getElementById('date-picker');
     container.innerHTML = '';
-    const today = new Date();
+
+    const { today } = patientWeekBounds();
+    const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const dayNames = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     for (let i = 0; i < 7; i++) {
-        const d = new Date(today); d.setDate(today.getDate() + i);
-        const iso = d.toISOString().slice(0,10);
-        const dayName = d.toLocaleDateString('en-US', {weekday:'short'});
-        const dayNum = d.getDate();
-        const mon = d.toLocaleDateString('en-US', {month:'short'});
+        const d = addDaysLocal(state.weekAnchor, i);
+        const iso = formatISODate(d);
+        const isPast = d < todayMid;
+
         const btn = document.createElement('button');
-        btn.className = 'flex flex-col items-center px-4 py-3 rounded-[12px] border-2 border-[#e4ebf0] bg-white text-[#1b2f44] text-sm font-semibold hover:border-[#31b2a3] hover:bg-[#f0faf9] transition shrink-0 min-w-[64px]';
-        btn.innerHTML = `<span class="text-[#6f7d8a] text-[11px] uppercase tracking-wide">${dayName}</span><span class="text-[1.2rem] font-extrabold leading-none">${dayNum}</span><span class="text-[11px] text-[#81909c]">${mon}</span>`;
-        btn.onclick = () => selectDate(iso, btn);
+        btn.type = 'button';
+        btn.dataset.date = iso;
+        const dayName = dayNames[i];
+        const dayNum = d.getDate();
+        const mon = d.toLocaleDateString('en-US', { month: 'short' });
+
+        if (isPast) {
+            btn.disabled = true;
+            btn.className = DATE_PAST_CLASSES;
+        } else {
+            btn.className = DATE_OPEN_CLASSES;
+            btn.onclick = () => selectDate(iso, btn);
+        }
+
+        btn.innerHTML = `<span class="text-[11px] uppercase tracking-wide ${isPast ? 'text-[#b0bcc8]' : 'text-[#6f7d8a]'}">${dayName}</span><span class="text-[1.2rem] font-extrabold leading-none">${dayNum}</span><span class="text-[11px] ${isPast ? 'text-[#b0bcc8]' : 'text-[#81909c]'}">${mon}</span>`;
         container.appendChild(btn);
+    }
+
+    const preferred = state.date && container.querySelector(`button[data-date="${state.date}"]:not([disabled])`);
+    const firstOpen = container.querySelector('button[data-date]:not([disabled])');
+    if (preferred) {
+        selectDate(state.date, preferred);
+    } else if (firstOpen) {
+        selectDate(firstOpen.dataset.date, firstOpen);
+    } else {
+        const noMsg = document.getElementById('no-slots-msg');
+        noMsg.textContent = 'All days in this week are in the past. Use the week controls to pick a later week.';
+        document.getElementById('slots-section').classList.add('hidden');
+        noMsg.classList.remove('hidden');
+        document.getElementById('continue2').disabled = true;
+        document.getElementById('continue2').classList.add('opacity-40', 'cursor-not-allowed');
     }
 }
 
 function selectDate(iso, btn) {
     state.date = iso; state.startTime = null; state.endTime = null;
     document.querySelectorAll('#date-picker button').forEach(b => {
-        b.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
-        b.classList.add('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+        if (b.disabled) {
+            b.className = DATE_PAST_CLASSES;
+            return;
+        }
+        b.className = DATE_OPEN_CLASSES;
     });
-    btn.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
     btn.classList.remove('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
+    btn.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
     loadSlots(iso);
 }
 
 function loadSlots(date) {
+    const noMsg = document.getElementById('no-slots-msg');
+    noMsg.textContent = 'No available slots on this day.';
     document.getElementById('slots-section').classList.add('hidden');
-    document.getElementById('no-slots-msg').classList.add('hidden');
+    noMsg.classList.add('hidden');
     document.getElementById('continue2').disabled = true;
     document.getElementById('continue2').classList.add('opacity-40', 'cursor-not-allowed');
 
-    fetch(`/api/slots/${state.doctorId}?date=${encodeURIComponent(date)}`)
+    fetch(`/api/slots/${state.doctorId}?date=${encodeURIComponent(date)}`, { credentials: 'same-origin' })
         .then(r => r.json())
         .then(slots => {
             const slotsEl = document.getElementById('slots');
