@@ -164,7 +164,6 @@
                                 <form method="post" action="" class="rounded-[14px] border border-[#e4ebf0] p-4 flex items-center justify-between gap-4">
                                     {% csrf_token %}
                                     <input type="hidden" name="appointment_id" value="{{ patient.id }}" />
-                                    <input type="hidden" name="action" value="check_in" />
                                     <div class="flex items-center gap-3">
                                         <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-base">{{ patient.initial }}</div>
                                         <div>
@@ -172,9 +171,14 @@
                                             <p class="mt-1 text-[13px] text-[#6f7b88]">{{ patient.date }} · {{ patient.start_time }}</p>
                                         </div>
                                     </div>
-                                    <button type="submit" class="inline-flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-2 text-white text-[13px] font-semibold hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                                        Check In
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button type="submit" name="action" value="check_in" class="inline-flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-2 text-white text-[13px] font-semibold hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                                            Check In
+                                        </button>
+                                        <button type="submit" name="action" value="mark_no_show" class="inline-flex items-center gap-2 rounded-[10px] bg-[#ffebee] px-4 py-2 text-[#c62828] text-[13px] font-semibold hover:bg-[#ffcdd2] transition">
+                                            No Show
+                                        </button>
+                                    </div>
                                 </form>
                             {% endfor %}
                         </div>

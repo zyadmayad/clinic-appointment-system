@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 
 from appointment.models import Appointment
-from auth.permissions import IsDoctor, IsPatient
+from auth.permissions import IsDoctor, IsPatient, IsReceptionist
 
 from .models import Consultation
 
@@ -73,11 +73,12 @@ def fill(request, appointment_id):
         doctor=request.user,
     )
 
-    if appointment.status != 'checked_in':
-        return redirect('consultations:index')
-
     consultation = Consultation.objects.filter(doctor=request.user,appointment=appointment,
     ).order_by('-updated_at','-id',).first()
+
+    # Allow editing previously saved consultations even after appointment completion.
+    if appointment.status != 'checked_in' and consultation is None:
+        return redirect('consultations:index')
 
     if consultation is None:
         consultation = Consultation(
@@ -125,15 +126,18 @@ def summary(request, appointment_id):
 
     is_doctor = IsDoctor().has_permission(request, None)
     is_patient = IsPatient().has_permission(request, None)
+    is_receptionist = IsReceptionist().has_permission(request, None)
 
-    if not is_doctor and not is_patient:
+    if not is_doctor and not is_patient and not is_receptionist:
         return redirect('home')
 
     appointment_filters = {'id': appointment_id}
     if is_doctor:
         appointment_filters['doctor'] = request.user
-    else:
+    elif is_patient:
         appointment_filters['patient'] = request.user
+        appointment_filters['status'] = 'completed'
+    else:
         appointment_filters['status'] = 'completed'
 
     appointment = get_object_or_404(
@@ -149,6 +153,8 @@ def summary(request, appointment_id):
     if consultation is None:
         if is_doctor:
             return redirect('consultations:fill', appointment_id=appointment.id)
+        if is_receptionist:
+            return redirect('receptionist:appointments_list')
         return redirect('appointment:my_appointments')
 
     return render(request, 'doctor/consultation_summary.html', {
@@ -158,4 +164,7 @@ def summary(request, appointment_id):
         'prescription_items': _split_items(consultation.prescriptions),
         'test_items': _split_items(consultation.tests),
         'is_patient': is_patient,
+        'is_receptionist': is_receptionist,
+        'can_view_notes': is_doctor,
+        'can_edit_consultation': is_doctor,
     })

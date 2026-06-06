@@ -16,6 +16,22 @@ def home(request):
   return render(request, "home.html")
 
 
+def _mark_overdue_confirmed_as_no_show(grace_minutes=15):
+  now_value = timezone.now()
+  if timezone.is_aware(now_value):
+    now_value = timezone.localtime(now_value)
+
+  cutoff = now_value - timedelta(minutes=grace_minutes)
+  cutoff_date = cutoff.date()
+  cutoff_time = cutoff.time().replace(tzinfo=None)
+
+  Appointment.objects.filter(
+      status='confirmed',
+  ).filter(
+      Q(date__lt=cutoff_date) | Q(date=cutoff_date, start_time__lte=cutoff_time)
+  ).update(status='no_show')
+
+
 def admin_dashboard(request):
   if not IsAdmin().has_permission(request, None):
     if not request.user.is_authenticated:
@@ -41,11 +57,25 @@ def doctor_dashboard(request):
       return redirect('auth:login')
     return redirect('home')
 
+  _mark_overdue_confirmed_as_no_show()
+
   profile = Users.objects.filter(user=request.user).only('role').first()
   user_name = request.user.username
   user_role = profile.role
-
   today = timezone.localdate()
+
+  if request.method == 'POST':
+    appointment_id = request.POST.get('appointment_id')
+    action = request.POST.get('action')
+    if appointment_id and action == 'mark_no_show':
+      appointment = Appointment.objects.filter(id=appointment_id,doctor=request.user,status='confirmed',date=today,).first()
+      
+      if appointment:
+        appointment.status = 'no_show'
+        appointment.save()
+
+    return redirect('dashboards:doctor_dashboard')
+
   appointments_today = Appointment.objects.filter(doctor=request.user, date=today)
   checked_in_count = appointments_today.filter(status='checked_in').count()
   confirmed_count = appointments_today.filter(status='confirmed').count()
@@ -113,6 +143,8 @@ def receptionist_dashboard(request):
       return redirect('auth:login')
     return redirect('home')
 
+  _mark_overdue_confirmed_as_no_show()
+
   today = timezone.localdate()
   if request.method == 'POST':
     appointment_id = request.POST.get('appointment_id')
@@ -128,6 +160,11 @@ def receptionist_dashboard(request):
         appointment.status = 'checked_in'
         appointment.check_in_time = timezone.now()
         appointment.save(update_fields=['status', 'check_in_time'])
+    elif appointment_id and action == 'mark_no_show':
+      appointment = Appointment.objects.filter(id=appointment_id, status='confirmed', date=today).first()
+      if appointment:
+        appointment.status = 'no_show'
+        appointment.save(update_fields=['status'])
     return redirect('dashboards:receptionist_dashboard')
 
   today_appts = Appointment.objects.filter(date=today)
