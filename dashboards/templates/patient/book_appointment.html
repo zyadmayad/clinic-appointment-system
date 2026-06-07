@@ -446,6 +446,10 @@ function loadSlots(date) {
     document.getElementById('continue2').disabled = true;
     document.getElementById('continue2').classList.add('opacity-40', 'cursor-not-allowed');
 
+    const now = new Date();
+    const todayIso = formatISODate(now);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
     fetch(`/api/slots/${state.doctorId}?date=${encodeURIComponent(date)}`, { credentials: 'same-origin' })
         .then(r => r.json())
         .then(slots => {
@@ -460,11 +464,18 @@ function loadSlots(date) {
 
             visibleSlots.forEach(slot => {
                 const isBooked = slot.status === 'booked';
+                const [startHour, startMinute] = slot.start_time.slice(0,5).split(':').map(Number);
+                const slotStartMinutes = (startHour * 60) + startMinute;
+                const isPastTimeToday = (date === todayIso) && (slotStartMinutes <= nowMinutes);
                 const btn = document.createElement('button');
-                if (isBooked) {
+                if (isBooked || isPastTimeToday) {
                     btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-[#f2f5f7] rounded-[10px] text-sm font-semibold text-[#9aa6b2] cursor-not-allowed';
                     btn.disabled = true;
-                    btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#9aa6b2]">block</span>${slot.start_time.slice(0,5)}`;
+                    if (isBooked) {
+                        btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#9aa6b2]">block</span>${slot.start_time.slice(0,5)}`;
+                    } else {
+                        btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#9aa6b2]">schedule</span>${slot.start_time.slice(0,5)}`;
+                    }
                 } else {
                     btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
                     btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start_time.slice(0,5)}`;

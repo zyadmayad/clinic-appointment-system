@@ -18,6 +18,13 @@ def schedule_list(request,doctor_id):
             if schedule.is_valid():
                 schedule.save(doctor_id=doctor_id)
                 return Response(schedule.data, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": "Validation failed.",
+                    "errors": schedule.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
