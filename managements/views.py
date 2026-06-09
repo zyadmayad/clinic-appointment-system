@@ -1,15 +1,16 @@
 from collections import defaultdict
 from datetime import timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from appointment.models import Appointment
-from auth.models import Users
 from auth.permissions import IsAdmin
 from schedule.models import Schedule
+
+ROLE_NAMES = ['admin', 'doctor', 'patient', 'receptionist']
 
 # Create your views here.
 
@@ -19,10 +20,10 @@ def check_admin(request):
       return redirect('auth:login'), None
     return redirect('home'), None
 
-  profile = Users.objects.filter(user=request.user).only('role').first()
+  role_group = request.user.groups.filter(name__in=ROLE_NAMES).first()
   return None, {
     'user_name': request.user.username,
-    'user_role': profile.role if profile else 'admin',
+    'user_role': role_group.name if role_group else 'admin',
   }
 
 def admin_appointments(request):
@@ -92,7 +93,7 @@ def doctor_schedule(request):
   if denied:
     return denied
 
-  doctors_qs = User.objects.filter(users__role='doctor').distinct().order_by('first_name', 'last_name', 'username')
+  doctors_qs = User.objects.filter(groups__name='doctor').distinct().order_by('first_name', 'last_name', 'username')
   doctors = [
     {
       'id': doctor.id,
@@ -197,21 +198,21 @@ def doctor_schedule(request):
 
 
 def list_users(search_query="", selected_role="all"):
-    users = Users.objects.select_related('user').filter(user__isnull=False).order_by('user__first_name', 'user__username')
+    users = User.objects.order_by('first_name', 'username')
 
     if selected_role and selected_role != 'all':
-        users = users.filter(role=selected_role)
+        users = users.filter(groups__name=selected_role)
 
     if search_query:
         users = users.filter(
-            Q(user__username__icontains=search_query)
-            | Q(user__first_name__icontains=search_query)
-            | Q(user__last_name__icontains=search_query)
-            | Q(user__email__icontains=search_query)
-            | Q(role__icontains=search_query)
+            Q(username__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(groups__name__icontains=search_query)
         )
 
-    return users
+    return users.distinct()
 
 
 def user_managements(request):
@@ -222,25 +223,26 @@ def user_managements(request):
   search_query = request.GET.get('q', '').strip()
   selected_role = request.GET.get('role', 'all').strip() or 'all'
 
-  profiles = list_users(search_query=search_query, selected_role=selected_role)
+  accounts = list_users(search_query=search_query, selected_role=selected_role)
 
   user_items = []
-  for profile in profiles:
-    account = profile.user
-    full_name = account.get_full_name().strip() or profile.username or account.username
+  for account in accounts.prefetch_related('groups'):
+    full_name = account.get_full_name().strip() or account.username
+    role_group = account.groups.filter(name__in=ROLE_NAMES).first()
+    role = role_group.name if role_group else '—'
 
     details = '—'
-    if profile.role == 'doctor':
+    if role == 'doctor':
       details = 'General Medicine'
-    elif profile.role == 'patient':
+    elif role == 'patient':
       details = f"+1 555-{1000 + account.id}"
 
     user_items.append({
       'id': account.id,
       'name': full_name,
       'initial': full_name[:1].upper(),
-      'email': account.email or profile.email or '—',
-      'role': profile.role,
+      'email': account.email or '—',
+      'role': role,
       'details': details,
     })
 
@@ -267,20 +269,20 @@ def update_user_role(request, user_id):
     return redirect('managements:user_managements')
 
   selected_role = (request.POST.get('role') or '').strip()
-  valid_roles = {role for role, _ in Users.ROLE_CHOICES}
-  if selected_role not in valid_roles:
+  if selected_role not in ROLE_NAMES:
     return redirect('managements:user_managements')
 
-  profile = Users.objects.filter(user_id=user_id).first()
-  if not profile:
+  account = User.objects.filter(id=user_id).first()
+  if not account:
     return redirect('managements:user_managements')
 
   # Keep at least one admin account accessible.
   if request.user.id == user_id and selected_role != 'admin':
     return redirect('managements:user_managements')
 
-  profile.role = selected_role
-  profile.save(update_fields=['role'])
+  account.groups.remove(*account.groups.filter(name__in=ROLE_NAMES))
+  new_group, _ = Group.objects.get_or_create(name=selected_role)
+  account.groups.add(new_group)
   return redirect('managements:user_managements')
 
 

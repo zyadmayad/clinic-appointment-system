@@ -1,9 +1,19 @@
 from django.contrib import admin
-from auth.models import Users
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
-# Register your models here.
-@admin.register(Users)
-class UsersAdmin(admin.ModelAdmin):
-	list_display = ('id', 'user', 'role')
-	list_filter = ('role',)
-	search_fields = ('user__username', 'user__email')
+# Unregister the default registration so we can add our customisation.
+admin.site.unregister(User)
+
+ROLE_NAMES = ['admin', 'doctor', 'patient', 'receptionist']
+
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    list_display = BaseUserAdmin.list_display + ('get_role',)
+    list_filter = BaseUserAdmin.list_filter + ('groups__name',)
+
+    @admin.display(description='Role')
+    def get_role(self, obj):
+        group = obj.groups.filter(name__in=ROLE_NAMES).first()
+        return group.name if group else '—'

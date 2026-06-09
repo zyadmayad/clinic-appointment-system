@@ -1,23 +1,19 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as django_login
+from django.contrib.auth import logout as django_logout
+from django.contrib.auth.models import Group, User
 from django.shortcuts import redirect, render
-from django.contrib.auth import logout as django_logout, authenticate, login as django_login 
-from django.contrib.auth.models import User
-from auth.models import Users
-from auth.permissions import IsAdmin, IsDoctor, IsPatient, IsReceptionist
+from .utils import _redirect_for_logged_in_user
 
 
-def _redirect_for_logged_in_user(request):
-    if IsAdmin().has_permission(request, None):
-        return redirect('dashboards:admin_dashboard')
-    if IsDoctor().has_permission(request, None):
-        return redirect('dashboards:doctor_dashboard')
-    if IsReceptionist().has_permission(request, None):
-        return redirect('dashboards:receptionist_dashboard')
-    if IsPatient().has_permission(request, None):
-        return redirect('appointment:patient_dashboard')
-    return redirect('home')
+
 
 def home(request):
+    if request.user.is_authenticated and request.user.groups.exists():
+        return _redirect_for_logged_in_user(request)
     return render(request, "home.html")
+
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -30,28 +26,22 @@ def register(request):
 
         if not username or not email or not password:
             return render(request, 'register.html', {"error": "All fields are required"})
-        
+
         if User.objects.filter(username__iexact=username).exists():
             return render(request, 'register.html', {"error": "Username already exists"})
 
         if User.objects.filter(email__iexact=email).exists():
             return render(request, 'register.html', {"error": "Email already exists"})
 
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            email=email,
-        )
-        
-        profile, _ = Users.objects.get_or_create(user=user, defaults={'role': 'patient'})
-        profile.username = user.username
-        profile.email = user.email
-        profile.password = user.password
-        profile.save(update_fields=['username', 'email', 'password'])
-        
+        user = User.objects.create_user(username=username, password=password, email=email)
+
+        patient_group, _ = Group.objects.get_or_create(name='patient')
+        user.groups.add(patient_group)
+
         return redirect('auth:login')
 
     return render(request, 'register.html')
+
 
 def login(request):
     if request.user.is_authenticated:
@@ -69,8 +59,8 @@ def login(request):
         if user:
             django_login(request, user)
 
-            profile = Users.objects.filter(user=user).first()
-            role = profile.role if profile else 'patient'
+            role_group = user.groups.first()
+            role = role_group.name if role_group else 'patient'
 
             request.session['user_id'] = user.id
             request.session['user_role'] = role
@@ -83,8 +73,7 @@ def login(request):
 
     return render(request, 'login.html')
 
+
 def logout(request):
     django_logout(request)
     return redirect('auth:login')
-
-

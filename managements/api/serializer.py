@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from appointment.models import Appointment
-from auth.models import Users
+
+ROLE_CHOICES = ['admin', 'doctor', 'patient', 'receptionist']
 
 
 class ManagementUserSerializer(serializers.Serializer):
@@ -9,12 +10,12 @@ class ManagementUserSerializer(serializers.Serializer):
 	name = serializers.CharField()
 	initial = serializers.CharField()
 	email = serializers.CharField()
-	role = serializers.ChoiceField(choices=Users.ROLE_CHOICES)
+	role = serializers.ChoiceField(choices=[(r, r) for r in ROLE_CHOICES])
 	details = serializers.CharField()
 
 
 class RoleUpdateSerializer(serializers.Serializer):
-	role = serializers.ChoiceField(choices=Users.ROLE_CHOICES)
+	role = serializers.ChoiceField(choices=[(r, r) for r in ROLE_CHOICES])
 
 
 class ManagementAppointmentSerializer(serializers.ModelSerializer):

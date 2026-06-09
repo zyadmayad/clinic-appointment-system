@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import date, timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
@@ -10,14 +10,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from appointment.models import Appointment
-from auth.models import Users
 from auth.permissions import IsAdmin
 from managements.api.serializer import (
 	ManagementAppointmentSerializer,
 	ManagementUserSerializer,
 	RoleUpdateSerializer,
 )
-from managements.views import list_users
+from managements.views import ROLE_NAMES, list_users
 from schedule.models import Schedule
 
 
@@ -30,14 +29,15 @@ def users_list(request):
 	profiles = list_users(search_query=search_query, selected_role=selected_role)
 
 	user_items = []
-	for profile in profiles:
-		account = profile.user
-		full_name = account.get_full_name().strip() or profile.username or account.username
+	for account in profiles.prefetch_related('groups'):
+		full_name = account.get_full_name().strip() or account.username
+		role_group = account.groups.filter(name__in=ROLE_NAMES).first()
+		role = role_group.name if role_group else '—'
 
 		details = '—'
-		if profile.role == 'doctor':
+		if role == 'doctor':
 			details = 'General Medicine'
-		elif profile.role == 'patient':
+		elif role == 'patient':
 			details = f"+1 555-{1000 + account.id}"
 
 		user_items.append(
@@ -45,8 +45,8 @@ def users_list(request):
 				'id': account.id,
 				'name': full_name,
 				'initial': full_name[:1].upper(),
-				'email': account.email or profile.email or '—',
-				'role': profile.role,
+				'email': account.email or '—',
+				'role': role,
 				'details': details,
 			}
 		)
@@ -69,9 +69,9 @@ def user_role_update(request, user_id):
 	serializer.is_valid(raise_exception=True)
 	selected_role = serializer.validated_data['role']
 
-	profile = Users.objects.filter(user_id=user_id).first()
-	if not profile:
-		return Response({'detail': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+	account = User.objects.filter(id=user_id).first()
+	if not account:
+		return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 	if request.user.id == user_id and selected_role != 'admin':
 		return Response(
@@ -79,8 +79,9 @@ def user_role_update(request, user_id):
 			status=status.HTTP_400_BAD_REQUEST,
 		)
 
-	profile.role = selected_role
-	profile.save(update_fields=['role'])
+	account.groups.remove(*account.groups.filter(name__in=ROLE_NAMES))
+	new_group, _ = Group.objects.get_or_create(name=selected_role)
+	account.groups.add(new_group)
 	return Response({'detail': 'User role updated successfully.', 'role': selected_role})
 
 
@@ -143,7 +144,7 @@ def appointments_list(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def doctor_schedules(request):
-	doctors_qs = User.objects.filter(users__role='doctor').distinct().order_by('first_name', 'last_name', 'username')
+	doctors_qs = User.objects.filter(groups__name='doctor').distinct().order_by('first_name', 'last_name', 'username')
 	doctors = [
 		{
 			'id': doctor.id,
