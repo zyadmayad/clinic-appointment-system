@@ -4,3 +4,5 @@ django-environ
 django-cleanup
 djangorestframework
 django-allauth
+psycopg2-binary 
+dj-database-url
