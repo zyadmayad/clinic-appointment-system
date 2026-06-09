@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from auth.models import Users
 from auth.permissions import IsAdmin, IsDoctor, IsReceptionist
 from appointment.models import Appointment
 from schedule.models import Schedule
@@ -38,9 +37,9 @@ def admin_dashboard(request):
       return redirect('auth:login')
     return redirect('home')
 
-  profile = Users.objects.filter(user=request.user).only('role').first()
   user_name = request.user.username
-  user_role = profile.role
+  role_group = request.user.groups.first()
+  user_role = role_group.name if role_group else 'admin'
 
   return render(
       request,
@@ -59,9 +58,9 @@ def doctor_dashboard(request):
 
   _mark_overdue_confirmed_as_no_show()
 
-  profile = Users.objects.filter(user=request.user).only('role').first()
   user_name = request.user.username
-  user_role = profile.role
+  role_group = request.user.groups.first()
+  user_role = role_group.name if role_group else 'doctor'
   today = timezone.localdate()
 
   if request.method == 'POST':
