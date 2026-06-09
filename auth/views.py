@@ -1,13 +1,28 @@
 from django.shortcuts import redirect, render
-from django.contrib.auth import logout as django_logout, authenticate, login as django_login
+from django.contrib.auth import logout as django_logout, authenticate, login as django_login 
 from django.contrib.auth.models import User
 from auth.models import Users
 from auth.permissions import IsAdmin, IsDoctor, IsPatient, IsReceptionist
+
+
+def _redirect_for_logged_in_user(request):
+    if IsAdmin().has_permission(request, None):
+        return redirect('dashboards:admin_dashboard')
+    if IsDoctor().has_permission(request, None):
+        return redirect('dashboards:doctor_dashboard')
+    if IsReceptionist().has_permission(request, None):
+        return redirect('dashboards:receptionist_dashboard')
+    if IsPatient().has_permission(request, None):
+        return redirect('appointment:patient_dashboard')
+    return redirect('home')
 
 def home(request):
     return render(request, "home.html")
 
 def register(request):
+    if request.user.is_authenticated:
+        return _redirect_for_logged_in_user(request)
+
     if request.method == "POST":
         username = (request.POST.get("username") or "").strip()
         password = (request.POST.get("password") or "").strip()
@@ -39,6 +54,9 @@ def register(request):
     return render(request, 'register.html')
 
 def login(request):
+    if request.user.is_authenticated:
+        return _redirect_for_logged_in_user(request)
+
     if request.method == "POST":
         username = (request.POST.get("username") or "").strip()
         password = request.POST.get("password")
@@ -59,19 +77,7 @@ def login(request):
             request.session['user_name'] = user.username
             request.session['user_email'] = user.email
 
-            if IsAdmin().has_permission(request, None):
-                return redirect('dashboards:admin_dashboard')
-            
-            if IsDoctor().has_permission(request, None):
-                return redirect('dashboards:doctor_dashboard')
-            
-            if IsReceptionist().has_permission(request, None):
-                return redirect('dashboards:receptionist_dashboard')
-            
-            if IsPatient().has_permission(request, None):
-                return redirect('appointment:patient_dashboard')
-            
-            return redirect('home')
+            return _redirect_for_logged_in_user(request)
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
 
