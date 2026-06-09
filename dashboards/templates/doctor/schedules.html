@@ -509,6 +509,7 @@ async function handleScheduleSubmit() {
 
         const slotResponse = await fetch('/api/slots/create', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
@@ -517,7 +518,12 @@ async function handleScheduleSubmit() {
         });
 
         if (!slotResponse.ok) {
-            throw new Error('Schedule created, but creating slots failed.');
+            let detail = 'Schedule created, but creating slots failed.';
+            try {
+                const errBody = await slotResponse.json();
+                detail = errBody.detail || errBody.error || detail;
+            } catch (e) { /* ignore */ }
+            throw new Error(detail);
         }
 
         closeScheduleModal();
@@ -699,15 +705,21 @@ document.getElementById('editDayTypeModal')?.addEventListener('click', function(
 
             <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
             
-            <div class="flex gap-3 pt-4">
-                <button type="button" onclick="closeExceptionModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
+            <div class="flex gap-3 pt-4 flex-wrap">
+                <button type="button" onclick="closeExceptionModal()" class="flex-1 min-w-[100px] px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
                     Cancel
                 </button>
-                <button type="button" id="setSlotAvailableBtn" onclick="handleMarkException('available')" class="flex-1 px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
+                <button type="button" id="setSlotAvailableBtn" onclick="handleMarkException('available')" class="flex-1 min-w-[100px] px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
                     Not Exception
                 </button>
-                <button type="button" id="setSlotExceptionBtn" onclick="handleMarkException('exception')" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
+                <button type="button" id="setSlotExceptionBtn" onclick="handleMarkException('exception')" class="flex-1 min-w-[100px] px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
                     Mark Exception
+                </button>
+            </div>
+            <div class="pt-2 border-t border-[#ecf0f4]">
+                <button type="button" id="deleteSlotBtn" onclick="handleDeleteSlot()" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[#ffcdd2] bg-[#fff5f5] text-[#c62828] font-semibold rounded-[10px] hover:bg-[#ffebee] transition text-sm">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                    Delete slot
                 </button>
             </div>
             
@@ -913,6 +925,7 @@ function setDayActionLoading(button, isLoading) {
 async function patchSlotStatus(slotId, status) {
     const response = await fetch(`/api/slots/${slotId}/update`, {
         method: 'PATCH',
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
@@ -1046,9 +1059,10 @@ async function openExceptionModal(slotId, timeSlot) {
     document.getElementById('exceptionError').classList.add('hidden');
 
     setExceptionActionButtonsDisabled(true);
+    setDeleteSlotButtonDisabled(true);
 
     try {
-        const response = await fetch(`/api/slots/${slotId}`);
+        const response = await fetch(`/api/slots/${slotId}/details`, { credentials: 'same-origin' });
         if (!response.ok) {
             throw new Error('Unable to load slot details.');
         }
@@ -1059,12 +1073,69 @@ async function openExceptionModal(slotId, timeSlot) {
 
         const lockButtons = slot.status === 'booked';
         setExceptionActionButtonsDisabled(lockButtons);
+        setDeleteSlotButtonDisabled(lockButtons);
         if (lockButtons) {
-            showExceptionError('Booked slots cannot be changed from this view.');
+            showExceptionError('Booked slots cannot be changed or deleted from this view.');
         }
     } catch (error) {
         showExceptionError(error.message || 'Unable to load slot details.');
         setExceptionActionButtonsDisabled(true);
+        setDeleteSlotButtonDisabled(true);
+    }
+}
+
+function setDeleteSlotButtonDisabled(isDisabled) {
+    const btn = document.getElementById('deleteSlotBtn');
+    if (!btn) return;
+    btn.disabled = isDisabled;
+    btn.classList.toggle('opacity-50', isDisabled);
+    btn.classList.toggle('cursor-not-allowed', isDisabled);
+}
+
+async function handleDeleteSlot() {
+    const slotId = document.getElementById('exceptionSlotId').value;
+    const currentStatus = document.getElementById('exceptionSlotStatus').value;
+
+    if (!slotId) {
+        showExceptionError('No slot selected.');
+        return;
+    }
+    if (currentStatus === 'booked') {
+        showExceptionError('Booked slots cannot be deleted.');
+        return;
+    }
+    if (!confirm('Delete this slot permanently? Patients will no longer see it.')) {
+        return;
+    }
+
+    document.getElementById('exceptionError').classList.add('hidden');
+    setDeleteSlotButtonDisabled(true);
+    setExceptionActionButtonsDisabled(true);
+
+    try {
+        const response = await fetch(`/api/slots/${slotId}/delete`, {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        });
+        if (response.status === 204) {
+            closeExceptionModal();
+            location.reload();
+            return;
+        }
+        let msg = 'Could not delete slot.';
+        try {
+            const data = await response.json();
+            msg = data.detail || msg;
+        } catch (e) { /* ignore */ }
+        showExceptionError(msg);
+    } catch (error) {
+        showExceptionError(error.message || 'Could not delete slot.');
+    } finally {
+        setDeleteSlotButtonDisabled(false);
+        setExceptionActionButtonsDisabled(false);
     }
 }
 
