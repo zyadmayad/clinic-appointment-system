@@ -1,23 +1,31 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 
 from appointment.models import Appointment
+from auth.permissions import IsPatient
+from auth.utils import role_required
 from schedule.models import Schedule
 
 
+@role_required(IsPatient)
 def patient_dashboard(request):
-    if not request.user.is_authenticated:
-        return redirect('auth:login')
-
     user_name = request.user.get_full_name() or request.user.username
     today = datetime.now().date()
 
-    appointments = Appointment.objects.filter(patient=request.user).select_related('doctor')
+    appointments = Appointment.objects.filter(
+        patient=request.user
+    ).select_related('doctor')
 
-    upcoming = appointments.filter(date__gte=today).exclude(status='cancelled').count()
-    today_apts = appointments.filter(date=today).exclude(status='cancelled')
+    upcoming = appointments.filter(
+        date__gte=today
+    ).exclude(status='cancelled').count()
+
+    today_apts = appointments.filter(
+        date=today
+    ).exclude(status='cancelled')
+
     completed = appointments.filter(status='completed').count()
     pending = appointments.filter(status='requested').count()
 
@@ -31,7 +39,7 @@ def patient_dashboard(request):
         'today_appointments': today_apts.order_by('start_time'),
     })
 
-
+@role_required(IsPatient)
 def book_appointment(request):
     if not request.user.is_authenticated:
         return redirect('auth:login')
@@ -46,7 +54,7 @@ def book_appointment(request):
         'doctors': doctors,
     })
 
-
+@role_required(IsPatient)
 def my_appointments(request):
     if not request.user.is_authenticated:
         return redirect('auth:login')

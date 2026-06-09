@@ -72,7 +72,7 @@ SOCIALACCOUNT_ADAPTER = "auth.adapters.SocialAccountAdapter"
 
 LOGIN_URL = 'auth:login'
 LOGOUT_URL = 'auth:logout'
-LOGIN_REDIRECT_URL = 'appointment:patient_dashboard'
+LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'auth:login'
 
 SITE_ID = 1
