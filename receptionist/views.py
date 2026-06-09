@@ -143,7 +143,7 @@ def receptionist_doctor_schedules(request):
     if denied:
         return denied
 
-    doctors_qs = User.objects.filter(users__role='doctor').distinct().order_by('username')
+    doctors_qs = User.objects.filter(groups__name='doctor').distinct().order_by('username')
     doctors = [{
         'id': doctor.id,
         'name': doctor.get_full_name() or doctor.username,

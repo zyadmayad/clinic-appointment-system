@@ -1,24 +1,12 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-
-from auth.models import Users
+from django.contrib.auth.models import Group
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form)
 
-        email = user.email or sociallogin.account.extra_data.get("email", "")
-        profile, _ = Users.objects.get_or_create(
-            user=user,
-            defaults={
-                "role": "patient",
-                "username": user.username,
-                "email": email,
-            },
-        )
-
-        profile.username = user.username
-        profile.email = email
-        profile.save(update_fields=["username", "email"])
+        patient_group, _ = Group.objects.get_or_create(name='patient')
+        user.groups.add(patient_group)
 
         return user
