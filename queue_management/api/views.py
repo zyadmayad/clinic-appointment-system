@@ -10,7 +10,7 @@ from queue_management.api.serializers import (
     AppointmentQueueSerializer,
     AppointmentQueueUpdateSerializer,
 )
-from queue_management.permissions import IsDoctor, IsReceptionist
+from auth.permissions import IsDoctor, IsReceptionist
 
 
 @api_view(['POST'])
