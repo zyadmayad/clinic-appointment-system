@@ -2,16 +2,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from appointment.models import Appointment
 from auth.permissions import IsDoctor, IsPatient, IsReceptionist
+from auth.utils import role_required
+from consultations.forms.consultationform import ConsultationForm
 
 from .models import Consultation
 
-
-def _require_doctor(request):
-    if IsDoctor().has_permission(request, None):
-        return None
-    if not request.user.is_authenticated:
-        return redirect('auth:login')
-    return redirect('home')
 
 
 def _split_items(value):
@@ -24,12 +19,8 @@ def _split_items(value):
         if line.strip()
     ]
 
-
+@role_required(IsDoctor)
 def index(request):
-    permission_result = _require_doctor(request)
-    if permission_result:
-        return permission_result
-
     appointments = Appointment.objects.filter(
         doctor=request.user,
     ).select_related('patient',
@@ -61,24 +52,21 @@ def index(request):
         'appointment_items': appointment_items,
     })
 
-
+@role_required(IsDoctor)
 def fill(request, appointment_id):
-    permission_result = _require_doctor(request)
-    if permission_result:
-        return permission_result
-
     appointment = get_object_or_404(
-        Appointment.objects.select_related('doctor', 'patient'),
+        Appointment.objects.select_related("doctor", "patient"),
         id=appointment_id,
         doctor=request.user,
     )
 
-    consultation = Consultation.objects.filter(doctor=request.user,appointment=appointment,
-    ).order_by('-updated_at','-id',).first()
+    consultation = Consultation.objects.filter(
+        doctor=request.user,
+        appointment=appointment,
+    ).order_by("-updated_at", "-id").first()
 
-    # Allow editing previously saved consultations even after appointment completion.
-    if appointment.status != 'checked_in' and consultation is None:
-        return redirect('consultations:index')
+    if appointment.status != "checked_in" and consultation is None:
+        return redirect("consultations:index")
 
     if consultation is None:
         consultation = Consultation(
@@ -87,43 +75,35 @@ def fill(request, appointment_id):
             appointment=appointment,
         )
 
-    error_message = ''
-    if request.method == 'POST':
-        diagnosis = request.POST.get('diagnosis').strip()
-        notes = request.POST.get('notes').strip()
-        prescriptions = request.POST.get('prescriptions').strip()
-        tests = request.POST.get('tests').strip()
+    if request.method == "POST":
+        form = ConsultationForm(request.POST, instance=consultation)
+        if form.is_valid():
+            saved = form.save(commit=False)
+            saved.doctor = request.user
+            saved.patient = appointment.patient
+            saved.appointment = appointment
+            saved.save()
 
-        if not diagnosis:
-            error_message = 'Diagnosis is required.'
-        else:
-            consultation.doctor = request.user
-            consultation.patient = appointment.patient
-            consultation.appointment = appointment
-            consultation.diagnosis = diagnosis
-            consultation.notes = notes
-            consultation.prescriptions = prescriptions
-            consultation.tests = tests
-            consultation.save()
+            if appointment.status != "completed":
+                appointment.status = "completed"
+                appointment.save(update_fields=["status"])
 
-            if appointment.status != 'completed':
-                appointment.status = 'completed'
-                appointment.save(update_fields=['status'])
+            return redirect("consultations:summary", appointment_id=appointment.id)
+    else:
+        form = ConsultationForm(instance=consultation)
 
-            return redirect('consultations:summary', appointment_id=appointment.id)
+    return render(
+        request,
+        "doctor/consultation_form.html",
+        {
+            "user_name": request.user.username,
+            "appointment": appointment,
+            "consultation": consultation,
+            "form": form,
+        },
+    )
 
-    return render(request, 'doctor/consultation_form.html', {
-        'user_name': request.user.username,
-        'appointment': appointment,
-        'consultation': consultation,
-        'error_message': error_message,
-    })
-
-
-def summary(request, appointment_id):
-    if not request.user.is_authenticated:
-        return redirect('auth:login')
-
+def _summary_for_role(request, appointment_id, role):
     is_doctor = IsDoctor().has_permission(request, None)
     is_patient = IsPatient().has_permission(request, None)
     is_receptionist = IsReceptionist().has_permission(request, None)
@@ -168,3 +148,16 @@ def summary(request, appointment_id):
         'can_view_notes': is_doctor,
         'can_edit_consultation': is_doctor,
     })
+
+
+@role_required(IsDoctor)
+def doctor_summary(request, appointment_id):
+    return _summary_for_role(request, appointment_id, role='doctor')
+
+@role_required(IsReceptionist)
+def receptionist_summary(request, appointment_id):
+    return _summary_for_role(request, appointment_id, role='receptionist')
+
+@role_required(IsPatient)
+def patient_summary(request, appointment_id):
+    return _summary_for_role(request, appointment_id, role='patient')

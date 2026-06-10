@@ -1,5 +1,7 @@
 
 
+from auth.permissions import IsDoctor
+from auth.utils import role_required
 from schedule.api.serializer import ScheduleExceptionSerializer, ScheduleSerializer
 from schedule.models import Schedule
 from rest_framework.response import Response
@@ -7,6 +9,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 @api_view(['GET', 'POST'])
+
 def schedule_list(request,doctor_id):
 
     if request.method == 'POST':
@@ -24,6 +27,7 @@ def schedule_list(request,doctor_id):
 
 
 @api_view(['POST'])
+@role_required(IsDoctor)
 def schedule_exception(request, doctor_id):
     schedule = request.data.get('schedule')
 
