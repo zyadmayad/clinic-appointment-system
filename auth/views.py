@@ -9,8 +9,8 @@ from .utils import _redirect_for_logged_in_user
 
 
 def home(request):
-    if request.user.is_authenticated and request.user.groups.exists():
-        return _redirect_for_logged_in_user(request)
+    # if request.user.is_authenticated and request.user.groups.exists():
+    #     return _redirect_for_logged_in_user(request)
     return render(request, "home.html")
 
 

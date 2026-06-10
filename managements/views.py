@@ -8,29 +8,22 @@ from django.utils import timezone
 
 from appointment.models import Appointment
 from auth.permissions import IsAdmin
+from auth.utils import role_required
 from schedule.models import Schedule
 
+# Create your views here.
 ROLE_NAMES = ['admin', 'doctor', 'patient', 'receptionist']
 
-# Create your views here.
 
-def check_admin(request):
-  if not IsAdmin().has_permission(request, None):
-    if not request.user.is_authenticated:
-      return redirect('auth:login'), None
-    return redirect('home'), None
-
-  role_group = request.user.groups.filter(name__in=ROLE_NAMES).first()
-  return None, {
+def _user_context(request, fallback_role='admin'):
+  role_group = request.user.groups.first()
+  return {
     'user_name': request.user.username,
-    'user_role': role_group.name if role_group else 'admin',
+    'user_role': role_group.name if role_group else fallback_role,
   }
 
+@role_required(IsAdmin)
 def admin_appointments(request):
-  denied, admin_context = check_admin(request)
-  if denied:
-    return denied
-
   search_query = request.GET.get('q', '').strip()
   selected_status = request.GET.get('status', '').strip()
 
@@ -77,7 +70,7 @@ def admin_appointments(request):
     request,
     'admin/appointments.html',
     {
-      **admin_context,
+      **_user_context(request),
       'appointments': appointment_items,
       'appointments_count': len(appointment_items),
       'search_query': search_query,
@@ -87,12 +80,8 @@ def admin_appointments(request):
     },
   )
 
-
+@role_required(IsAdmin)
 def doctor_schedule(request):
-  denied, admin_context = check_admin(request)
-  if denied:
-    return denied
-
   doctors_qs = User.objects.filter(groups__name='doctor').distinct().order_by('first_name', 'last_name', 'username')
   doctors = [
     {
@@ -183,7 +172,7 @@ def doctor_schedule(request):
     request,
     'admin/doctor_schedules.html',
     {
-      **admin_context,
+      **_user_context(request),
       'doctors': doctors,
       'selected_doctor': selected_doctor,
       'week_range': f"{week_start.strftime('%b %d')} - {week_end.strftime('%b %d')}",
@@ -195,7 +184,6 @@ def doctor_schedule(request):
       'active_admin_page': 'doctor_schedules',
     },
   )
-
 
 def list_users(search_query="", selected_role="all"):
     users = User.objects.order_by('first_name', 'username')
@@ -214,12 +202,8 @@ def list_users(search_query="", selected_role="all"):
 
     return users.distinct()
 
-
+@role_required(IsAdmin)
 def user_managements(request):
-  denied, admin_context = check_admin(request)
-  if denied:
-    return denied
-
   search_query = request.GET.get('q', '').strip()
   selected_role = request.GET.get('role', 'all').strip() or 'all'
 
@@ -250,7 +234,7 @@ def user_managements(request):
     request,
     'admin/user_managements.html',
     {
-      **admin_context,
+      **_user_context(request),
       'users': user_items,
       'users_count': len(user_items),
       'search_query': search_query,
@@ -259,12 +243,8 @@ def user_managements(request):
     },
   )
 
-
+@role_required(IsAdmin)
 def update_user_role(request, user_id):
-  denied, _ = check_admin(request)
-  if denied:
-    return denied
-
   if request.method != 'POST':
     return redirect('managements:user_managements')
 
@@ -285,12 +265,8 @@ def update_user_role(request, user_id):
   account.groups.add(new_group)
   return redirect('managements:user_managements')
 
-
+@role_required(IsAdmin)
 def delete_user(request, user_id):
-  denied, _ = check_admin(request)
-  if denied:
-    return denied
-
   if request.method != 'POST':
     return redirect('managements:user_managements')
 

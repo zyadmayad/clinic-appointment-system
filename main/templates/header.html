@@ -13,21 +13,73 @@
         >
       </div>
       <span class="text-xl font-extrabold text-slate-900 tracking-tight"
-        >MediCare Clinic</span
+        >MediCare</span
       >
     </a>
 
-    <div class="flex items-center gap-3">
-      <a
-        href="{% url 'auth:register' %}"
-        class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
-        >Sign Up</a
-      >
-      <a
-        href="{% url 'auth:login' %}"
-        class="inline-flex px-5 py-2.5 rounded-xl bg-[#1db2a8] hover:bg-[#199f96] text-white font-bold transition-colors shadow-[0px_14px_24px_-12px_rgba(29,178,168,0.75)]"
-        >Sign In</a
-      >
-    </div>
+    {% if request.resolver_match.namespace == 'auth' and request.resolver_match.url_name == 'home' %}
+    <nav class="hidden items-center gap-7 lg:flex">
+      <a href="#features" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Features</a>
+      <a href="#workflow" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Workflow</a>
+      <a href="#roles" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Roles</a>
+      <a href="#cta" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Get Started</a>
+    </nav>
+    {% endif %}
+
+    {% if request.user.is_authenticated %}
+      {% with request.user.groups.all|first as role_group %}
+        {% if role_group and role_group.name == 'admin' %}
+          {% url 'dashboards:admin_dashboard' as dashboard_url %}
+          {% with 'Admin' as role_label %}
+            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
+              <span class="material-symbols-outlined text-base">admin_panel_settings</span>
+              <span>{{ role_label }}</span>
+            </a>
+          {% endwith %}
+        {% elif role_group and role_group.name == 'doctor' %}
+          {% url 'dashboards:doctor_dashboard' as dashboard_url %}
+          {% with 'Doctor' as role_label %}
+            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
+              <span class="material-symbols-outlined text-base">stethoscope</span>
+              <span>{{ role_label }}</span>
+            </a>
+          {% endwith %}
+        {% elif role_group and role_group.name == 'receptionist' %}
+          {% url 'dashboards:receptionist_dashboard' as dashboard_url %}
+          {% with 'Receptionist' as role_label %}
+            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
+              <span class="material-symbols-outlined text-base">groups</span>
+              <span>{{ role_label }}</span>
+            </a>
+          {% endwith %}
+        {% elif role_group and role_group.name == 'patient' %}
+          {% url 'appointment:patient_dashboard' as dashboard_url %}
+          {% with 'Patient' as role_label %}
+            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
+              <span class="material-symbols-outlined text-base">person</span>
+              <span>{{ role_label }}</span>
+            </a>
+          {% endwith %}
+        {% else %}
+          <a href="{% url 'auth:home' %}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      <div class="flex items-center gap-3">
+        <a
+          href="{% url 'auth:login' %}"
+          class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-transparent text-slate-700 font-semibold hover:bg-slate-100 transition-colors"
+          >Sign In</a
+        >
+        <a
+          href="{% url 'auth:register' %}"
+          class="inline-flex px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1db2a8] to-[#1e8db6] hover:from-[#199f96] hover:to-[#1a78a0] text-white font-bold transition-all shadow-[0px_14px_24px_-12px_rgba(28,125,167,0.72)]"
+          >Get Started</a
+        >
+      </div>
+    {% endif %}
   </div>
 </header>
