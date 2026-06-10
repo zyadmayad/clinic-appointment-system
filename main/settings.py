@@ -69,6 +69,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_ADAPTER = "auth.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 LOGIN_URL = 'auth:login'
 LOGOUT_URL = 'auth:logout'
