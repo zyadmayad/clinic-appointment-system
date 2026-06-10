@@ -4,7 +4,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from appointment.api import serializer
 from appointment.models import Appointment
+from auth.permissions import IsDoctor, IsReceptionist
+from managements.api import serializer
+from auth.utils import role_required
 from schedule.models import Schedule
 from slots.api.serializer import SlotSerializer, SlotUpdateSerializer
 from slots.models import Slot
@@ -38,7 +42,7 @@ def slot_list(request, doctor_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@role_required(IsDoctor)
 def slot_create(request):
     slots_data = request.data.get('slots', [])
     doctor_id = request.data.get('doctor')
@@ -119,6 +123,7 @@ def slot_create(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsDoctor])
 def slot_detail(request, slot_id):
     try:
         slot = Slot.objects.get(id=slot_id)
@@ -130,22 +135,23 @@ def slot_detail(request, slot_id):
 
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsDoctor | IsReceptionist])
 def slot_update(request, slot_id):
     try:
         slot = Slot.objects.get(id=slot_id)
     except Slot.DoesNotExist:
         return Response({'detail': 'Slot not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = SlotUpdateSerializer(data=request.data)
+    serializer = SlotUpdateSerializer(slot, data=request.data, partial=True)
     if serializer.is_valid():
-        serializer.update(slot, serializer.validated_data)
+        serializer.save()
         return Response({'message': 'Slot updated successfully'}, status=status.HTTP_200_OK)
-
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsDoctor])
 def slot_delete(request, slot_id):
     try:
         slot = Slot.objects.get(pk=slot_id)

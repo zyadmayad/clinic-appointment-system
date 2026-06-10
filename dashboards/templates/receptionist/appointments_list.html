@@ -111,7 +111,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         {% if appointment.raw_status == 'completed' %}
-                                            <a href="{% url 'consultations:summary' appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
+                                            <a href="{% url 'receptionist:summary' appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
                                                 Summary
                                             </a>
                                         {% else %}
