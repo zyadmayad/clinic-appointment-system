@@ -87,9 +87,11 @@
                 </div>
             </div>
 
-            {% if error_message %}
+            {% if form.non_field_errors %}
                 <div class="mb-4 rounded-[10px] border border-[#f5c2c7] bg-[#f8d7da] px-4 py-3 text-[#842029] text-sm">
-                    {{ error_message }}
+                    {% for error in form.non_field_errors %}
+                        <p class="m-0{% if not forloop.last %} mb-1{% endif %}">{{ error }}</p>
+                    {% endfor %}
                 </div>
             {% endif %}
 
@@ -97,24 +99,36 @@
                 {% csrf_token %}
 
                 <div class="mb-4">
-                    <label for="diagnosis" class="block mb-1.5 font-semibold text-[#1b2f44]">Diagnosis</label>
-                    <textarea id="diagnosis" name="diagnosis" rows="3" required class="w-full px-3 py-2 border border-[#dde5eb] rounded-[10px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">{{ consultation.diagnosis }}</textarea>
+                    <label for="{{ form.diagnosis.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Diagnosis</label>
+                    {{ form.diagnosis }}
+                    {% if form.diagnosis.errors %}
+                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.diagnosis.errors|striptags }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
-                    <label for="notes" class="block mb-1.5 font-semibold text-[#1b2f44]">Clinical Notes</label>
-                    <textarea id="notes" name="notes" rows="4" class="w-full px-3 py-2 border border-[#dde5eb] rounded-[10px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">{{ consultation.notes }}</textarea>
+                    <label for="{{ form.notes.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Clinical Notes</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.notes.errors|striptags }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
-                    <label for="prescriptions" class="block mb-1.5 font-semibold text-[#1b2f44]">Prescriptions</label>
-                    <textarea id="prescriptions" name="prescriptions" rows="4" class="w-full px-3 py-2 border border-[#dde5eb] rounded-[10px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">{{ consultation.prescriptions }}</textarea>
+                    <label for="{{ form.prescriptions.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Prescriptions</label>
+                    {{ form.prescriptions }}
+                    {% if form.prescriptions.errors %}
+                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.prescriptions.errors|striptags }}</p>
+                    {% endif %}
                     <p class="m-0 mt-1 text-xs text-[#8091a3]">Add one item per line, for example: Amlodipine 5mg once daily.</p>
                 </div>
 
                 <div>
-                    <label for="tests" class="block mb-1.5 font-semibold text-[#1b2f44]">Requested Tests</label>
-                    <textarea id="tests" name="tests" rows="3" class="w-full px-3 py-2 border border-[#dde5eb] rounded-[10px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">{{ consultation.tests }}</textarea>
+                    <label for="{{ form.tests.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Requested Tests</label>
+                    {{ form.tests }}
+                    {% if form.tests.errors %}
+                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.tests.errors|striptags }}</p>
+                    {% endif %}
                     <p class="m-0 mt-1 text-xs text-[#8091a3]">Add one test per line, for example: Complete Blood Count.</p>
                 </div>
 
