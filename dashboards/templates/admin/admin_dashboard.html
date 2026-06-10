@@ -42,7 +42,7 @@
                 <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
                 <div>
                     <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">{{ user_role }}</p>
+                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">{{ user_role|title }}</p>
                 </div>
             </div>
             <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
@@ -75,9 +75,8 @@
                             <span class="material-symbols-outlined text-[17px]">group</span>
                         </div>
                     </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">8</div>
+                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ total_users }}</div>
                     <div class="mt-1 text-[13px] text-[#81909c]">registered</div>
-                    <div class="mt-1 text-[13px] font-semibold text-[#27b37e]">↑ +3 this week</div>
                 </article>
 
                 <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
@@ -87,9 +86,8 @@
                             <span class="material-symbols-outlined text-[17px]">event</span>
                         </div>
                     </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">7</div>
+                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ total_appointments }}</div>
                     <div class="mt-1 text-[13px] text-[#81909c]">all time</div>
-                    <div class="mt-1 text-[13px] font-semibold text-[#27b37e]">↑ +12%</div>
                 </article>
 
                 <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
@@ -99,9 +97,8 @@
                             <span class="material-symbols-outlined text-[17px]">trending_up</span>
                         </div>
                     </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">14%</div>
+                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ completion_rate }}%</div>
                     <div class="mt-1 text-[13px] text-[#81909c]">service flow</div>
-                    <div class="mt-1 text-[13px] font-semibold text-[#27b37e]">↑ +5%</div>
                 </article>
 
                 <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
@@ -111,9 +108,8 @@
                             <span class="material-symbols-outlined text-[17px]">schedule</span>
                         </div>
                     </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">14%</div>
+                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ no_show_rate }}%</div>
                     <div class="mt-1 text-[13px] text-[#81909c]">monthly average</div>
-                    <div class="mt-1 text-[13px] font-semibold text-[#27b37e]">↓ -2%</div>
                 </article>
             </div>
 
@@ -122,20 +118,15 @@
                     <h3 class="m-0 mb-4 text-[17px] text-[#1c2d40] font-bold">Weekly Appointments</h3>
                     <div class="h-56 grid grid-rows-[1fr_auto] gap-2">
                         <div class="flex items-end justify-between gap-2 border-l border-b border-[#d9e2e8] rounded-md bg-[linear-gradient(to_top,_transparent_24%,_#edf2f6_24%,_#edf2f6_25%,_transparent_25%,_transparent_49%,_#edf2f6_49%,_#edf2f6_50%,_transparent_50%,_transparent_74%,_#edf2f6_74%,_#edf2f6_75%,_transparent_75%)] p-2 pb-1 pl-3" aria-hidden="true">
-                            <div class="w-[14%] h-[56%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
-                            <div class="w-[14%] h-[70%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
-                            <div class="w-[14%] h-[38%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
-                            <div class="w-[14%] h-[85%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
-                            <div class="w-[14%] h-[66%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
-                            <div class="w-[14%] h-[28%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]"></div>
+                            {% for day in weekly_appointment_chart %}
+                            <div class="w-[14%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]" 
+                                style="height: {{ day.height }}%"; title="{{ day.label }}: {{ day.value }}"></div>
+                            {% endfor %}
                         </div>
                         <div class="flex justify-between text-[13px] text-[#7f8b97] px-1">
-                            <span>Mon</span>
-                            <span>Tue</span>
-                            <span>Wed</span>
-                            <span>Thu</span>
-                            <span>Fri</span>
-                            <span>Sat</span>
+                            {% for day in weekly_appointment_chart %}
+                            <span>{{ day.label }}</span>
+                            {% endfor %}
                         </div>
                     </div>
                 </article>
@@ -147,11 +138,11 @@
                             <div class="absolute inset-8 rounded-full bg-white ring-1 ring-[#ecf2f6]"></div>
                         </div>
                         <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-[13px] text-[#6f7d8a]">
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#32b079]"></i>Completed (1)</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#3183d5]"></i>Confirmed (3)</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#29a79b]"></i>Checked In (1)</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#eba82e]"></i>Requested (1)</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#738090]"></i>No Show (1)</span>
+                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#32b079]"></i>Completed ({{ completed_count }})</span>
+                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#3183d5]"></i>Confirmed ({{ confirmed_count }})</span>
+                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#29a79b]"></i>Checked In ({{ checked_in_count }})</span>
+                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#eba82e]"></i>Requested ({{ requested_count }})</span>
+                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#738090]"></i>No Show ({{ no_show_count }})</span>
                         </div>
                     </div>
                 </article>
@@ -161,21 +152,42 @@
                 <h3 class="m-0 mb-3 text-[17px] text-[#1b2f44] font-bold">User Breakdown</h3>
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">3</strong>
+                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ patient_users }}</strong>
                         <span class="text-[#6f7d8a] text-[15px] font-semibold">Patients</span>
                     </div>
                     <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">3</strong>
+                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ doctor_users }}</strong>
                         <span class="text-[#6f7d8a] text-[15px] font-semibold">Doctors</span>
                     </div>
                     <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">1</strong>
+                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ receptionist_users }}</strong>
                         <span class="text-[#6f7d8a] text-[15px] font-semibold">Receptionists</span>
                     </div>
                     <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">1</strong>
+                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ admin_users }}</strong>
                         <span class="text-[#6f7d8a] text-[15px] font-semibold">Admins</span>
                     </div>
+                </div>
+            </section>
+
+            <section class="mt-4 bg-white border border-[#e4ebf0] rounded-[14px] p-4">
+                <h3 class="m-0 mb-3 text-[17px] text-[#1b2f44] font-bold">Recent Appointments</h3>
+                <div class="space-y-3">
+                    {% for appointment in recent_appointments %}
+                    <div class="flex flex-col gap-2 rounded-xl border border-[#ebeff4] bg-[#fbfdff] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="font-bold text-[#11253a]">{{ appointment.code }} - {{ appointment.patient_name }}</div>
+                            <div class="text-sm text-[#6f7d8a]">{{ appointment.doctor_name }} · {{ appointment.date }} · {{ appointment.time }}</div>
+                        </div>
+                        <div class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if appointment.status_key == 'completed' %}bg-[#e7f7ef] text-[#1b8b57]{% elif appointment.status_key == 'confirmed' %}bg-[#e8f1fb] text-[#2c6db2]{% elif appointment.status_key == 'checked_in' %}bg-[#e6faf8] text-[#1d8e84]{% elif appointment.status_key == 'requested' %}bg-[#fff4df] text-[#bb8425]{% elif appointment.status_key == 'no_show' %}bg-[#eef2f7] text-[#5e6b7c]{% else %}bg-[#f4f6f8] text-[#667485]{% endif %}">
+                            {{ appointment.status }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="rounded-xl border border-dashed border-[#d7e0e7] bg-[#fbfdff] px-4 py-6 text-center text-sm text-[#6f7d8a]">
+                        No appointments yet.
+                    </div>
+                    {% endfor %}
                 </div>
             </section>
         </div>
