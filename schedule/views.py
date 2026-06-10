@@ -2,10 +2,13 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from datetime import datetime, timedelta
 from appointment.models import Appointment
+from auth.utils import role_required
+from auth.permissions import IsDoctor
 from schedule.models import Schedule
 from slots.models import Slot
 
 # Create your views here.
+@role_required(IsDoctor)
 def doctor_schedule(request):
   if not request.user.is_authenticated:
     return redirect('auth:login')
@@ -78,6 +81,7 @@ def doctor_schedule(request):
       },
   )
 
+@role_required(IsDoctor)
 def patient_queue(request):
   if not request.user.is_authenticated:
     return redirect('auth:login')
