@@ -1,85 +1,58 @@
-<header
-  class="fixed top-0 w-full z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/70"
->
-  <div
-    class="flex justify-between items-center px-4 sm:px-8 py-4 w-full max-w-7xl mx-auto"
-  >
-    <a href="{% url 'auth:home' %}" class="flex items-center gap-3 group">
-      <div
-        class="h-9 w-9 rounded-xl bg-[#22b7ab] flex items-center justify-center shadow-[0px_10px_20px_-8px_rgba(0,0,0,0.3)]"
-      >
-        <span class="material-symbols-outlined text-white text-xl"
-          >stethoscope</span
-        >
-      </div>
-      <span class="text-xl font-extrabold text-slate-900 tracking-tight"
-        >MediCare</span
-      >
-    </a>
+<header class="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/30">
+	<div class="flex justify-between items-center px-margin-mobile lg:px-margin-desktop py-md max-w-7xl mx-auto w-full">
+		<a href="{% url 'auth:home' %}" class="flex items-center gap-sm group">
+			<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center shadow-lg glass-edge group-hover:shadow-primary/20 transition-shadow">
+				<span class="material-symbols-outlined text-on-primary-container text-[22px]" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+			</div>
+			<div>
+				<span class="font-headline-md text-headline-md text-on-surface tracking-tight block leading-none">ClinixCare</span>
+				<span class="font-label-sm text-label-sm text-on-surface-variant hidden sm:block">Precision Healthcare</span>
+			</div>
+		</a>
 
-    {% if request.resolver_match.namespace == 'auth' and request.resolver_match.url_name == 'home' %}
-    <nav class="hidden items-center gap-7 lg:flex">
-      <a href="#features" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Features</a>
-      <a href="#workflow" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Workflow</a>
-      <a href="#roles" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Roles</a>
-      <a href="#cta" class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-900">Get Started</a>
-    </nav>
-    {% endif %}
+		{% if request.resolver_match.namespace == 'auth' and request.resolver_match.url_name == 'home' %}
+		<nav class="hidden items-center gap-lg lg:flex" aria-label="Main navigation">
+			<a href="#features" class="font-body-sm text-body-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Features</a>
+			<a href="#workflow" class="font-body-sm text-body-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Workflow</a>
+			<a href="#roles" class="font-body-sm text-body-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Roles</a>
+			<a href="#cta" class="font-body-sm text-body-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Get Started</a>
+		</nav>
+		{% endif %}
 
-    {% if request.user.is_authenticated %}
-      {% with request.user.groups.all|first as role_group %}
-        {% if role_group and role_group.name == 'admin' %}
-          {% url 'dashboards:admin_dashboard' as dashboard_url %}
-          {% with 'Admin' as role_label %}
-            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
-              <span class="material-symbols-outlined text-base">admin_panel_settings</span>
-              <span>{{ role_label }}</span>
-            </a>
-          {% endwith %}
-        {% elif role_group and role_group.name == 'doctor' %}
-          {% url 'dashboards:doctor_dashboard' as dashboard_url %}
-          {% with 'Doctor' as role_label %}
-            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
-              <span class="material-symbols-outlined text-base">stethoscope</span>
-              <span>{{ role_label }}</span>
-            </a>
-          {% endwith %}
-        {% elif role_group and role_group.name == 'receptionist' %}
-          {% url 'dashboards:receptionist_dashboard' as dashboard_url %}
-          {% with 'Receptionist' as role_label %}
-            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
-              <span class="material-symbols-outlined text-base">groups</span>
-              <span>{{ role_label }}</span>
-            </a>
-          {% endwith %}
-        {% elif role_group and role_group.name == 'patient' %}
-          {% url 'appointment:patient_dashboard' as dashboard_url %}
-          {% with 'Patient' as role_label %}
-            <a href="{{ dashboard_url }}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
-              <span class="material-symbols-outlined text-base">person</span>
-              <span>{{ role_label }}</span>
-            </a>
-          {% endwith %}
-        {% else %}
-          <a href="{% url 'auth:home' %}" class="inline-flex items-center gap-2 rounded-xl border border-[#c9e9e5] bg-[#eefaf8] px-4 py-2 font-bold text-[#157f77] transition-colors hover:bg-[#e4f6f3]">
-            <span class="material-symbols-outlined text-base">dashboard</span>
-            <span>Dashboard</span>
-          </a>
-        {% endif %}
-      {% endwith %}
-    {% else %}
-      <div class="flex items-center gap-3">
-        <a
-          href="{% url 'auth:login' %}"
-          class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-transparent text-slate-700 font-semibold hover:bg-slate-100 transition-colors"
-          >Sign In</a
-        >
-        <a
-          href="{% url 'auth:register' %}"
-          class="inline-flex px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1db2a8] to-[#1e8db6] hover:from-[#199f96] hover:to-[#1a78a0] text-white font-bold transition-all shadow-[0px_14px_24px_-12px_rgba(28,125,167,0.72)]"
-          >Get Started</a
-        >
-      </div>
-    {% endif %}
-  </div>
+		{% if request.user.is_authenticated %}
+			{% with request.user.groups.all|first as role_group %}
+				{% if role_group and role_group.name == 'admin' %}
+					<a href="{% url 'dashboards:admin_dashboard' %}" class="inline-flex items-center gap-xs rounded-lg border border-secondary-container/40 bg-secondary-container/15 px-md py-sm font-body-sm text-body-sm font-bold text-secondary hover:bg-secondary-container/25 transition-colors">
+						<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+						<span class="hidden sm:inline">Admin</span>
+					</a>
+				{% elif role_group and role_group.name == 'doctor' %}
+					<a href="{% url 'dashboards:doctor_dashboard' %}" class="inline-flex items-center gap-xs rounded-lg border border-secondary-container/40 bg-secondary-container/15 px-md py-sm font-body-sm text-body-sm font-bold text-secondary hover:bg-secondary-container/25 transition-colors">
+						<span class="material-symbols-outlined text-[18px]">stethoscope</span>
+						<span class="hidden sm:inline">Doctor</span>
+					</a>
+				{% elif role_group and role_group.name == 'receptionist' %}
+					<a href="{% url 'dashboards:receptionist_dashboard' %}" class="inline-flex items-center gap-xs rounded-lg border border-secondary-container/40 bg-secondary-container/15 px-md py-sm font-body-sm text-body-sm font-bold text-secondary hover:bg-secondary-container/25 transition-colors">
+						<span class="material-symbols-outlined text-[18px]">groups</span>
+						<span class="hidden sm:inline">Receptionist</span>
+					</a>
+				{% elif role_group and role_group.name == 'patient' %}
+					<a href="{% url 'appointment:patient_dashboard' %}" class="inline-flex items-center gap-xs rounded-lg border border-secondary-container/40 bg-secondary-container/15 px-md py-sm font-body-sm text-body-sm font-bold text-secondary hover:bg-secondary-container/25 transition-colors">
+						<span class="material-symbols-outlined text-[18px]">person</span>
+						<span class="hidden sm:inline">Patient</span>
+					</a>
+				{% else %}
+					<a href="{% url 'auth:home' %}" class="inline-flex items-center gap-xs rounded-lg border border-outline-variant/40 px-md py-sm font-body-sm text-body-sm font-bold text-on-surface-variant hover:text-primary transition-colors">
+						<span class="material-symbols-outlined text-[18px]">dashboard</span>
+						<span class="hidden sm:inline">Dashboard</span>
+					</a>
+				{% endif %}
+			{% endwith %}
+		{% else %}
+			<div class="flex items-center gap-sm">
+				<a href="{% url 'auth:login' %}" class="hidden sm:inline-flex px-md py-sm rounded-lg text-on-surface-variant font-body-sm text-body-sm font-semibold hover:text-primary transition-colors">Sign In</a>
+				<a href="{% url 'auth:register' %}" class="inline-flex px-lg py-sm rounded-lg bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold hover:bg-primary transition-colors border border-primary/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">Get Started</a>
+			</div>
+		{% endif %}
+	</div>
 </header>

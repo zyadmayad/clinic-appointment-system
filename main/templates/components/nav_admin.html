@@ -1,0 +1,16 @@
+<a href="{% url 'dashboards:admin_dashboard' %}" class="dash-nav-link {% if active == 'dashboard' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">dashboard</span>
+	<span>Overview</span>
+</a>
+<a href="{% url 'managements:admin_appointments' %}" class="dash-nav-link {% if active == 'appointments' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">event</span>
+	<span>Appointments</span>
+</a>
+<a href="{% url 'managements:doctor_schedule' %}" class="dash-nav-link {% if active == 'schedules' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+	<span>Schedules</span>
+</a>
+<a href="{% url 'managements:user_managements' %}" class="dash-nav-link {% if active == 'users' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">group</span>
+	<span>Users</span>
+</a>
