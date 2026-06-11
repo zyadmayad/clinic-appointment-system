@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -37,12 +39,16 @@ def slot_list(request, doctor_id):
     if date:
         qs = qs.filter(date=date)
 
+    today = timezone.localdate()
+    now_time = timezone.localtime().time()
+    qs = qs.filter(Q(date__gt=today) | Q(date=today, start_time__gt=now_time))
+
     serializer = SlotSerializer(qs, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-@role_required(IsDoctor)
+@permission_classes([IsAuthenticated, IsDoctor ])
 def slot_create(request):
     slots_data = request.data.get('slots', [])
     doctor_id = request.data.get('doctor')

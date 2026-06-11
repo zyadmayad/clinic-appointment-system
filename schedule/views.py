@@ -16,7 +16,7 @@ def doctor_schedule(request):
   user_name = request.user.username
   id = request.user.id
 
-  # The optional "week" query param can be any date inside the week to show.
+  # The optional "week" query param is the start date for a 7-day window.
   week_param = request.GET.get('week', '').strip()
   if week_param:
     try:
@@ -26,31 +26,31 @@ def doctor_schedule(request):
   else:
     anchor_date = timezone.localdate()
 
-  # Get week dates starting from Saturday.
-  saturday = anchor_date - timedelta(days=(anchor_date.weekday() - 5) % 7)
-  friday = saturday + timedelta(days=6)
+  window_start = anchor_date
+  window_end = window_start + timedelta(days=6)
 
-  prev_week = saturday - timedelta(days=7)
-  next_week = saturday + timedelta(days=7)
+  next_week = window_start + timedelta(days=7)
   
-  schedules = Schedule.objects.filter(doctor_id=id,date__gte=saturday,date__lte=friday).order_by('date', 'start_time')
-  slots = Slot.objects.filter(doctor_id=id, date__gte=saturday, date__lte=friday).order_by('date', 'start_time')
+  schedules = Schedule.objects.filter(doctor_id=id,date__gte=window_start,date__lte=window_end).order_by('date', 'start_time')
+  slots = Slot.objects.filter(doctor_id=id, date__gte=window_start, date__lte=window_end).order_by('date', 'start_time')
 
   
   schedule_data = {}
-  days_of_week = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-  day_weekday_map = {5: 'Saturday', 6: 'Sunday', 0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday'}
+  day_key_by_date = {}
   
-  for i, day_name in enumerate(days_of_week):
-    day_date = saturday + timedelta(days=i)
+  for i in range(7):
+    day_date = window_start + timedelta(days=i)
+    day_name = day_date.strftime('%A')
     date_str = day_date.strftime('%Y-%m-%d')
     key = f"{day_name} ({date_str})"
     schedule_data[key] = []
+    day_key_by_date[day_date] = key
   
   for slot in slots:
-    day_name = day_weekday_map.get(slot.date.weekday(), 'Unknown')
-    date_str = slot.date.strftime('%Y-%m-%d')
-    key = f"{day_name} ({date_str})"
+    key = day_key_by_date.get(slot.date)
+
+    if not key:
+      continue
 
     schedule_data[key].append({
         "slot_id": slot.id,
@@ -62,10 +62,9 @@ def doctor_schedule(request):
 
   off_dates = {schedule.date for schedule in schedules if schedule.day_type == 'off'}
   for off_date in off_dates:
-    day_name = day_weekday_map.get(off_date.weekday(), 'Unknown')
-    date_str = off_date.strftime('%Y-%m-%d')
-    key = f"{day_name} ({date_str})"
-    schedule_data[key] = [{"day_type": "off"}]
+    key = day_key_by_date.get(off_date)
+    if key:
+      schedule_data[key] = [{"day_type": "off"}]
 
   return render(
       request,
@@ -73,10 +72,9 @@ def doctor_schedule(request):
       {
           "user_name": user_name,
           "schedule_data": schedule_data,
-          "week_start": saturday.strftime('%B %d, %Y'),
-          "week_end": friday.strftime('%B %d, %Y'),
-          "selected_week": saturday.strftime('%Y-%m-%d'),
-          "prev_week": prev_week.strftime('%Y-%m-%d'),
+          "week_start": window_start.strftime('%B %d, %Y'),
+          "week_end": window_end.strftime('%B %d, %Y'),
+          "selected_week": window_start.strftime('%Y-%m-%d'),
           "next_week": next_week.strftime('%Y-%m-%d'),
       },
   )

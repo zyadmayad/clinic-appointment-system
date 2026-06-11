@@ -11,6 +11,11 @@ class ScheduleSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
 
+    def validate_date(self, value):
+        if value < timezone.localdate():
+            raise serializers.ValidationError('date cannot be in the past.')
+        return value
+
     def validate(self, attrs):
         start = attrs.get('start_time', self.instance.start_time if self.instance else None)
         end = attrs.get('end_time', self.instance.end_time if self.instance else None)
