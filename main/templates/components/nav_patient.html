@@ -1,0 +1,12 @@
+<a href="{% url 'appointment:patient_dashboard' %}" class="dash-nav-link {% if active == 'dashboard' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">dashboard</span>
+	<span>Dashboard</span>
+</a>
+<a href="{% url 'appointment:book_appointment' %}" class="dash-nav-link {% if active == 'book' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">event_available</span>
+	<span>Book Appointment</span>
+</a>
+<a href="{% url 'appointment:my_appointments' %}" class="dash-nav-link {% if active == 'appointments' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+	<span>My Appointments</span>
+</a>

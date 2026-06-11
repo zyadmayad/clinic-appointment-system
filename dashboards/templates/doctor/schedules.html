@@ -1,1258 +1,1192 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}My Schedule | MediCare{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}My Schedule | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:doctor_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Doctor Workspace{% endblock %}
+{% block dashboard_breadcrumb %}Doctor{% endblock %}
+{% block dashboard_user_role %}Doctor{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_doctor.html" with active="schedule" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_doctor_mobile.html" with active="schedule" %}{% endblock %}
 
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+{% block page_title %}My Schedule{% endblock %}
 
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">{{ week_start }} to {{ week_end }}</p>
+{% endblock %}
 
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Doctor navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">dashboard</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'schedule:doctor_schedule' %}">
-                <span class="material-symbols-outlined text-[19px]">schedule</span>
-                My Schedule
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:patient_queue' %}">
-                <span class="material-symbols-outlined text-[19px]">group</span>
-                Patient Queue
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'consultations:index' %}">
-                <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
-                Consultations
-            </a>
-        </nav>
+{% block page_actions %}
+<button onclick="openScheduleModal()" class="inline-flex items-center justify-center gap-xs px-lg py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20 shrink-0">
+	<span class="material-symbols-outlined text-[18px]">add</span>
+	<span class="hidden sm:inline">Create Schedule</span>
+</button>
+{% endblock %}
 
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Doctor</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
 
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="mb-4 flex sm:hidden items-center justify-between">
-            <div class="rounded-full bg-[#dbf5f3] text-[#0b6860] px-3 py-1 text-xs font-semibold tracking-wide">Schedule</div>
-            <div id="mobile-user-role" class="rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
-        </div>
+{% block dashboard_content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start">
+	<aside class="lg:col-span-3 lg:sticky lg:top-0 self-start">
+		<div class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light space-y-md">
+			<div class="flex items-center gap-sm pb-md border-b border-outline-variant/30">
+				<span class="material-symbols-outlined text-secondary text-[20px]">calendar_month</span>
+				<h3 class="font-headline-md text-headline-md text-on-surface m-0">Week Controls</h3>
+			</div>
+			<p class="font-body-sm text-body-sm text-on-surface-variant m-0">Dr. {{ user_name }}</p>
+			<div class="flex flex-col gap-sm">
+				<a href="{% url 'schedule:doctor_schedule' %}?week={{ next_week }}" class="inline-flex items-center justify-center gap-xs px-md py-sm bg-surface-container-high text-on-surface font-body-sm text-body-sm font-semibold rounded-lg hover:bg-surface-container-high/80 transition border border-outline-variant/30">
+					Next Week
+					<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+				</a>
+				<a href="{% url 'schedule:doctor_schedule' %}" class="inline-flex items-center justify-center px-md py-sm bg-secondary-container/20 text-secondary font-body-sm text-body-sm font-semibold rounded-lg hover:bg-secondary-container/30 transition border border-secondary-container/30">
+					Current Week
+				</a>
+			</div>
+			<form method="get" class="flex flex-col gap-sm pt-md border-t border-outline-variant/30">
+				<label for="weekPicker" class="font-label-md text-label-md font-semibold text-on-surface-variant">Jump to week</label>
+				<input id="weekPicker" type="date" name="week" value="{{ selected_week }}" class="w-full px-md py-sm border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface bg-surface-container-high focus:outline-none focus:border-primary/50">
+				<button type="submit" class="inline-flex items-center justify-center px-lg py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+					Show Week
+				</button>
+			</form>
+		</div>
+	</aside>
 
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div>
-                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">My Schedule</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ week_start }} to {{ week_end }}</p>
-                </div>
-                <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
-            </div>
+	<section class="lg:col-span-9 bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+		<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-lg pb-md border-b border-outline-variant/30">Weekly Schedule</h3>
 
-            <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-6">
-                <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:justify-between">
-                    <div class="flex items-center gap-2">
-                        <a href="{% url 'schedule:doctor_schedule' %}?week={{ next_week }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f6f8] text-[#1b2f44] font-semibold rounded-[8px] hover:bg-[#e4ebf0] transition text-sm">
-                            Next Week
-                            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-                        </a>
-                        <a href="{% url 'schedule:doctor_schedule' %}" class="inline-flex items-center justify-center px-3 py-2 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
-                            Current Week
-                        </a>
-                    </div>
-
-                    <form method="get" class="flex flex-col sm:flex-row sm:items-end gap-2">
-                        <div class="flex items-center gap-2">
-                            <input id="weekPicker" type="date" name="week" value="{{ selected_week }}" class="px-3 py-2 border border-[#d0dae4] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[8px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition text-sm">
-                                Show Week
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Weekly Schedule Section -->
-            <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-6">
-                <div class="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-[#ecf0f4]">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-[#187a70] text-[20px]">calendar_month</span>
-                        <div>
-                            <h3 class="m-0 text-[17px] text-[#1c2d40] font-bold">Weekly Schedule — Dr. {{ user_name }}</h3>
-                        </div>
-                    </div>
-                    <button onclick="openScheduleModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition text-sm">
-                        <span class="material-symbols-outlined text-[18px]">add</span>
-                        Create Schedule
-                    </button>
-                </div>
-
-                <!-- Days Schedule -->
-                <div class="space-y-4">
-                    {% for day_info, slots in schedule_data.items %}
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 border-b border-[#ecf0f4]" data-day-row data-day-info="{{ day_info }}">
-                        <div class="min-w-[200px] flex items-center justify-between">
-                            <p class="m-0 font-semibold text-[#1b2f44]">{{ day_info }}</p>
-                            <button type="button" data-day-action onclick="markDayException('{{ day_info }}', {{ slots.0.schedule_id|default:'null' }})" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#e0f2f1] text-[#187a70] transition" title="Toggle day exception">
-                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                        </div>
-                        <div class="flex flex-wrap gap-2" data-day-slots>
-                            {% if slots %}
-                                {% for slot in slots %}
-                                    {% if slot.day_type == "off" %}
-                                        <span class="text-[#9fc7c7] italic text-sm">Day off</span>
-                                    {% else %}
-                                        <button type="button" data-slot-action data-slot-id="{{ slot.slot_id }}" data-slot-time="{{ slot.start }} - {{ slot.end }}" onclick="openExceptionModal({{ slot.slot_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#0fa39a] text-sm font-semibold rounded-full hover:bg-[#c8e6e5] cursor-pointer transition">
-                                            <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                            {{ slot.start }} - {{ slot.end }}
-                                        </button>
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                <span class="text-[#9fc7c7] italic text-sm">No slots</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </section>
+	<div class="space-y-md">
+		{% for day_info, slots in schedule_data.items %}
+		<div class="flex flex-col sm:flex-row sm:items-center gap-sm pb-md border-b border-outline-variant/30 last:border-b-0 last:pb-0" data-day-row data-day-info="{{ day_info }}">
+			<div class="min-w-[200px] flex items-center justify-between">
+				<p class="m-0 font-body-md text-body-md font-semibold text-on-surface">{{ day_info }}</p>
+				<button type="button" data-day-action onclick="markDayException('{{ day_info }}', {{ slots.0.schedule_id|default:'null' }})" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-container-high text-secondary transition" title="Toggle day exception">
+					<span class="material-symbols-outlined text-[18px]">edit</span>
+				</button>
+			</div>
+			<div class="flex flex-wrap gap-sm" data-day-slots>
+				{% if slots %}
+					{% for slot in slots %}
+						{% if slot.day_type == "off" %}
+						<span class="text-on-surface-variant italic font-body-sm text-body-sm">Day off</span>
+						{% else %}
+						<button type="button" data-slot-action data-slot-id="{{ slot.slot_id }}" data-slot-time="{{ slot.start }} - {{ slot.end }}" onclick="openExceptionModal({{ slot.slot_id }}, '{{ slot.start }} - {{ slot.end }}')" class="inline-flex items-center gap-xs px-md py-xs bg-secondary-container/20 text-secondary font-body-sm text-body-sm font-semibold rounded-full hover:bg-secondary-container/30 cursor-pointer transition">
+							<span class="material-symbols-outlined text-[16px]">schedule</span>
+							{{ slot.start }} - {{ slot.end }}
+						</button>
+						{% endif %}
+					{% endfor %}
+				{% else %}
+				<span class="text-on-surface-variant italic font-body-sm text-body-sm">No slots</span>
+				{% endif %}
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	</section>
 </div>
 
 <!-- Create Schedule Modal -->
-<div id="scheduleModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[18px] max-w-2xl w-full shadow-2xl">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
-            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Create Schedule</h3>
-            <button onclick="closeScheduleModal()" class="text-[#81909c] hover:text-[#1b2f44]">
-                <span class="material-symbols-outlined text-[24px]">close</span>
-            </button>
-        </div>
+<div id="scheduleModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-margin-mobile">
+	<div class="bg-surface-container border border-outline-variant/30 rounded-xl max-w-2xl w-full shadow-2xl">
+		<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant/30">
+			<h3 class="m-0 font-headline-md text-headline-md text-on-surface">Create Schedule</h3>
+			<button onclick="closeScheduleModal()" class="text-on-surface-variant hover:text-on-surface transition">
+				<span class="material-symbols-outlined text-[24px]">close</span>
+			</button>
+		</div>
 
-        <div class="p-6">
-            <div class="flex items-center gap-0 mb-6">
-                <div id="schedule-step1-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold">
-                    <span>1</span><span>Working Window</span>
-                </div>
-                <div id="schedule-line1" class="flex-1 h-[2px] bg-[#d0dae4] mx-1"></div>
-                <div id="schedule-step2-indicator" class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold">
-                    <span>2</span><span>Select Slots</span>
-                </div>
-            </div>
+		<div class="p-lg">
+			<div class="flex items-center gap-0 mb-lg">
+				<div id="schedule-step1-indicator" class="flex items-center gap-xs px-md py-sm rounded-full bg-primary-container text-on-primary-container font-body-sm text-body-sm font-semibold">
+					<span>1</span><span>Working Window</span>
+				</div>
+				<div id="schedule-line1" class="flex-1 h-[2px] bg-outline-variant/40 mx-xs"></div>
+				<div id="schedule-step2-indicator" class="flex items-center gap-xs px-md py-sm rounded-full bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm font-semibold">
+					<span>2</span><span>Select Slots</span>
+				</div>
+			</div>
 
-            <div id="scheduleError" class="hidden mb-4 bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
+			<div id="scheduleError" class="hidden mb-md bg-error-container/20 text-error border border-error/30 px-md py-sm rounded-lg font-body-sm text-body-sm"></div>
 
-            <div id="scheduleStep1">
-                <h4 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Set Working Window</h4>
+			<div id="scheduleStep1">
+				<h4 class="m-0 mb-md font-headline-md text-headline-md text-on-surface">Set Working Window</h4>
 
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div class="sm:col-span-2">
-                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Date</label>
-                        <input type="date" id="scheduleDate" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                    </div>
+				<div class="grid sm:grid-cols-2 gap-md">
+					<div class="sm:col-span-2">
+						<label class="block font-body-sm text-body-sm font-semibold text-on-surface mb-xs">Date</label>
+						<input type="date" id="scheduleDate" class="w-full px-md py-sm border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface bg-surface-container-high focus:outline-none focus:border-primary/50">
+					</div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Start Time</label>
-                        <input type="time" id="scheduleStartTime" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                    </div>
+					<div>
+						<label class="block font-body-sm text-body-sm font-semibold text-on-surface mb-xs">Start Time</label>
+						<input type="time" id="scheduleStartTime" class="w-full px-md py-sm border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface bg-surface-container-high focus:outline-none focus:border-primary/50">
+					</div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">End Time</label>
-                        <input type="time" id="scheduleEndTime" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                    </div>
+					<div>
+						<label class="block font-body-sm text-body-sm font-semibold text-on-surface mb-xs">End Time</label>
+						<input type="time" id="scheduleEndTime" class="w-full px-md py-sm border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface bg-surface-container-high focus:outline-none focus:border-primary/50">
+					</div>
 
-                    <div class="sm:col-span-2">
-                        <label class="block text-sm font-semibold text-[#1b2f44] mb-2">Session Duration (minutes)</label>
-                        <input type="number" id="scheduleDuration" value="30" min="5" step="5" class="w-full px-3 py-2 border border-[#e4ebf0] rounded-[8px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]">
-                    </div>
-                </div>
+					<div class="sm:col-span-2">
+						<label class="block font-body-sm text-body-sm font-semibold text-on-surface mb-xs">Session Duration (minutes)</label>
+						<input type="number" id="scheduleDuration" value="30" min="5" step="5" class="w-full px-md py-sm border border-outline-variant/40 rounded-lg font-body-sm text-body-sm text-on-surface bg-surface-container-high focus:outline-none focus:border-primary/50">
+					</div>
+				</div>
 
-                <div class="flex gap-3 pt-6">
-                    <button type="button" onclick="closeScheduleModal()" class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
-                        Cancel
-                    </button>
-                    <button type="button" onclick="continueToScheduleSlots()" class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                        Continue
-                    </button>
-                </div>
-            </div>
+				<div class="flex gap-sm pt-lg">
+					<button type="button" onclick="closeScheduleModal()" class="flex-1 py-md bg-surface-container-high border border-outline-variant/40 text-on-surface font-body-sm text-body-sm font-semibold rounded-lg hover:bg-surface-container transition">
+						Cancel
+					</button>
+					<button type="button" onclick="continueToScheduleSlots()" class="flex-1 py-md bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+						Continue
+					</button>
+				</div>
+			</div>
 
-            <div id="scheduleStep2" class="hidden">
-                <h4 class="m-0 mb-4 text-[17px] font-bold text-[#1b2f44]">Select Slots</h4>
+			<div id="scheduleStep2" class="hidden">
+				<h4 class="m-0 mb-md font-headline-md text-headline-md text-on-surface">Select Slots</h4>
 
-                <div class="grid sm:grid-cols-3 gap-3 mb-5 p-4 bg-[#f8fbfc] border border-[#e4ebf0] rounded-[12px]">
-                    <div>
-                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Date</p>
-                        <p id="scheduleSummaryDate" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
-                    </div>
-                    <div>
-                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Window</p>
-                        <p id="scheduleSummaryWindow" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
-                    </div>
-                    <div>
-                        <p class="m-0 text-xs font-semibold text-[#7d8b98] uppercase tracking-wide">Session</p>
-                        <p id="scheduleSummaryDuration" class="m-0 mt-1 text-sm font-semibold text-[#1b2f44]"></p>
-                    </div>
-                </div>
+				<div class="grid sm:grid-cols-3 gap-sm mb-md p-md bg-surface-container-high border border-outline-variant/30 rounded-lg">
+					<div>
+						<p class="m-0 font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Date</p>
+						<p id="scheduleSummaryDate" class="m-0 mt-xs font-body-sm text-body-sm font-semibold text-on-surface"></p>
+					</div>
+					<div>
+						<p class="m-0 font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Window</p>
+						<p id="scheduleSummaryWindow" class="m-0 mt-xs font-body-sm text-body-sm font-semibold text-on-surface"></p>
+					</div>
+					<div>
+						<p class="m-0 font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Session</p>
+						<p id="scheduleSummaryDuration" class="m-0 mt-xs font-body-sm text-body-sm font-semibold text-on-surface"></p>
+					</div>
+				</div>
 
-                <p class="m-0 text-sm text-[#6f7b88] mb-3 font-medium">Choose one or more slots to publish for booking.</p>
+				<p class="m-0 font-body-sm text-body-sm text-on-surface-variant mb-sm font-medium">Choose one or more slots to publish for booking.</p>
 
-                <div id="scheduleGeneratedSlots" class="flex flex-wrap gap-3 mb-3"></div>
-                <div id="scheduleNoSlots" class="hidden text-[#81909c] text-sm mb-3">No slots were generated. Check time range and session duration.</div>
-                <p id="scheduleSelectedCount" class="m-0 text-sm text-[#5f6d79] mb-6">0 slots selected</p>
+				<div id="scheduleGeneratedSlots" class="flex flex-wrap gap-sm mb-sm"></div>
+				<div id="scheduleNoSlots" class="hidden text-on-surface-variant font-body-sm text-body-sm mb-sm">No slots were generated. Check time range and session duration.</div>
+				<p id="scheduleSelectedCount" class="m-0 font-body-sm text-body-sm text-on-surface-variant mb-lg">0 slots selected</p>
 
-                <div class="flex gap-3">
-                    <button type="button" onclick="goScheduleStep(1)" class="flex-1 py-3 bg-white border border-[#d0dae4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#f3f6f8] transition">
-                        Back
-                    </button>
-                    <button id="scheduleSubmitBtn" type="button" onclick="handleScheduleSubmit()" class="flex-1 py-3 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] opacity-40 cursor-not-allowed transition" disabled>
-                        Create Selected Slots
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+				<div class="flex gap-sm">
+					<button type="button" onclick="goScheduleStep(1)" class="flex-1 py-md bg-surface-container-high border border-outline-variant/40 text-on-surface font-body-sm text-body-sm font-semibold rounded-lg hover:bg-surface-container transition">
+						Back
+					</button>
+					<button id="scheduleSubmitBtn" type="button" onclick="handleScheduleSubmit()" class="flex-1 py-md bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg opacity-40 cursor-not-allowed transition border border-primary/20" disabled>
+						Create Selected Slots
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Edit Day Type Modal -->
+<div id="editDayTypeModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-margin-mobile">
+	<div class="bg-surface-container border border-outline-variant/30 rounded-xl max-w-md w-full shadow-2xl">
+		<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant/30">
+			<h3 class="m-0 font-headline-md text-headline-md text-on-surface">Edit Day Type</h3>
+			<button onclick="closeEditDayTypeModal()" class="text-on-surface-variant hover:text-on-surface transition">
+				<span class="material-symbols-outlined text-[24px]">close</span>
+			</button>
+		</div>
+
+		<form id="editDayTypeForm" onsubmit="handleEditDayType(event)" class="p-lg space-y-md">
+			<input type="hidden" id="currentDayInfo">
+
+			<div>
+				<label class="block font-body-sm text-body-sm font-semibold text-on-surface mb-sm">Select Day Type</label>
+				<div class="space-y-sm">
+					<label class="flex items-center gap-sm cursor-pointer p-md border border-outline-variant/30 rounded-lg hover:bg-surface-container-high transition">
+						<input type="radio" name="dayType" value="working" id="workingDay" class="w-4 h-4">
+						<div>
+							<p class="m-0 font-body-sm text-body-sm font-semibold text-on-surface">Working Day</p>
+							<p class="m-0 font-label-md text-label-md text-on-surface-variant">Doctor is available for consultations</p>
+						</div>
+					</label>
+					<label class="flex items-center gap-sm cursor-pointer p-md border border-outline-variant/30 rounded-lg hover:bg-surface-container-high transition">
+						<input type="radio" name="dayType" value="off" id="dayOff" class="w-4 h-4">
+						<div>
+							<p class="m-0 font-body-sm text-body-sm font-semibold text-on-surface">Day Off</p>
+							<p class="m-0 font-label-md text-label-md text-on-surface-variant">Doctor is not available</p>
+						</div>
+					</label>
+				</div>
+				<input type="hidden" id="newDayType">
+			</div>
+
+			<div id="editDayTypeError" class="hidden bg-error-container/20 text-error border border-error/30 px-md py-sm rounded-lg font-body-sm text-body-sm"></div>
+
+			<div class="flex gap-sm pt-md">
+				<button type="button" onclick="updateDayType()" class="flex-1 px-md py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+					Update
+				</button>
+				<button type="button" onclick="closeEditDayTypeModal()" class="flex-1 px-md py-sm bg-surface-container-high text-on-surface font-body-sm text-body-sm font-semibold rounded-lg hover:bg-surface-container transition border border-outline-variant/30">
+					Cancel
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Exception Modal -->
+<div id="exceptionModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-margin-mobile">
+	<div class="bg-surface-container border border-outline-variant/30 rounded-xl max-w-md w-full shadow-2xl">
+		<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant/30">
+			<h3 class="m-0 font-headline-md text-headline-md text-on-surface">Slot Exception</h3>
+			<button onclick="closeExceptionModal()" class="text-on-surface-variant hover:text-on-surface transition">
+				<span class="material-symbols-outlined text-[24px]">close</span>
+			</button>
+		</div>
+
+		<div class="p-lg space-y-md">
+			<div>
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide m-0 mb-xs">Selected Schedule</p>
+				<p class="font-body-md text-body-md font-semibold text-primary m-0" id="exceptionTimeSlot"></p>
+				<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs m-0" id="exceptionCurrentStatus"></p>
+			</div>
+
+			<div id="exceptionError" class="hidden bg-error-container/20 text-error border border-error/30 px-md py-sm rounded-lg font-body-sm text-body-sm"></div>
+
+			<div class="flex gap-sm pt-md flex-wrap">
+				<button type="button" onclick="closeExceptionModal()" class="flex-1 min-w-[100px] px-md py-sm bg-surface-container-high text-on-surface font-body-sm text-body-sm font-semibold rounded-lg hover:bg-surface-container transition border border-outline-variant/30">
+					Cancel
+				</button>
+				<button type="button" id="setSlotAvailableBtn" onclick="handleMarkException('available')" class="flex-1 min-w-[100px] px-md py-sm bg-secondary-container/20 text-secondary font-body-sm text-body-sm font-semibold rounded-lg hover:bg-secondary-container/30 transition border border-secondary-container/30">
+					Not Exception
+				</button>
+				<button type="button" id="setSlotExceptionBtn" onclick="handleMarkException('exception')" class="flex-1 min-w-[100px] px-md py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+					Mark Exception
+				</button>
+			</div>
+			<div class="pt-sm border-t border-outline-variant/30">
+				<button type="button" id="deleteSlotBtn" onclick="handleDeleteSlot()" class="w-full inline-flex items-center justify-center gap-xs px-md py-sm border-2 border-error/30 bg-error-container/10 text-error font-body-sm text-body-sm font-semibold rounded-lg hover:bg-error-container/20 transition">
+					<span class="material-symbols-outlined text-[18px]">delete</span>
+					Delete slot
+				</button>
+			</div>
+
+			<input type="hidden" id="exceptionSlotId">
+			<input type="hidden" id="exceptionSlotStatus">
+		</div>
+	</div>
 </div>
 
 <script>
 let scheduleWizardState = {
-    step: 1,
-    date: '',
-    startTime: '',
-    endTime: '',
-    duration: 30,
-    generatedSlots: [],
-    selectedSlotKeys: new Set()
+	step: 1,
+	date: '',
+	startTime: '',
+	endTime: '',
+	duration: 30,
+	generatedSlots: [],
+	selectedSlotKeys: new Set()
 };
 
 function openScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
-    modal.classList.remove('hidden');
-    resetScheduleWizard();
-    goScheduleStep(1);
+	const modal = document.getElementById('scheduleModal');
+	modal.classList.remove('hidden');
+	resetScheduleWizard();
+	goScheduleStep(1);
 }
 
 function closeScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
-    modal.classList.add('hidden');
-    resetScheduleWizard();
+	const modal = document.getElementById('scheduleModal');
+	modal.classList.add('hidden');
+	resetScheduleWizard();
 }
 
 function resetScheduleWizard() {
-    scheduleWizardState = {
-        step: 1,
-        date: '',
-        startTime: '',
-        endTime: '',
-        duration: 30,
-        generatedSlots: [],
-        selectedSlotKeys: new Set()
-    };
+	scheduleWizardState = {
+		step: 1,
+		date: '',
+		startTime: '',
+		endTime: '',
+		duration: 30,
+		generatedSlots: [],
+		selectedSlotKeys: new Set()
+	};
 
-    document.getElementById('scheduleDate').value = '';
-    document.getElementById('scheduleStartTime').value = '';
-    document.getElementById('scheduleEndTime').value = '';
-    document.getElementById('scheduleDuration').value = '30';
-    document.getElementById('scheduleGeneratedSlots').innerHTML = '';
-    document.getElementById('scheduleNoSlots').classList.add('hidden');
-    document.getElementById('scheduleSelectedCount').textContent = '0 slots selected';
+	document.getElementById('scheduleDate').value = '';
+	document.getElementById('scheduleStartTime').value = '';
+	document.getElementById('scheduleEndTime').value = '';
+	document.getElementById('scheduleDuration').value = '30';
+	document.getElementById('scheduleGeneratedSlots').innerHTML = '';
+	document.getElementById('scheduleNoSlots').classList.add('hidden');
+	document.getElementById('scheduleSelectedCount').textContent = '0 slots selected';
 
-    const submitBtn = document.getElementById('scheduleSubmitBtn');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Create Selected Slots';
-    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+	const submitBtn = document.getElementById('scheduleSubmitBtn');
+	submitBtn.disabled = true;
+	submitBtn.textContent = 'Create Selected Slots';
+	submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
 
-    document.getElementById('scheduleError').classList.add('hidden');
+	document.getElementById('scheduleError').classList.add('hidden');
 }
 
 function goScheduleStep(step) {
-    scheduleWizardState.step = step;
+	scheduleWizardState.step = step;
 
-    document.getElementById('scheduleStep1').classList.toggle('hidden', step !== 1);
-    document.getElementById('scheduleStep2').classList.toggle('hidden', step !== 2);
+	document.getElementById('scheduleStep1').classList.toggle('hidden', step !== 1);
+	document.getElementById('scheduleStep2').classList.toggle('hidden', step !== 2);
 
-    const indicators = ['schedule-step1-indicator', 'schedule-step2-indicator'];
-    indicators.forEach((id, idx) => {
-        const el = document.getElementById(id);
-        if (idx + 1 < step) {
-            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e0f7f4] text-[#1b8a80] text-sm font-semibold';
-        } else if (idx + 1 === step) {
-            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white text-sm font-semibold';
-        } else {
-            el.className = 'flex items-center gap-2 px-4 py-2 rounded-full bg-[#e4ebf0] text-[#8898a8] text-sm font-semibold';
-        }
-    });
+	const indicators = ['schedule-step1-indicator', 'schedule-step2-indicator'];
+	indicators.forEach((id, idx) => {
+		const el = document.getElementById(id);
+		if (idx + 1 < step) {
+			el.className = 'flex items-center gap-xs px-md py-sm rounded-full bg-secondary-container/20 text-secondary font-body-sm text-body-sm font-semibold';
+		} else if (idx + 1 === step) {
+			el.className = 'flex items-center gap-xs px-md py-sm rounded-full bg-primary-container text-on-primary-container font-body-sm text-body-sm font-semibold';
+		} else {
+			el.className = 'flex items-center gap-xs px-md py-sm rounded-full bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm font-semibold';
+		}
+	});
 
-    const line1 = document.getElementById('schedule-line1');
-    line1.className = step > 1 ? 'flex-1 h-[2px] bg-[#8bd8cf] mx-1' : 'flex-1 h-[2px] bg-[#d0dae4] mx-1';
+	const line1 = document.getElementById('schedule-line1');
+	line1.className = step > 1 ? 'flex-1 h-[2px] bg-secondary/50 mx-xs' : 'flex-1 h-[2px] bg-outline-variant/40 mx-xs';
 }
 
 function continueToScheduleSlots() {
-    const date = document.getElementById('scheduleDate').value;
-    const startTime = document.getElementById('scheduleStartTime').value;
-    const endTime = document.getElementById('scheduleEndTime').value;
-    const duration = parseInt(document.getElementById('scheduleDuration').value, 10);
+	const date = document.getElementById('scheduleDate').value;
+	const startTime = document.getElementById('scheduleStartTime').value;
+	const endTime = document.getElementById('scheduleEndTime').value;
+	const duration = parseInt(document.getElementById('scheduleDuration').value, 10);
 
-    if (!date || !startTime || !endTime || Number.isNaN(duration)) {
-        showScheduleError('Please fill all fields before continuing.');
-        return;
-    }
+	if (!date || !startTime || !endTime || Number.isNaN(duration)) {
+		showScheduleError('Please fill all fields before continuing.');
+		return;
+	}
 
-    if (duration <= 0) {
-        showScheduleError('Session duration must be greater than 0 minutes.');
-        return;
-    }
+	if (duration <= 0) {
+		showScheduleError('Session duration must be greater than 0 minutes.');
+		return;
+	}
 
-    if (startTime >= endTime) {
-        showScheduleError('End time must be after start time.');
-        return;
-    }
+	if (startTime >= endTime) {
+		showScheduleError('End time must be after start time.');
+		return;
+	}
 
-    scheduleWizardState.date = date;
-    scheduleWizardState.startTime = startTime;
-    scheduleWizardState.endTime = endTime;
-    scheduleWizardState.duration = duration;
-    scheduleWizardState.generatedSlots = generateScheduleSlots(startTime, endTime, duration);
-    scheduleWizardState.selectedSlotKeys = new Set();
+	scheduleWizardState.date = date;
+	scheduleWizardState.startTime = startTime;
+	scheduleWizardState.endTime = endTime;
+	scheduleWizardState.duration = duration;
+	scheduleWizardState.generatedSlots = generateScheduleSlots(startTime, endTime, duration);
+	scheduleWizardState.selectedSlotKeys = new Set();
 
-    fillScheduleSummary();
-    renderGeneratedScheduleSlots();
-    document.getElementById('scheduleError').classList.add('hidden');
-    goScheduleStep(2);
+	fillScheduleSummary();
+	renderGeneratedScheduleSlots();
+	document.getElementById('scheduleError').classList.add('hidden');
+	goScheduleStep(2);
 }
 
 function generateScheduleSlots(start, end, duration) {
-    const startParts = start.split(':').map(Number);
-    const endParts = end.split(':').map(Number);
-    const fragmentMinutes = 5;
+	const startParts = start.split(':').map(Number);
+	const endParts = end.split(':').map(Number);
+	const fragmentMinutes = 5;
 
-    if (startParts.length !== 2 || endParts.length !== 2 || startParts.some(Number.isNaN) || endParts.some(Number.isNaN)) {
-        return [];
-    }
+	if (startParts.length !== 2 || endParts.length !== 2 || startParts.some(Number.isNaN) || endParts.some(Number.isNaN)) {
+		return [];
+	}
 
-    const startMins = startParts[0] * 60 + startParts[1];
-    const endMins = endParts[0] * 60 + endParts[1];
-    const slots = [];
-    let cursor = startMins;
+	const startMins = startParts[0] * 60 + startParts[1];
+	const endMins = endParts[0] * 60 + endParts[1];
+	const slots = [];
+	let cursor = startMins;
 
-    while (cursor + duration <= endMins) {
-        const next = cursor + duration;
-        const sh = Math.floor(cursor / 60);
-        const sm = cursor % 60;
-        const eh = Math.floor(next / 60);
-        const em = next % 60;
+	while (cursor + duration <= endMins) {
+		const next = cursor + duration;
+		const sh = Math.floor(cursor / 60);
+		const sm = cursor % 60;
+		const eh = Math.floor(next / 60);
+		const em = next % 60;
 
-        slots.push({
-            start: `${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}`,
-            end: `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`
-        });
+		slots.push({
+			start: `${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}`,
+			end: `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`
+		});
 
-        cursor = next + fragmentMinutes;
-    }
+		cursor = next + fragmentMinutes;
+	}
 
-    return slots;
+	return slots;
 }
 
 function fillScheduleSummary() {
-    const date = new Date(`${scheduleWizardState.date}T00:00:00`);
-    const formattedDate = date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-    });
+	const date = new Date(`${scheduleWizardState.date}T00:00:00`);
+	const formattedDate = date.toLocaleDateString('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	});
 
-    document.getElementById('scheduleSummaryDate').textContent = formattedDate;
-    document.getElementById('scheduleSummaryWindow').textContent = `${scheduleWizardState.startTime} - ${scheduleWizardState.endTime}`;
-    document.getElementById('scheduleSummaryDuration').textContent = `${scheduleWizardState.duration} minutes`;
+	document.getElementById('scheduleSummaryDate').textContent = formattedDate;
+	document.getElementById('scheduleSummaryWindow').textContent = `${scheduleWizardState.startTime} - ${scheduleWizardState.endTime}`;
+	document.getElementById('scheduleSummaryDuration').textContent = `${scheduleWizardState.duration} minutes`;
 }
 
 function renderGeneratedScheduleSlots() {
-    const slotsWrap = document.getElementById('scheduleGeneratedSlots');
-    const noSlots = document.getElementById('scheduleNoSlots');
-    const submitBtn = document.getElementById('scheduleSubmitBtn');
+	const slotsWrap = document.getElementById('scheduleGeneratedSlots');
+	const noSlots = document.getElementById('scheduleNoSlots');
+	const submitBtn = document.getElementById('scheduleSubmitBtn');
 
-    slotsWrap.innerHTML = '';
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+	slotsWrap.innerHTML = '';
+	submitBtn.disabled = true;
+	submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
 
-    if (!scheduleWizardState.generatedSlots.length) {
-        noSlots.classList.remove('hidden');
-        updateScheduleSelectedCount();
-        return;
-    }
+	if (!scheduleWizardState.generatedSlots.length) {
+		noSlots.classList.remove('hidden');
+		updateScheduleSelectedCount();
+		return;
+	}
 
-    noSlots.classList.add('hidden');
+	noSlots.classList.add('hidden');
 
-    scheduleWizardState.generatedSlots.forEach((slot) => {
-        const key = `${slot.start}-${slot.end}`;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'inline-flex items-center gap-2 px-4 py-2 border-2 border-[#e4ebf0] bg-white rounded-[10px] text-sm font-semibold text-[#1b2f44] hover:border-[#31b2a3] hover:bg-[#f0faf9] transition';
-        btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-[#31b2a3]">schedule</span>${slot.start} - ${slot.end}`;
-        btn.addEventListener('click', () => {
-            toggleScheduleSlotSelection(key, btn);
-        });
-        slotsWrap.appendChild(btn);
-    });
+	scheduleWizardState.generatedSlots.forEach((slot) => {
+		const key = `${slot.start}-${slot.end}`;
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.className = 'inline-flex items-center gap-xs px-md py-sm border-2 border-outline-variant/40 bg-surface-container rounded-lg font-body-sm text-body-sm font-semibold text-on-surface hover:border-primary hover:bg-primary/5 transition';
+		btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-primary">schedule</span>${slot.start} - ${slot.end}`;
+		btn.addEventListener('click', () => {
+			toggleScheduleSlotSelection(key, btn);
+		});
+		slotsWrap.appendChild(btn);
+	});
 
-    updateScheduleSelectedCount();
+	updateScheduleSelectedCount();
 }
 
 function toggleScheduleSlotSelection(slotKey, button) {
-    if (scheduleWizardState.selectedSlotKeys.has(slotKey)) {
-        scheduleWizardState.selectedSlotKeys.delete(slotKey);
-        button.classList.remove('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
-        button.classList.add('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
-    } else {
-        scheduleWizardState.selectedSlotKeys.add(slotKey);
-        button.classList.remove('border-[#e4ebf0]', 'bg-white', 'text-[#1b2f44]');
-        button.classList.add('border-[#31b2a3]', 'bg-[#f0faf9]', 'text-[#1b8a80]');
-    }
+	if (scheduleWizardState.selectedSlotKeys.has(slotKey)) {
+		scheduleWizardState.selectedSlotKeys.delete(slotKey);
+		button.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
+		button.classList.add('border-outline-variant/40', 'bg-surface-container', 'text-on-surface');
+	} else {
+		scheduleWizardState.selectedSlotKeys.add(slotKey);
+		button.classList.remove('border-outline-variant/40', 'bg-surface-container', 'text-on-surface');
+		button.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+	}
 
-    const submitBtn = document.getElementById('scheduleSubmitBtn');
-    const hasSelection = scheduleWizardState.selectedSlotKeys.size > 0;
-    submitBtn.disabled = !hasSelection;
+	const submitBtn = document.getElementById('scheduleSubmitBtn');
+	const hasSelection = scheduleWizardState.selectedSlotKeys.size > 0;
+	submitBtn.disabled = !hasSelection;
 
-    if (hasSelection) {
-        submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
-    } else {
-        submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
-    }
+	if (hasSelection) {
+		submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+	} else {
+		submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+	}
 
-    updateScheduleSelectedCount();
+	updateScheduleSelectedCount();
 }
 
 function updateScheduleSelectedCount() {
-    const selectedCount = scheduleWizardState.selectedSlotKeys.size;
-    const label = selectedCount === 1 ? 'slot selected' : 'slots selected';
-    document.getElementById('scheduleSelectedCount').textContent = `${selectedCount} ${label}`;
+	const selectedCount = scheduleWizardState.selectedSlotKeys.size;
+	const label = selectedCount === 1 ? 'slot selected' : 'slots selected';
+	document.getElementById('scheduleSelectedCount').textContent = `${selectedCount} ${label}`;
 }
 
 async function handleScheduleSubmit() {
-    if (!scheduleWizardState.selectedSlotKeys.size) {
-        showScheduleError('Please select at least one slot to create.');
-        return;
-    }
+	if (!scheduleWizardState.selectedSlotKeys.size) {
+		showScheduleError('Please select at least one slot to create.');
+		return;
+	}
 
-    const submitBtn = document.getElementById('scheduleSubmitBtn');
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
-    submitBtn.textContent = 'Creating...';
+	const submitBtn = document.getElementById('scheduleSubmitBtn');
+	submitBtn.disabled = true;
+	submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+	submitBtn.textContent = 'Creating...';
 
-    const doctorId = document.body.getAttribute('data-doctor-id') || '{{ request.user.id }}';
-    const selectedSlots = scheduleWizardState.generatedSlots.filter((slot) => {
-        const key = `${slot.start}-${slot.end}`;
-        return scheduleWizardState.selectedSlotKeys.has(key);
-    });
+	const doctorId = document.body.getAttribute('data-doctor-id') || '{{ request.user.id }}';
+	const selectedSlots = scheduleWizardState.generatedSlots.filter((slot) => {
+		const key = `${slot.start}-${slot.end}`;
+		return scheduleWizardState.selectedSlotKeys.has(key);
+	});
 
-    try {
-        const scheduleData = {
-            doctor: parseInt(doctorId, 10),
-            date: scheduleWizardState.date,
-            start_time: scheduleWizardState.startTime,
-            end_time: scheduleWizardState.endTime,
-            session_duration: scheduleWizardState.duration,
-            day_type: 'working'
-        };
+	try {
+		const scheduleData = {
+			doctor: parseInt(doctorId, 10),
+			date: scheduleWizardState.date,
+			start_time: scheduleWizardState.startTime,
+			end_time: scheduleWizardState.endTime,
+			session_duration: scheduleWizardState.duration,
+			day_type: 'working'
+		};
 
-        const scheduleResponse = await fetch(`/api/doctors/${doctorId}/availability`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(scheduleData)
-        });
+		const scheduleResponse = await fetch(`/api/doctors/${doctorId}/availability`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify(scheduleData)
+		});
 
-        if (!scheduleResponse.ok) {
-            let detail = 'Error creating schedule.';
-            try {
-                const errBody = await scheduleResponse.json();
-                detail = extractApiErrorMessage(errBody, detail);
-            } catch (e) {
-                // Keep fallback message if response body is not JSON.
-            }
-            throw new Error(detail);
-        }
+		if (!scheduleResponse.ok) {
+			let detail = 'Error creating schedule.';
+			try {
+				const errBody = await scheduleResponse.json();
+				detail = extractApiErrorMessage(errBody, detail);
+			} catch (e) {
+				// Keep fallback message if response body is not JSON.
+			}
+			throw new Error(detail);
+		}
 
-        const scheduleResult = await scheduleResponse.json();
-        if (!scheduleResult.id) {
-            throw new Error('Schedule created but no schedule id returned.');
-        }
+		const scheduleResult = await scheduleResponse.json();
+		if (!scheduleResult.id) {
+			throw new Error('Schedule created but no schedule id returned.');
+		}
 
-        const slotsPayload = {
-            doctor: parseInt(doctorId, 10),
-            schedule: scheduleResult.id,
-            slots: selectedSlots.map((slot) => ({
-                start_time: slot.start,
-                end_time: slot.end
-            }))
-        };
+		const slotsPayload = {
+			doctor: parseInt(doctorId, 10),
+			schedule: scheduleResult.id,
+			slots: selectedSlots.map((slot) => ({
+				start_time: slot.start,
+				end_time: slot.end
+			}))
+		};
 
-        const slotResponse = await fetch('/api/slots/create', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(slotsPayload)
-        });
+		const slotResponse = await fetch('/api/slots/create', {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify(slotsPayload)
+		});
 
-        if (!slotResponse.ok) {
-            let detail = 'Schedule created, but creating slots failed.';
-            try {
-                const errBody = await slotResponse.json();
-                detail = errBody.detail || errBody.error || detail;
-            } catch (e) { /* ignore */ }
-            throw new Error(detail);
-        }
+		if (!slotResponse.ok) {
+			let detail = 'Schedule created, but creating slots failed.';
+			try {
+				const errBody = await slotResponse.json();
+				detail = errBody.detail || errBody.error || detail;
+			} catch (e) { /* ignore */ }
+			throw new Error(detail);
+		}
 
-        closeScheduleModal();
-        location.reload();
-    } catch (error) {
-        showScheduleError(error.message || 'Error creating schedule and slots.');
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
-        submitBtn.textContent = 'Create Selected Slots';
-    }
+		closeScheduleModal();
+		location.reload();
+	} catch (error) {
+		showScheduleError(error.message || 'Error creating schedule and slots.');
+		submitBtn.disabled = false;
+		submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+		submitBtn.textContent = 'Create Selected Slots';
+	}
 }
 
 function showScheduleError(message) {
-    const errorDiv = document.getElementById('scheduleError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
+	const errorDiv = document.getElementById('scheduleError');
+	errorDiv.textContent = message;
+	errorDiv.classList.remove('hidden');
 }
 
 function extractApiErrorMessage(payload, fallbackMessage) {
-    if (!payload || typeof payload !== 'object') {
-        return fallbackMessage;
-    }
+	if (!payload || typeof payload !== 'object') {
+		return fallbackMessage;
+	}
 
-    if (payload.errors && typeof payload.errors === 'object') {
-        const lines = [];
-        Object.entries(payload.errors).forEach(([field, fieldErrors]) => {
-            if (Array.isArray(fieldErrors)) {
-                fieldErrors.forEach((err) => lines.push(`${err}`));
-            } else if (typeof fieldErrors === 'string') {
-                lines.push(`${fieldErrors}`);
-            }
-        });
+	if (payload.errors && typeof payload.errors === 'object') {
+		const lines = [];
+		Object.entries(payload.errors).forEach(([field, fieldErrors]) => {
+			if (Array.isArray(fieldErrors)) {
+				fieldErrors.forEach((err) => lines.push(`${err}`));
+			} else if (typeof fieldErrors === 'string') {
+				lines.push(`${fieldErrors}`);
+			}
+		});
 
-        if (lines.length) {
-            return lines.join(' | ');
-        }
-    }
+		if (lines.length) {
+			return lines.join(' | ');
+		}
+	}
 
-    if (typeof payload.detail === 'string' && payload.detail) {
-        return payload.detail;
-    }
+	if (typeof payload.detail === 'string' && payload.detail) {
+		return payload.detail;
+	}
 
-    if (typeof payload.message === 'string' && payload.message) {
-        return payload.message;
-    }
+	if (typeof payload.message === 'string' && payload.message) {
+		return payload.message;
+	}
 
-    return fallbackMessage;
+	return fallbackMessage;
 }
 
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
+	let cookieValue = null;
+	if (document.cookie && document.cookie !== '') {
+		const cookies = document.cookie.split(';');
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+			if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+				break;
+			}
+		}
+	}
+	return cookieValue;
 }
 
-// Close modal when clicking outside
 document.getElementById('scheduleModal')?.addEventListener('click', function(event) {
-    if (event.target === this) {
-        closeScheduleModal();
-    }
+	if (event.target === this) {
+		closeScheduleModal();
+	}
 });
 
-// Edit Day Type Modal Functions
 function openEditDayTypeModal(dayInfo) {
-    document.getElementById('editDayTypeModal').classList.remove('hidden');
-    document.getElementById('currentDayInfo').value = dayInfo;
+	document.getElementById('editDayTypeModal').classList.remove('hidden');
+	document.getElementById('currentDayInfo').value = dayInfo;
 }
 
 function closeEditDayTypeModal() {
-    document.getElementById('editDayTypeModal').classList.add('hidden');
-    document.getElementById('editDayTypeError').classList.add('hidden');
+	document.getElementById('editDayTypeModal').classList.add('hidden');
+	document.getElementById('editDayTypeError').classList.add('hidden');
 }
 
 function handleEditDayType(event) {
-    event.preventDefault();
-    
-    const dayInfo = document.getElementById('currentDayInfo').value;
-    const newDayType = document.getElementById('newDayType').value;
-    
-    // Extract date from dayInfo (format: "Saturday (2026-04-12)")
-    const dateMatch = dayInfo.match(/\((\d{4}-\d{2}-\d{2})\)/);
-    if (!dateMatch) {
-        showEditDayTypeError('Invalid day format');
-        return;
-    }
-    
-    const date = dateMatch[1];
-    const doctorId = '{{ request.user.id }}';
-    
-    const updateData = {
-        doctor: parseInt(doctorId),
-        date: date,
-        day_type: newDayType
-    };
-    
-    // Send to API endpoint
-    fetch(`/api/doctors/${doctorId}/availability`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(updateData)
-    })
-    .then(response => {
-        if (response.ok) {
-            closeEditDayTypeModal();
-            location.reload();
-        } else {
-            return response.json().then(data => {
-                showEditDayTypeError(data.message || 'Error updating day type');
-            });
-        }
-    })
-    .catch(error => {
-        showEditDayTypeError('Error updating day type: ' + error);
-    });
+	event.preventDefault();
+
+	const dayInfo = document.getElementById('currentDayInfo').value;
+	const newDayType = document.getElementById('newDayType').value;
+
+	const dateMatch = dayInfo.match(/\((\d{4}-\d{2}-\d{2})\)/);
+	if (!dateMatch) {
+		showEditDayTypeError('Invalid day format');
+		return;
+	}
+
+	const date = dateMatch[1];
+	const doctorId = '{{ request.user.id }}';
+
+	const updateData = {
+		doctor: parseInt(doctorId),
+		date: date,
+		day_type: newDayType
+	};
+
+	fetch(`/api/doctors/${doctorId}/availability`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken')
+		},
+		body: JSON.stringify(updateData)
+	})
+	.then(response => {
+		if (response.ok) {
+			closeEditDayTypeModal();
+			location.reload();
+		} else {
+			return response.json().then(data => {
+				showEditDayTypeError(data.message || 'Error updating day type');
+			});
+		}
+	})
+	.catch(error => {
+		showEditDayTypeError('Error updating day type: ' + error);
+	});
 }
 
 function showEditDayTypeError(message) {
-    const errorDiv = document.getElementById('editDayTypeError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
+	const errorDiv = document.getElementById('editDayTypeError');
+	errorDiv.textContent = message;
+	errorDiv.classList.remove('hidden');
 }
 
-// Close modal when clicking outside
 document.getElementById('editDayTypeModal')?.addEventListener('click', function(event) {
-    if (event.target === this) {
-        closeEditDayTypeModal();
-    }
+	if (event.target === this) {
+		closeEditDayTypeModal();
+	}
 });
-</script>
 
-<!-- Edit Day Type Modal -->
-<div id="editDayTypeModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
-            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Edit Day Type</h3>
-            <button onclick="closeEditDayTypeModal()" class="text-[#81909c] hover:text-[#1b2f44]">
-                <span class="material-symbols-outlined text-[24px]">close</span>
-            </button>
-        </div>
-
-        <form id="editDayTypeForm" onsubmit="handleEditDayType(event)" class="p-6 space-y-4">
-            <input type="hidden" id="currentDayInfo">
-            
-            <!-- Day Type Selection -->
-            <div>
-                <label class="block text-sm font-semibold text-[#1b2f44] mb-3">Select Day Type</label>
-                <div class="space-y-3">
-                    <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#e4ebf0] rounded-[8px] hover:bg-[#f8fafb] transition">
-                        <input type="radio" name="dayType" value="working" id="workingDay" class="w-4 h-4">
-                        <div>
-                            <p class="m-0 font-semibold text-[#1b2f44]">Working Day</p>
-                            <p class="m-0 text-xs text-[#81909c]">Doctor is available for consultations</p>
-                        </div>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer p-3 border border-[#e4ebf0] rounded-[8px] hover:bg-[#f8fafb] transition">
-                        <input type="radio" name="dayType" value="off" id="dayOff" class="w-4 h-4">
-                        <div>
-                            <p class="m-0 font-semibold text-[#1b2f44]">Day Off</p>
-                            <p class="m-0 text-xs text-[#81909c]">Doctor is not available</p>
-                        </div>
-                    </label>
-                </div>
-                <input type="hidden" id="newDayType">
-            </div>
-
-            <!-- Error Message -->
-            <div id="editDayTypeError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-sm"></div>
-
-            <!-- Submit Button -->
-            <div class="flex gap-3 pt-4">
-                <button type="button" onclick="updateDayType()" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                    Update
-                </button>
-                <button type="button" onclick="closeEditDayTypeModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
-                    Cancel
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Exception Modal -->
-<div id="exceptionModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
-            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Slot Exception</h3>
-            <button onclick="closeExceptionModal()" class="text-[#81909c] hover:text-[#1b2f44]">
-                <span class="material-symbols-outlined text-[24px]">close</span>
-            </button>
-        </div>
-
-        <div class="p-6 space-y-4">
-            <div>
-                <p class="text-[12px] font-semibold text-[#81909c] mb-2">SELECTED SCHEDULE</p>
-                <p class="text-[16px] font-semibold text-[#31b2a3]" id="exceptionTimeSlot"></p>
-                <p class="text-sm text-[#64748b] mt-1" id="exceptionCurrentStatus"></p>
-            </div>
-
-            <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
-            
-            <div class="flex gap-3 pt-4 flex-wrap">
-                <button type="button" onclick="closeExceptionModal()" class="flex-1 min-w-[100px] px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
-                    Cancel
-                </button>
-                <button type="button" id="setSlotAvailableBtn" onclick="handleMarkException('available')" class="flex-1 min-w-[100px] px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
-                    Not Exception
-                </button>
-                <button type="button" id="setSlotExceptionBtn" onclick="handleMarkException('exception')" class="flex-1 min-w-[100px] px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                    Mark Exception
-                </button>
-            </div>
-            <div class="pt-2 border-t border-[#ecf0f4]">
-                <button type="button" id="deleteSlotBtn" onclick="handleDeleteSlot()" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-[#ffcdd2] bg-[#fff5f5] text-[#c62828] font-semibold rounded-[10px] hover:bg-[#ffebee] transition text-sm">
-                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                    Delete slot
-                </button>
-            </div>
-            
-            <input type="hidden" id="exceptionSlotId">
-            <input type="hidden" id="exceptionSlotStatus">
-        </div>
-    </div>
-</div>
-
-<script>
 const doctorScheduleState = {
-    doctorId: parseInt('{{ request.user.id }}', 10),
-    schedulesByDate: {},
-    slotStatusById: {},
+	doctorId: parseInt('{{ request.user.id }}', 10),
+	schedulesByDate: {},
+	slotStatusById: {},
 };
 
 function parseDateFromDayInfo(dayInfo) {
-    const dateMatch = String(dayInfo || '').match(/\((\d{4}-\d{2}-\d{2})\)/);
-    return dateMatch ? dateMatch[1] : null;
+	const dateMatch = String(dayInfo || '').match(/\((\d{4}-\d{2}-\d{2})\)/);
+	return dateMatch ? dateMatch[1] : null;
 }
 
 function formatSlotStatus(status) {
-    if (status === 'booked') {
-        return 'Booked';
-    }
-    if (status === 'exception') {
-        return 'Exception';
-    }
-    return 'Available';
+	if (status === 'booked') {
+		return 'Booked';
+	}
+	if (status === 'exception') {
+		return 'Exception';
+	}
+	return 'Available';
 }
 
 function styleDayActionButton(button, dayType) {
-    if (!button) {
-        return;
-    }
+	if (!button) {
+		return;
+	}
 
-    const baseClass = 'inline-flex items-center justify-center w-8 h-8 rounded-full transition';
+	const baseClass = 'inline-flex items-center justify-center w-8 h-8 rounded-full transition';
 
-    if (dayType === 'exception') {
-        button.className = `${baseClass} bg-[#fff7ed] text-[#c2410c] hover:bg-[#ffedd5]`;
-        button.title = 'Day is exception. Click to set it back to working.';
-        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>';
-        return;
-    }
+	if (dayType === 'exception') {
+		button.className = `${baseClass} bg-tertiary/10 text-tertiary hover:bg-tertiary/20`;
+		button.title = 'Day is exception. Click to set it back to working.';
+		button.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>';
+		return;
+	}
 
-    if (dayType === 'off') {
-        button.className = `${baseClass} bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]`;
-        button.title = 'Day is off. Click to set it back to working.';
-        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">event_busy</span>';
-        return;
-    }
+	if (dayType === 'off') {
+		button.className = `${baseClass} bg-error-container/20 text-error hover:bg-error-container/30`;
+		button.title = 'Day is off. Click to set it back to working.';
+		button.innerHTML = '<span class="material-symbols-outlined text-[18px]">event_busy</span>';
+		return;
+	}
 
-    button.className = `${baseClass} hover:bg-[#e0f2f1] text-[#187a70]`;
-    button.title = 'Mark this day as exception';
-    button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit</span>';
+	button.className = `${baseClass} hover:bg-surface-container-high text-secondary`;
+	button.title = 'Mark this day as exception';
+	button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit</span>';
 }
 
 function styleSlotButton(button, slotStatus) {
-    if (!button) {
-        return;
-    }
+	if (!button) {
+		return;
+	}
 
-    const timeLabel = button.dataset.slotTime || button.textContent.trim();
-    const baseClass = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full transition';
+	const timeLabel = button.dataset.slotTime || button.textContent.trim();
+	const baseClass = 'inline-flex items-center gap-xs px-md py-xs font-body-sm text-body-sm font-semibold rounded-full transition';
 
-    if (slotStatus === 'exception') {
-        button.className = `${baseClass} bg-[#fff7ed] text-[#9a3412] hover:bg-[#ffedd5] cursor-pointer`;
-        button.innerHTML = `<span class="material-symbols-outlined text-[16px]">warning</span>${timeLabel}`;
-        button.title = 'Exception slot';
-        return;
-    }
+	if (slotStatus === 'exception') {
+		button.className = `${baseClass} bg-tertiary/10 text-tertiary hover:bg-tertiary/20 cursor-pointer`;
+		button.innerHTML = `<span class="material-symbols-outlined text-[16px]">warning</span>${timeLabel}`;
+		button.title = 'Exception slot';
+		return;
+	}
 
-    if (slotStatus === 'booked') {
-        button.className = `${baseClass} bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] cursor-not-allowed`;
-        button.innerHTML = `<span class="material-symbols-outlined text-[16px]">event_busy</span>${timeLabel}`;
-        button.title = 'Booked slot';
-        return;
-    }
+	if (slotStatus === 'booked') {
+		button.className = `${baseClass} bg-surface-container-high text-on-surface-variant hover:bg-surface-container-high cursor-not-allowed`;
+		button.innerHTML = `<span class="material-symbols-outlined text-[16px]">event_busy</span>${timeLabel}`;
+		button.title = 'Booked slot';
+		return;
+	}
 
-    button.className = `${baseClass} bg-[#e0f2f1] text-[#0fa39a] hover:bg-[#c8e6e5] cursor-pointer`;
-    button.innerHTML = `<span class="material-symbols-outlined text-[16px]">schedule</span>${timeLabel}`;
-    button.title = 'Available slot';
+	button.className = `${baseClass} bg-secondary-container/20 text-secondary hover:bg-secondary-container/30 cursor-pointer`;
+	button.innerHTML = `<span class="material-symbols-outlined text-[16px]">schedule</span>${timeLabel}`;
+	button.title = 'Available slot';
 }
 
 function getDayType(dayData) {
-    if (!dayData || !dayData.ids.length) {
-        return 'off';
-    }
-    if (dayData.hasException) {
-        return 'exception';
-    }
-    if (dayData.hasOff) {
-        return 'off';
-    }
-    return 'working';
+	if (!dayData || !dayData.ids.length) {
+		return 'off';
+	}
+	if (dayData.hasException) {
+		return 'exception';
+	}
+	if (dayData.hasOff) {
+		return 'off';
+	}
+	return 'working';
 }
 
 function applyDayStatusesToUI() {
-    const dayRows = Array.from(document.querySelectorAll('[data-day-row]'));
-    dayRows.forEach((row) => {
-        const dayInfo = row.dataset.dayInfo;
-        const date = parseDateFromDayInfo(dayInfo);
-        const dayData = doctorScheduleState.schedulesByDate[date];
-        const dayType = getDayType(dayData);
-        const dayActionButton = row.querySelector('[data-day-action]');
-        styleDayActionButton(dayActionButton, dayType);
-    });
+	const dayRows = Array.from(document.querySelectorAll('[data-day-row]'));
+	dayRows.forEach((row) => {
+		const dayInfo = row.dataset.dayInfo;
+		const date = parseDateFromDayInfo(dayInfo);
+		const dayData = doctorScheduleState.schedulesByDate[date];
+		const dayType = getDayType(dayData);
+		const dayActionButton = row.querySelector('[data-day-action]');
+		styleDayActionButton(dayActionButton, dayType);
+	});
 }
 
 function applySlotStatusesToUI() {
-    const slotButtons = Array.from(document.querySelectorAll('[data-slot-action][data-slot-id]'));
-    slotButtons.forEach((button) => {
-        const slotId = parseInt(button.dataset.slotId, 10);
-        const slotStatus = doctorScheduleState.slotStatusById[slotId] || 'available';
-        button.dataset.slotStatus = slotStatus;
-        styleSlotButton(button, slotStatus);
-    });
+	const slotButtons = Array.from(document.querySelectorAll('[data-slot-action][data-slot-id]'));
+	slotButtons.forEach((button) => {
+		const slotId = parseInt(button.dataset.slotId, 10);
+		const slotStatus = doctorScheduleState.slotStatusById[slotId] || 'available';
+		button.dataset.slotStatus = slotStatus;
+		styleSlotButton(button, slotStatus);
+	});
 }
 
 function buildSchedulesByDate(schedules) {
-    return schedules.reduce((groups, schedule) => {
-        if (!groups[schedule.date]) {
-            groups[schedule.date] = {
-                ids: [],
-                hasException: false,
-                hasOff: false,
-                hasWorking: false,
-            };
-        }
+	return schedules.reduce((groups, schedule) => {
+		if (!groups[schedule.date]) {
+			groups[schedule.date] = {
+				ids: [],
+				hasException: false,
+				hasOff: false,
+				hasWorking: false,
+			};
+		}
 
-        groups[schedule.date].ids.push(schedule.id);
-        if (schedule.day_type === 'exception') {
-            groups[schedule.date].hasException = true;
-        }
-        if (schedule.day_type === 'off') {
-            groups[schedule.date].hasOff = true;
-        }
-        if (schedule.day_type === 'working') {
-            groups[schedule.date].hasWorking = true;
-        }
+		groups[schedule.date].ids.push(schedule.id);
+		if (schedule.day_type === 'exception') {
+			groups[schedule.date].hasException = true;
+		}
+		if (schedule.day_type === 'off') {
+			groups[schedule.date].hasOff = true;
+		}
+		if (schedule.day_type === 'working') {
+			groups[schedule.date].hasWorking = true;
+		}
 
-        return groups;
-    }, {});
+		return groups;
+	}, {});
 }
 
 async function fetchAvailabilityForDoctor() {
-    const response = await fetch(`/api/doctors/${doctorScheduleState.doctorId}/availability`);
-    if (!response.ok) {
-        throw new Error('Unable to load doctor availability.');
-    }
-    return response.json();
+	const response = await fetch(`/api/doctors/${doctorScheduleState.doctorId}/availability`);
+	if (!response.ok) {
+		throw new Error('Unable to load doctor availability.');
+	}
+	return response.json();
 }
 
 async function fetchSlotsForWeek() {
-    const weekDates = new Set(
-        Array.from(document.querySelectorAll('[data-day-row]'))
-            .map((row) => parseDateFromDayInfo(row.dataset.dayInfo))
-            .filter(Boolean)
-    );
+	const weekDates = new Set(
+		Array.from(document.querySelectorAll('[data-day-row]'))
+			.map((row) => parseDateFromDayInfo(row.dataset.dayInfo))
+			.filter(Boolean)
+	);
 
-    const response = await fetch(`/api/slots/${doctorScheduleState.doctorId}`);
-    if (!response.ok) {
-        throw new Error('Unable to load doctor slots.');
-    }
+	const response = await fetch(`/api/slots/${doctorScheduleState.doctorId}`);
+	if (!response.ok) {
+		throw new Error('Unable to load doctor slots.');
+	}
 
-    const slots = await response.json();
-    return slots.filter((slot) => weekDates.has(slot.date));
+	const slots = await response.json();
+	return slots.filter((slot) => weekDates.has(slot.date));
 }
 
 async function syncDoctorScheduleState() {
-    try {
-        const [schedules, slots] = await Promise.all([
-            fetchAvailabilityForDoctor(),
-            fetchSlotsForWeek(),
-        ]);
+	try {
+		const [schedules, slots] = await Promise.all([
+			fetchAvailabilityForDoctor(),
+			fetchSlotsForWeek(),
+		]);
 
-        doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
-        doctorScheduleState.slotStatusById = slots.reduce((acc, slot) => {
-            acc[slot.id] = slot.status;
-            return acc;
-        }, {});
+		doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
+		doctorScheduleState.slotStatusById = slots.reduce((acc, slot) => {
+			acc[slot.id] = slot.status;
+			return acc;
+		}, {});
 
-        applyDayStatusesToUI();
-        applySlotStatusesToUI();
-    } catch (error) {
-        console.error(error);
-    }
+		applyDayStatusesToUI();
+		applySlotStatusesToUI();
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 function setDayActionLoading(button, isLoading) {
-    if (!button) {
-        return;
-    }
+	if (!button) {
+		return;
+	}
 
-    button.disabled = isLoading;
-    button.classList.toggle('opacity-70', isLoading);
-    button.classList.toggle('cursor-not-allowed', isLoading);
-    if (isLoading) {
-        button.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>';
-    }
+	button.disabled = isLoading;
+	button.classList.toggle('opacity-70', isLoading);
+	button.classList.toggle('cursor-not-allowed', isLoading);
+	if (isLoading) {
+		button.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>';
+	}
 }
 
 async function patchSlotStatus(slotId, status) {
-    const response = await fetch(`/api/slots/${slotId}/update`, {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ status })
-    });
+	const response = await fetch(`/api/slots/${slotId}/update`, {
+		method: 'PATCH',
+		credentials: 'same-origin',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken')
+		},
+		body: JSON.stringify({ status })
+	});
 
-    if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || data.message || 'Failed to update slot status.');
-    }
+	if (!response.ok) {
+		const data = await response.json().catch(() => ({}));
+		throw new Error(data.error || data.message || 'Failed to update slot status.');
+	}
 }
 
 async function markDayException(dayInfo, scheduleId) {
-    const date = parseDateFromDayInfo(dayInfo);
-    if (!date) {
-        alert('Invalid day format.');
-        return;
-    }
+	const date = parseDateFromDayInfo(dayInfo);
+	if (!date) {
+		alert('Invalid day format.');
+		return;
+	}
 
-    let dayData = doctorScheduleState.schedulesByDate[date];
-    if (!dayData || !dayData.ids.length) {
-        try {
-            const schedules = await fetchAvailabilityForDoctor();
-            doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
-            dayData = doctorScheduleState.schedulesByDate[date];
-        } catch (error) {
-            alert(error.message || 'Unable to read day schedule.');
-            return;
-        }
-    }
+	let dayData = doctorScheduleState.schedulesByDate[date];
+	if (!dayData || !dayData.ids.length) {
+		try {
+			const schedules = await fetchAvailabilityForDoctor();
+			doctorScheduleState.schedulesByDate = buildSchedulesByDate(schedules);
+			dayData = doctorScheduleState.schedulesByDate[date];
+		} catch (error) {
+			alert(error.message || 'Unable to read day schedule.');
+			return;
+		}
+	}
 
-    if (!dayData || !dayData.ids.length) {
-        alert('No schedule exists for this day.');
-        return;
-    }
+	if (!dayData || !dayData.ids.length) {
+		alert('No schedule exists for this day.');
+		return;
+	}
 
-    const currentDayType = getDayType(dayData);
-    const targetDayType = (currentDayType === 'exception' || currentDayType === 'off') ? 'working' : 'exception';
-    const confirmMessage = targetDayType === 'exception'
-        ? `Mark ${dayInfo} as exception? Available slots will become exception.`
-        : `Remove exception on ${dayInfo}? Exception slots will become available.`;
+	const currentDayType = getDayType(dayData);
+	const targetDayType = (currentDayType === 'exception' || currentDayType === 'off') ? 'working' : 'exception';
+	const confirmMessage = targetDayType === 'exception'
+		? `Mark ${dayInfo} as exception? Available slots will become exception.`
+		: `Remove exception on ${dayInfo}? Exception slots will become available.`;
 
-    if (!confirm(confirmMessage)) {
-        return;
-    }
+	if (!confirm(confirmMessage)) {
+		return;
+	}
 
-    const dayActionButton = Array.from(document.querySelectorAll('[data-day-row]'))
-        .find((row) => row.dataset.dayInfo === dayInfo)
-        ?.querySelector('[data-day-action]');
-    setDayActionLoading(dayActionButton, true);
+	const dayActionButton = Array.from(document.querySelectorAll('[data-day-row]'))
+		.find((row) => row.dataset.dayInfo === dayInfo)
+		?.querySelector('[data-day-action]');
+	setDayActionLoading(dayActionButton, true);
 
-    try {
-        const scheduleIds = scheduleId ? [parseInt(scheduleId, 10)] : dayData.ids;
-        const uniqueScheduleIds = Array.from(new Set(scheduleIds.filter(Boolean)));
+	try {
+		const scheduleIds = scheduleId ? [parseInt(scheduleId, 10)] : dayData.ids;
+		const uniqueScheduleIds = Array.from(new Set(scheduleIds.filter(Boolean)));
 
-        const scheduleRequests = uniqueScheduleIds.map((id) => fetch(`/api/doctors/${doctorScheduleState.doctorId}/exceptions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                schedule: id,
-                day_type: targetDayType,
-            })
-        }));
+		const scheduleRequests = uniqueScheduleIds.map((id) => fetch(`/api/doctors/${doctorScheduleState.doctorId}/exceptions`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({
+				schedule: id,
+				day_type: targetDayType,
+			})
+		}));
 
-        const scheduleResponses = await Promise.all(scheduleRequests);
-        const failedScheduleResponse = scheduleResponses.find((response) => !response.ok);
-        if (failedScheduleResponse) {
-            const data = await failedScheduleResponse.json().catch(() => ({}));
-            throw new Error(data.detail || data.message || 'Unable to update day status.');
-        }
+		const scheduleResponses = await Promise.all(scheduleRequests);
+		const failedScheduleResponse = scheduleResponses.find((response) => !response.ok);
+		if (failedScheduleResponse) {
+			const data = await failedScheduleResponse.json().catch(() => ({}));
+			throw new Error(data.detail || data.message || 'Unable to update day status.');
+		}
 
-        const slotResponse = await fetch(`/api/slots/${doctorScheduleState.doctorId}?date=${encodeURIComponent(date)}`);
-        if (!slotResponse.ok) {
-            throw new Error('Day status updated, but unable to read slots for sync.');
-        }
+		const slotResponse = await fetch(`/api/slots/${doctorScheduleState.doctorId}?date=${encodeURIComponent(date)}`);
+		if (!slotResponse.ok) {
+			throw new Error('Day status updated, but unable to read slots for sync.');
+		}
 
-        const daySlots = await slotResponse.json();
-        let updates = [];
-        if (targetDayType === 'exception') {
-            updates = daySlots
-                .filter((slot) => slot.status === 'available')
-                .map((slot) => patchSlotStatus(slot.id, 'exception'));
-        } else {
-            updates = daySlots
-                .filter((slot) => slot.status === 'exception')
-                .map((slot) => patchSlotStatus(slot.id, 'available'));
-        }
+		const daySlots = await slotResponse.json();
+		let updates = [];
+		if (targetDayType === 'exception') {
+			updates = daySlots
+				.filter((slot) => slot.status === 'available')
+				.map((slot) => patchSlotStatus(slot.id, 'exception'));
+		} else {
+			updates = daySlots
+				.filter((slot) => slot.status === 'exception')
+				.map((slot) => patchSlotStatus(slot.id, 'available'));
+		}
 
-        if (updates.length) {
-            await Promise.all(updates);
-        }
+		if (updates.length) {
+			await Promise.all(updates);
+		}
 
-        await syncDoctorScheduleState();
-    } catch (error) {
-        alert(error.message || 'Error updating day exception.');
-    } finally {
-        setDayActionLoading(dayActionButton, false);
-        applyDayStatusesToUI();
-    }
+		await syncDoctorScheduleState();
+	} catch (error) {
+		alert(error.message || 'Error updating day exception.');
+	} finally {
+		setDayActionLoading(dayActionButton, false);
+		applyDayStatusesToUI();
+	}
 }
 
 function updateDayType() {
-    const workingDayRadio = document.getElementById('workingDay');
-    const dayOffRadio = document.getElementById('dayOff');
-    
-    if (workingDayRadio.checked) {
-        document.getElementById('newDayType').value = 'working';
-    } else if (dayOffRadio.checked) {
-        document.getElementById('newDayType').value = 'off';
-    } else {
-        showEditDayTypeError('Please select a day type');
-        return;
-    }
-    
-    const form = document.getElementById('editDayTypeForm');
-    const event = new Event('submit');
-    form.dispatchEvent(event);
+	const workingDayRadio = document.getElementById('workingDay');
+	const dayOffRadio = document.getElementById('dayOff');
+
+	if (workingDayRadio.checked) {
+		document.getElementById('newDayType').value = 'working';
+	} else if (dayOffRadio.checked) {
+		document.getElementById('newDayType').value = 'off';
+	} else {
+		showEditDayTypeError('Please select a day type');
+		return;
+	}
+
+	const form = document.getElementById('editDayTypeForm');
+	const event = new Event('submit');
+	form.dispatchEvent(event);
 }
 
-// Exception Functions
 async function openExceptionModal(slotId, timeSlot) {
-    document.getElementById('exceptionModal').classList.remove('hidden');
-    document.getElementById('exceptionSlotId').value = slotId;
-    document.getElementById('exceptionSlotStatus').value = '';
-    document.getElementById('exceptionTimeSlot').textContent = timeSlot;
-    document.getElementById('exceptionCurrentStatus').textContent = 'Loading status...';
-    document.getElementById('exceptionError').classList.add('hidden');
+	document.getElementById('exceptionModal').classList.remove('hidden');
+	document.getElementById('exceptionSlotId').value = slotId;
+	document.getElementById('exceptionSlotStatus').value = '';
+	document.getElementById('exceptionTimeSlot').textContent = timeSlot;
+	document.getElementById('exceptionCurrentStatus').textContent = 'Loading status...';
+	document.getElementById('exceptionError').classList.add('hidden');
 
-    setExceptionActionButtonsDisabled(true);
-    setDeleteSlotButtonDisabled(true);
+	setExceptionActionButtonsDisabled(true);
+	setDeleteSlotButtonDisabled(true);
 
-    try {
-        const response = await fetch(`/api/slots/${slotId}/details`, { credentials: 'same-origin' });
-        if (!response.ok) {
-            throw new Error('Unable to load slot details.');
-        }
+	try {
+		const response = await fetch(`/api/slots/${slotId}/details`, { credentials: 'same-origin' });
+		if (!response.ok) {
+			throw new Error('Unable to load slot details.');
+		}
 
-        const slot = await response.json();
-        document.getElementById('exceptionSlotStatus').value = slot.status;
-        document.getElementById('exceptionCurrentStatus').textContent = `Current status: ${formatSlotStatus(slot.status)}`;
+		const slot = await response.json();
+		document.getElementById('exceptionSlotStatus').value = slot.status;
+		document.getElementById('exceptionCurrentStatus').textContent = `Current status: ${formatSlotStatus(slot.status)}`;
 
-        const lockButtons = slot.status === 'booked';
-        setExceptionActionButtonsDisabled(lockButtons);
-        setDeleteSlotButtonDisabled(lockButtons);
-        if (lockButtons) {
-            showExceptionError('Booked slots cannot be changed or deleted from this view.');
-        }
-    } catch (error) {
-        showExceptionError(error.message || 'Unable to load slot details.');
-        setExceptionActionButtonsDisabled(true);
-        setDeleteSlotButtonDisabled(true);
-    }
+		const lockButtons = slot.status === 'booked';
+		setExceptionActionButtonsDisabled(lockButtons);
+		setDeleteSlotButtonDisabled(lockButtons);
+		if (lockButtons) {
+			showExceptionError('Booked slots cannot be changed or deleted from this view.');
+		}
+	} catch (error) {
+		showExceptionError(error.message || 'Unable to load slot details.');
+		setExceptionActionButtonsDisabled(true);
+		setDeleteSlotButtonDisabled(true);
+	}
 }
 
 function setDeleteSlotButtonDisabled(isDisabled) {
-    const btn = document.getElementById('deleteSlotBtn');
-    if (!btn) return;
-    btn.disabled = isDisabled;
-    btn.classList.toggle('opacity-50', isDisabled);
-    btn.classList.toggle('cursor-not-allowed', isDisabled);
+	const btn = document.getElementById('deleteSlotBtn');
+	if (!btn) return;
+	btn.disabled = isDisabled;
+	btn.classList.toggle('opacity-50', isDisabled);
+	btn.classList.toggle('cursor-not-allowed', isDisabled);
 }
 
 async function handleDeleteSlot() {
-    const slotId = document.getElementById('exceptionSlotId').value;
-    const currentStatus = document.getElementById('exceptionSlotStatus').value;
+	const slotId = document.getElementById('exceptionSlotId').value;
+	const currentStatus = document.getElementById('exceptionSlotStatus').value;
 
-    if (!slotId) {
-        showExceptionError('No slot selected.');
-        return;
-    }
-    if (currentStatus === 'booked') {
-        showExceptionError('Booked slots cannot be deleted.');
-        return;
-    }
-    if (!confirm('Delete this slot permanently? Patients will no longer see it.')) {
-        return;
-    }
+	if (!slotId) {
+		showExceptionError('No slot selected.');
+		return;
+	}
+	if (currentStatus === 'booked') {
+		showExceptionError('Booked slots cannot be deleted.');
+		return;
+	}
+	if (!confirm('Delete this slot permanently? Patients will no longer see it.')) {
+		return;
+	}
 
-    document.getElementById('exceptionError').classList.add('hidden');
-    setDeleteSlotButtonDisabled(true);
-    setExceptionActionButtonsDisabled(true);
+	document.getElementById('exceptionError').classList.add('hidden');
+	setDeleteSlotButtonDisabled(true);
+	setExceptionActionButtonsDisabled(true);
 
-    try {
-        const response = await fetch(`/api/slots/${slotId}/delete`, {
-            method: 'DELETE',
-            credentials: 'same-origin',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            },
-        });
-        if (response.status === 204) {
-            closeExceptionModal();
-            location.reload();
-            return;
-        }
-        let msg = 'Could not delete slot.';
-        try {
-            const data = await response.json();
-            msg = data.detail || msg;
-        } catch (e) { /* ignore */ }
-        showExceptionError(msg);
-    } catch (error) {
-        showExceptionError(error.message || 'Could not delete slot.');
-    } finally {
-        setDeleteSlotButtonDisabled(false);
-        setExceptionActionButtonsDisabled(false);
-    }
+	try {
+		const response = await fetch(`/api/slots/${slotId}/delete`, {
+			method: 'DELETE',
+			credentials: 'same-origin',
+			headers: {
+				'X-CSRFToken': getCookie('csrftoken'),
+			},
+		});
+		if (response.status === 204) {
+			closeExceptionModal();
+			location.reload();
+			return;
+		}
+		let msg = 'Could not delete slot.';
+		try {
+			const data = await response.json();
+			msg = data.detail || msg;
+		} catch (e) { /* ignore */ }
+		showExceptionError(msg);
+	} catch (error) {
+		showExceptionError(error.message || 'Could not delete slot.');
+	} finally {
+		setDeleteSlotButtonDisabled(false);
+		setExceptionActionButtonsDisabled(false);
+	}
 }
 
 function closeExceptionModal() {
-    document.getElementById('exceptionModal').classList.add('hidden');
-    document.getElementById('exceptionError').classList.add('hidden');
+	document.getElementById('exceptionModal').classList.add('hidden');
+	document.getElementById('exceptionError').classList.add('hidden');
 }
 
 function setExceptionButtonsLoading(isLoading) {
-    const availableBtn = document.getElementById('setSlotAvailableBtn');
-    const exceptionBtn = document.getElementById('setSlotExceptionBtn');
+	const availableBtn = document.getElementById('setSlotAvailableBtn');
+	const exceptionBtn = document.getElementById('setSlotExceptionBtn');
 
-    [availableBtn, exceptionBtn].forEach((button) => {
-        if (!button) {
-            return;
-        }
-        button.disabled = isLoading;
-        button.classList.toggle('opacity-50', isLoading);
-        button.classList.toggle('cursor-not-allowed', isLoading);
-    });
+	[availableBtn, exceptionBtn].forEach((button) => {
+		if (!button) {
+			return;
+		}
+		button.disabled = isLoading;
+		button.classList.toggle('opacity-50', isLoading);
+		button.classList.toggle('cursor-not-allowed', isLoading);
+	});
 }
 
 function setExceptionActionButtonsDisabled(isDisabled) {
-    const availableBtn = document.getElementById('setSlotAvailableBtn');
-    const exceptionBtn = document.getElementById('setSlotExceptionBtn');
+	const availableBtn = document.getElementById('setSlotAvailableBtn');
+	const exceptionBtn = document.getElementById('setSlotExceptionBtn');
 
-    [availableBtn, exceptionBtn].forEach((button) => {
-        if (!button) {
-            return;
-        }
-        button.disabled = isDisabled;
-        button.classList.toggle('opacity-50', isDisabled);
-        button.classList.toggle('cursor-not-allowed', isDisabled);
-    });
+	[availableBtn, exceptionBtn].forEach((button) => {
+		if (!button) {
+			return;
+		}
+		button.disabled = isDisabled;
+		button.classList.toggle('opacity-50', isDisabled);
+		button.classList.toggle('cursor-not-allowed', isDisabled);
+	});
 }
 
 async function handleMarkException(targetStatus) {
-    const slotId = document.getElementById('exceptionSlotId').value;
-    const currentStatus = document.getElementById('exceptionSlotStatus').value;
+	const slotId = document.getElementById('exceptionSlotId').value;
+	const currentStatus = document.getElementById('exceptionSlotStatus').value;
 
-    if (!slotId) {
-        showExceptionError('No slot selected.');
-        return;
-    }
+	if (!slotId) {
+		showExceptionError('No slot selected.');
+		return;
+	}
 
-    if (currentStatus === 'booked') {
-        showExceptionError('Booked slots cannot be changed from this view.');
-        return;
-    }
+	if (currentStatus === 'booked') {
+		showExceptionError('Booked slots cannot be changed from this view.');
+		return;
+	}
 
-    if (targetStatus === currentStatus) {
-        closeExceptionModal();
-        return;
-    }
+	if (targetStatus === currentStatus) {
+		closeExceptionModal();
+		return;
+	}
 
-    setExceptionButtonsLoading(true);
-    document.getElementById('exceptionError').classList.add('hidden');
+	setExceptionButtonsLoading(true);
+	document.getElementById('exceptionError').classList.add('hidden');
 
-    try {
-        await patchSlotStatus(slotId, targetStatus);
-        doctorScheduleState.slotStatusById[parseInt(slotId, 10)] = targetStatus;
-        applySlotStatusesToUI();
-        closeExceptionModal();
-    } catch (error) {
-        showExceptionError(error.message || 'Error updating slot status.');
-    } finally {
-        setExceptionButtonsLoading(false);
-    }
+	try {
+		await patchSlotStatus(slotId, targetStatus);
+		doctorScheduleState.slotStatusById[parseInt(slotId, 10)] = targetStatus;
+		applySlotStatusesToUI();
+		closeExceptionModal();
+	} catch (error) {
+		showExceptionError(error.message || 'Error updating slot status.');
+	} finally {
+		setExceptionButtonsLoading(false);
+	}
 }
 
 function showExceptionError(message) {
-    const errorDiv = document.getElementById('exceptionError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
+	const errorDiv = document.getElementById('exceptionError');
+	errorDiv.textContent = message;
+	errorDiv.classList.remove('hidden');
 }
 
 document.getElementById('exceptionModal')?.addEventListener('click', function(event) {
-    if (event.target === this) {
-        closeExceptionModal();
-    }
+	if (event.target === this) {
+		closeExceptionModal();
+	}
 });
 
 syncDoctorScheduleState();
 </script>
-
 {% endblock %}
