@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block show_header %}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block main_classes %}p-0 m-0 max-w-none w-full flex-grow overflow-hidden{% endblock %}
+
+{% block extra_head %}
+<style>
+	.dash-nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 14px; font-weight: 600; transition: background 0.15s, color 0.15s; border: 1px solid transparent; }
+	.dash-nav-link:hover { background: rgba(45, 52, 73, 0.6); color: #dae2fd; }
+	.dash-nav-active { background: rgba(49, 49, 192, 0.18); color: #c0c1ff; border-color: rgba(49, 49, 192, 0.35); }
+	.dash-nav-active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+	.dash-nav-mobile { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0.5rem 0.75rem; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #bbcabf; transition: color 0.15s; min-width: 4.5rem; }
+	.dash-nav-mobile-active { color: #c0c1ff; }
+	.dash-nav-mobile-active .material-symbols-outlined { font-variation-settings: 'FILL' 1; color: #c0c1ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-[100dvh] overflow-hidden bg-background">
+	<aside class="hidden lg:flex w-[256px] shrink-0 flex-col border-r border-outline-variant/30 bg-surface-container-lowest">
+		<div class="p-lg border-b border-outline-variant/20">
+			<a href="{% block dashboard_home_url %}{% url 'auth:home' %}{% endblock %}" class="flex items-center gap-sm group">
+				<div class="w-11 h-11 bg-primary-container rounded-xl flex items-center justify-center glass-edge shadow-lg group-hover:shadow-primary/20 transition-shadow shrink-0">
+					<span class="material-symbols-outlined text-on-primary-container text-[24px]" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+				</div>
+				<div class="min-w-0">
+					<p class="font-headline-md text-headline-md text-on-surface m-0 leading-tight truncate">ClinixCare</p>
+					<p class="font-label-sm text-label-sm text-on-surface-variant m-0 truncate">{% block dashboard_role_label %}Portal{% endblock %}</p>
+				</div>
+			</a>
+		</div>
+
+		<nav id="sidebar-nav-container" class="flex-1 overflow-y-auto p-sm space-y-xs" aria-label="Sidebar navigation">
+			{% block dashboard_nav %}{% endblock %}
+		</nav>
+
+		<div class="p-md border-t border-outline-variant/20 mt-auto">
+			<div class="flex items-center gap-sm mb-md px-xs">
+				<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container grid place-items-center font-label-md text-label-md font-bold shrink-0">
+					{{ user_name|slice:":1"|upper }}
+				</div>
+				<div class="min-w-0 flex-1">
+					<p class="font-body-sm text-body-sm text-on-surface font-semibold m-0 truncate">{{ user_name }}</p>
+					<p class="font-label-sm text-label-sm text-on-surface-variant m-0">{% block dashboard_user_role %}{{ user_role|title|default:"User" }}{% endblock %}</p>
+				</div>
+			</div>
+			<a href="{% url 'auth:logout' %}" class="dash-nav-link text-on-surface-variant w-full">
+				<span class="material-symbols-outlined text-[20px]">logout</span>
+				<span>Sign Out</span>
+			</a>
+		</div>
+	</aside>
+
+	<div id="dash-drawer-backdrop" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm hidden lg:hidden" aria-hidden="true"></div>
+	<aside id="dash-drawer" class="fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-surface-container-lowest border-r border-outline-variant/30 -translate-x-full transition-transform duration-200 lg:hidden">
+		<div class="flex items-center justify-between p-md border-b border-outline-variant/20">
+			<p class="font-headline-md text-headline-md text-on-surface m-0">Menu</p>
+			<button type="button" id="dash-drawer-close" class="p-xs text-on-surface-variant hover:text-on-surface" aria-label="Close menu">
+				<span class="material-symbols-outlined">close</span>
+			</button>
+		</div>
+		<nav id="drawer-nav-container" class="flex-1 overflow-y-auto p-sm space-y-xs" aria-label="Mobile drawer navigation"></nav>
+		<div class="p-md border-t border-outline-variant/20">
+			<a href="{% url 'auth:logout' %}" class="dash-nav-link text-on-surface-variant w-full">
+				<span class="material-symbols-outlined text-[20px]">logout</span>
+				<span>Sign Out</span>
+			</a>
+		</div>
+	</aside>
+
+	<div class="flex-1 flex flex-col min-w-0 min-h-0">
+		<header class="shrink-0 flex items-center gap-md justify-between px-margin-mobile lg:px-lg py-sm border-b border-outline-variant/30 bg-surface-container-lowest/80 backdrop-blur-md">
+			<div class="flex items-center gap-sm min-w-0 flex-1">
+				<button type="button" id="dash-drawer-open" class="lg:hidden p-sm rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-on-surface shrink-0" aria-label="Open menu">
+					<span class="material-symbols-outlined">menu</span>
+				</button>
+				<div class="min-w-0">
+					<nav class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-0.5 hidden sm:block" aria-label="Breadcrumb">
+						<span>ClinixCare</span>
+						<span class="mx-xs opacity-40">/</span>
+						<span>{% block dashboard_breadcrumb %}Portal{% endblock %}</span>
+					</nav>
+					<h1 class="font-headline-md text-headline-md text-on-surface m-0 truncate">{% block page_title %}Dashboard{% endblock %}</h1>
+				</div>
+			</div>
+			<div class="flex items-center gap-sm shrink-0">
+				{% block page_actions %}{% endblock %}
+				<div class="lg:hidden w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container grid place-items-center font-label-md text-label-md font-bold">
+					{{ user_name|slice:":1"|upper }}
+				</div>
+			</div>
+		</header>
+
+		{% block page_subheader %}{% endblock %}
+
+		<div class="flex-1 overflow-y-auto min-h-0 pb-20 lg:pb-0">
+			<div class="p-margin-mobile lg:p-lg max-w-[1440px] mx-auto w-full">
+				{% block dashboard_header %}{% endblock %}
+
+				<div class="{% block workspace_classes %}rounded-xl border border-outline-variant/25 bg-surface-container-low rim-light{% endblock %} {% block workspace_padding %}p-md lg:p-lg{% endblock %}">
+					{% block dashboard_content %}{% endblock %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 flex justify-around border-t border-outline-variant/30 bg-surface-container-lowest/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]" aria-label="Mobile navigation">
+	{% block dashboard_mobile_nav %}{% endblock %}
+</nav>
+
+<script>
+(function () {
+	const openBtn = document.getElementById('dash-drawer-open');
+	const closeBtn = document.getElementById('dash-drawer-close');
+	const drawer = document.getElementById('dash-drawer');
+	const backdrop = document.getElementById('dash-drawer-backdrop');
+	const sidebarNav = document.getElementById('sidebar-nav-container');
+	const drawerNav = document.getElementById('drawer-nav-container');
+	if (sidebarNav && drawerNav) drawerNav.innerHTML = sidebarNav.innerHTML;
+	function openDrawer() {
+		drawer.classList.remove('-translate-x-full');
+		backdrop.classList.remove('hidden');
+		document.body.style.overflow = 'hidden';
+	}
+	function closeDrawer() {
+		drawer.classList.add('-translate-x-full');
+		backdrop.classList.add('hidden');
+		document.body.style.overflow = '';
+	}
+	openBtn?.addEventListener('click', openDrawer);
+	closeBtn?.addEventListener('click', closeDrawer);
+	backdrop?.addEventListener('click', closeDrawer);
+	drawerNav?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeDrawer));
+})();
+</script>
+{% endblock %}

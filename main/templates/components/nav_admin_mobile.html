@@ -1,0 +1,16 @@
+<a href="{% url 'dashboards:admin_dashboard' %}" class="dash-nav-mobile {% if active == 'dashboard' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">dashboard</span>
+	<span>Overview</span>
+</a>
+<a href="{% url 'managements:admin_appointments' %}" class="dash-nav-mobile {% if active == 'appointments' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">event</span>
+	<span>Appts</span>
+</a>
+<a href="{% url 'managements:doctor_schedule' %}" class="dash-nav-mobile {% if active == 'schedules' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">calendar_month</span>
+	<span>Schedules</span>
+</a>
+<a href="{% url 'managements:user_managements' %}" class="dash-nav-mobile {% if active == 'users' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">group</span>
+	<span>Users</span>
+</a>

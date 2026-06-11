@@ -1,0 +1,16 @@
+<a href="{% url 'dashboards:doctor_dashboard' %}" class="dash-nav-link {% if active == 'dashboard' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">dashboard</span>
+	<span>Today</span>
+</a>
+<a href="{% url 'schedule:doctor_schedule' %}" class="dash-nav-link {% if active == 'schedule' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">schedule</span>
+	<span>My Schedule</span>
+</a>
+<a href="{% url 'schedule:patient_queue' %}" class="dash-nav-link {% if active == 'queue' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">group</span>
+	<span>Patient Queue</span>
+</a>
+<a href="{% url 'consultations:index' %}" class="dash-nav-link {% if active == 'consultations' %}dash-nav-active{% else %}text-on-surface-variant{% endif %}">
+	<span class="material-symbols-outlined text-[20px]">clinical_notes</span>
+	<span>Consultations</span>
+</a>

@@ -1,146 +1,119 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}Consultation Form | MediCare{% endblock %}
-
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
-
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
-
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Doctor navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">dashboard</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:doctor_schedule' %}">
-                <span class="material-symbols-outlined text-[19px]">schedule</span>
-                My Schedule
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:patient_queue' %}">
-                <span class="material-symbols-outlined text-[19px]">group</span>
-                Patient Queue
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'consultations:index' %}">
-                <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
-                Consultations
-            </a>
-        </nav>
-
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p class="m-0 text-xs text-[#9fc7c7]">Doctor</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
-
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                    <a href="{% url 'consultations:index' %}" class="inline-flex items-center gap-1 text-[#4d6478] hover:text-[#1b2f44] transition text-sm">
-                        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                        Back
-                    </a>
-                    <h2 class="m-0 mt-1 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Consultation Form</h2>
-                    <p class="m-0 mt-1 text-base text-[#6f7b88]">APT-{{ appointment.id|stringformat:"03d" }}</p>
-                </div>
-                <div class="inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
-            </div>
-
-            <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Patient</p>
-                        <p class="m-0 mt-1 font-semibold text-[#1b2f44]">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</p>
-                    </div>
-                    <div>
-                        <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Doctor</p>
-                        <p class="m-0 mt-1 font-semibold text-[#1b2f44]">{{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</p>
-                    </div>
-                    <div>
-                        <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Date</p>
-                        <p class="m-0 mt-1 font-semibold text-[#1b2f44]">{{ appointment.date }}</p>
-                    </div>
-                    <div>
-                        <p class="m-0 text-xs text-[#8091a3] uppercase tracking-wide">Time</p>
-                        <p class="m-0 mt-1 font-semibold text-[#1b2f44]">{{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}</p>
-                    </div>
-                </div>
-            </div>
-
-            {% if form.non_field_errors %}
-                <div class="mb-4 rounded-[10px] border border-[#f5c2c7] bg-[#f8d7da] px-4 py-3 text-[#842029] text-sm">
-                    {% for error in form.non_field_errors %}
-                        <p class="m-0{% if not forloop.last %} mb-1{% endif %}">{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <form method="post" class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 sm:p-5">
-                {% csrf_token %}
-
-                <div class="mb-4">
-                    <label for="{{ form.diagnosis.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Diagnosis</label>
-                    {{ form.diagnosis }}
-                    {% if form.diagnosis.errors %}
-                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.diagnosis.errors|striptags }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="mb-4">
-                    <label for="{{ form.notes.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Clinical Notes</label>
-                    {{ form.notes }}
-                    {% if form.notes.errors %}
-                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.notes.errors|striptags }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="mb-4">
-                    <label for="{{ form.prescriptions.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Prescriptions</label>
-                    {{ form.prescriptions }}
-                    {% if form.prescriptions.errors %}
-                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.prescriptions.errors|striptags }}</p>
-                    {% endif %}
-                    <p class="m-0 mt-1 text-xs text-[#8091a3]">Add one item per line, for example: Amlodipine 5mg once daily.</p>
-                </div>
-
-                <div>
-                    <label for="{{ form.tests.id_for_label }}" class="block mb-1.5 font-semibold text-[#1b2f44]">Requested Tests</label>
-                    {{ form.tests }}
-                    {% if form.tests.errors %}
-                        <p class="m-0 mt-1 text-sm text-[#842029]">{{ form.tests.errors|striptags }}</p>
-                    {% endif %}
-                    <p class="m-0 mt-1 text-xs text-[#8091a3]">Add one test per line, for example: Complete Blood Count.</p>
-                </div>
-
-                <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-2">
-                    <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                        <span class="material-symbols-outlined text-[18px]">save</span>
-                        Save and View Summary
-                    </button>
-                    <a href="{% url 'consultations:index' %}" class="inline-flex items-center justify-center px-4 py-2 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[10px] hover:bg-[#bbdefb] transition">Cancel</a>
-                </div>
-            </form>
-        </div>
-    </section>
-</div>
-{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}Consultation Form | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:doctor_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Doctor Workspace{% endblock %}
+{% block dashboard_breadcrumb %}Doctor{% endblock %}
+{% block dashboard_user_role %}Doctor{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_doctor.html" with active="consultations" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_doctor_mobile.html" with active="consultations" %}{% endblock %}
+
+{% block page_title %}Consultation Form{% endblock %}
+
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">APT-{{ appointment.id|stringformat:"03d" }}</p>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'consultations:index' %}" class="inline-flex items-center gap-xs text-on-surface-variant hover:text-on-surface transition font-body-sm text-body-sm px-md py-sm rounded-lg border border-outline-variant/30 hover:bg-surface-container-high">
+	<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+	Back
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg mb-lg">
+	<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+		<div class="lg:col-span-4 space-y-md">
+			<div>
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide m-0">Patient</p>
+				<p class="font-body-md text-body-md font-semibold text-on-surface m-0 mt-xs">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</p>
+			</div>
+			<div>
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide m-0">Doctor</p>
+				<p class="font-body-md text-body-md font-semibold text-on-surface m-0 mt-xs">{{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</p>
+			</div>
+			<div>
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide m-0">Date</p>
+				<p class="font-body-md text-body-md font-semibold text-on-surface m-0 mt-xs">{{ appointment.date }}</p>
+			</div>
+			<div>
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide m-0">Time</p>
+				<p class="font-body-md text-body-md font-semibold text-on-surface m-0 mt-xs">{{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}</p>
+			</div>
+		</div>
+		<div class="lg:col-span-8">
+			{% if form.non_field_errors %}
+			<div class="mb-md rounded-lg border border-error/30 bg-error-container/20 px-md py-sm font-body-sm text-body-sm text-error">
+				{% for error in form.non_field_errors %}
+				<p class="m-0{% if not forloop.last %} mb-xs{% endif %}">{{ error }}</p>
+				{% endfor %}
+			</div>
+			{% endif %}
+
+			<form method="post" class="space-y-lg">
+				{% csrf_token %}
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start">
+					<div class="lg:col-span-4">
+						<label for="{{ form.diagnosis.id_for_label }}" class="block font-body-sm text-body-sm font-semibold text-on-surface">Diagnosis</label>
+						<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">Primary clinical diagnosis for this visit.</p>
+					</div>
+					<div class="lg:col-span-8">
+						{{ form.diagnosis }}
+						{% if form.diagnosis.errors %}
+						<p class="m-0 mt-xs font-body-sm text-body-sm text-error">{{ form.diagnosis.errors|striptags }}</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start border-t border-outline-variant/30 pt-lg">
+					<div class="lg:col-span-4">
+						<label for="{{ form.notes.id_for_label }}" class="block font-body-sm text-body-sm font-semibold text-on-surface">Clinical Notes</label>
+						<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">Observations and findings during consultation.</p>
+					</div>
+					<div class="lg:col-span-8">
+						{{ form.notes }}
+						{% if form.notes.errors %}
+						<p class="m-0 mt-xs font-body-sm text-body-sm text-error">{{ form.notes.errors|striptags }}</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start border-t border-outline-variant/30 pt-lg">
+					<div class="lg:col-span-4">
+						<label for="{{ form.prescriptions.id_for_label }}" class="block font-body-sm text-body-sm font-semibold text-on-surface">Prescriptions</label>
+						<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">Add one item per line, for example: Amlodipine 5mg once daily.</p>
+					</div>
+					<div class="lg:col-span-8">
+						{{ form.prescriptions }}
+						{% if form.prescriptions.errors %}
+						<p class="m-0 mt-xs font-body-sm text-body-sm text-error">{{ form.prescriptions.errors|striptags }}</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start border-t border-outline-variant/30 pt-lg">
+					<div class="lg:col-span-4">
+						<label for="{{ form.tests.id_for_label }}" class="block font-body-sm text-body-sm font-semibold text-on-surface">Requested Tests</label>
+						<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">Add one test per line, for example: Complete Blood Count.</p>
+					</div>
+					<div class="lg:col-span-8">
+						{{ form.tests }}
+						{% if form.tests.errors %}
+						<p class="m-0 mt-xs font-body-sm text-body-sm text-error">{{ form.tests.errors|striptags }}</p>
+						{% endif %}
+					</div>
+				</div>
+
+				<div class="flex flex-col sm:flex-row sm:items-center gap-sm pt-lg border-t border-outline-variant/30">
+					<button type="submit" class="inline-flex items-center justify-center gap-xs px-lg py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+						<span class="material-symbols-outlined text-[18px]">save</span>
+						Save and View Summary
+					</button>
+					<a href="{% url 'consultations:index' %}" class="inline-flex items-center justify-center px-lg py-sm rounded-lg border border-outline-variant/40 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm font-semibold transition">Cancel</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}

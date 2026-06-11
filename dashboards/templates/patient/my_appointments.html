@@ -1,200 +1,111 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}My Appointments | MediCare{% endblock %}
-
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
-
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-
-    <!-- Sidebar -->
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
-
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Patient navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'appointment:patient_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">dashboard</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'appointment:book_appointment' %}">
-                <span class="material-symbols-outlined text-[19px]">event_available</span>
-                Book Appointment
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'appointment:my_appointments' %}">
-                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
-                My Appointments
-            </a>
-        </nav>
-
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p class="m-0 text-xs text-[#9fc7c7]">Patient</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
-
-    <!-- Main content -->
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="mb-4 flex sm:hidden items-center justify-between">
-            <div class="rounded-full bg-[#dbf5f3] text-[#0b6860] px-3 py-1 text-xs font-semibold tracking-wide">My Appointments</div>
-            <div class="rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Patient</div>
-        </div>
-
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                    <h2 class="m-0 text-[1.7rem] font-extrabold leading-tight text-[#112234]">My Appointments</h2>
-                    <p class="m-0 mt-1 text-base text-[#6f7b88]">{{ appointments|length }} appointment{{ appointments|length|pluralize }} found</p>
-                </div>
-                <a href="{% url 'appointment:book_appointment' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition text-sm">
-                    <span class="material-symbols-outlined text-[17px]">add</span>
-                    New Appointment
-                </a>
-            </div>
-
-            {% if appointments %}
-            <div class="space-y-3">
-                {% for apt in appointments %}
-                <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#f8fafb] transition" data-apt-id="{{ apt.pk }}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm shrink-0">
-                            {{ apt.doctor.get_full_name|slice:":1"|upper|default:apt.doctor.username|slice:":1"|upper }}
-                        </div>
-                        <div>
-                            <h4 class="m-0 font-semibold text-[#1b2f44]">Dr. {{ apt.doctor.get_full_name|default:apt.doctor.username }}</h4>
-                            <p class="m-0 text-sm text-[#81909c]">{{ apt.date }} &middot; {{ apt.start_time|time:"H:i" }}–{{ apt.end_time|time:"H:i" }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 flex-wrap justify-end">
-                        {% if apt.status == 'checked_in' %}
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#00897b] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[15px]">check_circle</span>Checked In
-                            </span>
-                        {% elif apt.status == 'confirmed' %}
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[15px]">verified</span>Confirmed
-                            </span>
-                        {% elif apt.status == 'requested' %}
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fff8e1] text-[#f9a825] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[15px]">schedule</span>Requested
-                            </span>
-                        {% elif apt.status == 'completed' %}
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e8f5e9] text-[#388e3c] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[15px]">task_alt</span>Completed
-                            </span>
-                        {% elif apt.status == 'cancelled' %}
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ffebee] text-[#c62828] text-[13px] font-semibold rounded-full">
-                                <span class="material-symbols-outlined text-[15px]">cancel</span>Cancelled
-                            </span>
-                        {% endif %}
-
-                        <span class="text-[#9aacb8] text-[13px] font-medium">APT-{{ apt.pk|stringformat:"03d" }}</span>
-
-                        {% if apt.status == 'completed' %}
-                        <a
-                            href="{% url 'appointment:appointment_summary' apt.pk %}"
-                            class="inline-flex items-center gap-1 text-[#1976d2] hover:text-[#0d47a1] text-[13px] font-semibold transition"
-                            title="View consultation summary"
-                        >
-                            <span class="material-symbols-outlined text-[17px]">description</span>
-                            Summary
-                        </a>
-                        {% endif %}
-
-                        {% if apt.status == 'requested' or apt.status == 'confirmed' %}
-                        <button
-                            type="button"
-                            onclick="cancelAppointment({{ apt.pk }}, this)"
-                            class="inline-flex items-center gap-1 text-[#c62828] hover:text-[#b71c1c] text-[13px] font-semibold transition"
-                            title="Cancel appointment"
-                        >
-                            <span class="material-symbols-outlined text-[17px]">close</span>
-                            Cancel
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-                <div class="py-16 text-center">
-                    <span class="material-symbols-outlined text-[48px] text-[#b0bec5] block mb-3">event_busy</span>
-                    <p class="text-[#81909c] text-base">You have no appointments yet.</p>
-                    <a href="{% url 'appointment:book_appointment' %}" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                        <span class="material-symbols-outlined text-[19px]">event_available</span>
-                        Book your first appointment
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-    </section>
-</div>
-
-<script>
-function cancelAppointment(id, btn) {
-    if (!confirm('Cancel this appointment?')) return;
-    const prev = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-pulse">hourglass_empty</span> Cancelling…';
-
-    function showCancelError(msg) {
-        alert(msg || 'Could not cancel.');
-        btn.disabled = false;
-        btn.innerHTML = prev;
-    }
-
-    function detailFromPayload(data) {
-        if (!data || typeof data !== 'object') return null;
-        const d = data.detail;
-        if (typeof d === 'string') return d;
-        if (Array.isArray(d)) return d.join(' ');
-        if (d && typeof d === 'object') {
-            return Object.values(d).flat().map(String).join(' ');
-        }
-        return null;
-    }
-
-    fetch(`/api/appointments/${id}/cancel/`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(async (r) => {
-        if (r.ok) {
-            location.reload();
-            return;
-        }
-        let msg = 'Could not cancel.';
-        try {
-            const data = await r.json();
-            msg = detailFromPayload(data) || msg;
-        } catch (e) {
-            msg = r.statusText || msg;
-        }
-        showCancelError(msg);
-    })
-    .catch(() => showCancelError('Network error. Try again.'));
-}
-</script>
-{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}My Appointments | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'appointment:patient_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Patient Portal{% endblock %}
+{% block dashboard_breadcrumb %}Patient{% endblock %}
+{% block dashboard_user_role %}Patient{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_patient.html" with active="appointments" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_patient_mobile.html" with active="appointments" %}{% endblock %}
+
+{% block page_title %}My Appointments{% endblock %}
+
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">{{ appointments|length }} appointment{{ appointments|length|pluralize }} found</p>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'appointment:book_appointment' %}" class="inline-flex items-center gap-xs px-lg py-sm bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+	<span class="material-symbols-outlined text-[18px]">add</span>
+	<span class="hidden sm:inline">New Appointment</span>
+</a>
+{% endblock %}
+
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
+
+{% block dashboard_content %}
+{% if appointments %}
+<ol class="relative border-l-2 border-outline-variant/40 ml-md space-y-lg list-none p-0 m-0">
+	{% for apt in appointments %}
+	<li class="relative pl-lg" data-apt-id="{{ apt.pk }}">
+		<span class="absolute -left-[9px] top-4 w-4 h-4 rounded-full {% if apt.status == 'completed' %}bg-primary-container{% elif apt.status == 'checked_in' %}bg-primary{% elif apt.status == 'confirmed' %}bg-secondary{% elif apt.status == 'requested' %}bg-tertiary{% elif apt.status == 'cancelled' %}bg-error{% else %}bg-on-surface-variant{% endif %} ring-4 ring-background"></span>
+		<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-md hover:bg-surface-container-high/50 transition rim-light">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+				<div class="flex items-center gap-sm min-w-0">
+					<div class="w-11 h-11 rounded-full bg-secondary-container text-on-secondary-container grid place-items-center font-bold text-sm shrink-0">
+						{{ apt.doctor.get_full_name|slice:":1"|upper|default:apt.doctor.username|slice:":1"|upper }}
+					</div>
+					<div class="min-w-0">
+						<h4 class="font-body-md text-body-md font-semibold text-on-surface m-0 truncate">Dr. {{ apt.doctor.get_full_name|default:apt.doctor.username }}</h4>
+						<p class="font-body-sm text-body-sm text-on-surface-variant m-0">{{ apt.date }} · {{ apt.start_time|time:"H:i" }}–{{ apt.end_time|time:"H:i" }}</p>
+						<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">APT-{{ apt.pk|stringformat:"03d" }}</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-sm flex-wrap justify-end shrink-0">
+					{% if apt.status == 'checked_in' %}
+					<span class="inline-flex items-center gap-xs px-md py-xs bg-primary/10 text-primary font-label-md text-label-md rounded-full uppercase"><span class="material-symbols-outlined text-[14px]">check_circle</span>Checked In</span>
+					{% elif apt.status == 'confirmed' %}
+					<span class="inline-flex items-center gap-xs px-md py-xs bg-secondary-container/20 text-secondary font-label-md text-label-md rounded-full uppercase"><span class="material-symbols-outlined text-[14px]">verified</span>Confirmed</span>
+					{% elif apt.status == 'requested' %}
+					<span class="inline-flex items-center gap-xs px-md py-xs bg-tertiary/10 text-tertiary font-label-md text-label-md rounded-full uppercase"><span class="material-symbols-outlined text-[14px]">schedule</span>Requested</span>
+					{% elif apt.status == 'completed' %}
+					<span class="inline-flex items-center gap-xs px-md py-xs bg-primary-container/20 text-primary-container font-label-md text-label-md rounded-full uppercase"><span class="material-symbols-outlined text-[14px]">task_alt</span>Completed</span>
+					{% elif apt.status == 'cancelled' %}
+					<span class="inline-flex items-center gap-xs px-md py-xs bg-error-container/20 text-error font-label-md text-label-md rounded-full uppercase"><span class="material-symbols-outlined text-[14px]">cancel</span>Cancelled</span>
+					{% endif %}
+					{% if apt.status == 'completed' %}
+					<a href="{% url 'appointment:appointment_summary' apt.pk %}" class="inline-flex items-center gap-xs text-secondary hover:text-primary font-body-sm text-body-sm font-semibold transition" title="View consultation summary">
+						<span class="material-symbols-outlined text-[17px]">description</span>Summary
+					</a>
+					{% endif %}
+					{% if apt.status == 'requested' or apt.status == 'confirmed' %}
+					<button type="button" onclick="cancelAppointment({{ apt.pk }}, this)" class="inline-flex items-center gap-xs text-error hover:text-error-container font-body-sm text-body-sm font-semibold transition" title="Cancel appointment">
+						<span class="material-symbols-outlined text-[17px]">close</span>Cancel
+					</button>
+					{% endif %}
+				</div>
+			</div>
+		</article>
+	</li>
+	{% endfor %}
+</ol>
+{% else %}
+<div class="py-xl text-center bg-surface-container border border-outline-variant/30 rounded-xl">
+	<span class="material-symbols-outlined text-[48px] text-on-surface-variant/40 block mb-sm">event_busy</span>
+	<p class="font-body-md text-body-md text-on-surface-variant m-0">You have no appointments yet.</p>
+	<a href="{% url 'appointment:book_appointment' %}" class="inline-flex items-center gap-xs mt-md px-lg py-md bg-primary-container text-on-primary-container font-body-sm text-body-sm font-bold rounded-lg hover:bg-primary transition-colors border border-primary/20">
+		<span class="material-symbols-outlined text-[18px]">event_available</span>
+		Book your first appointment
+	</a>
+</div>
+{% endif %}
+
+<script>
+function cancelAppointment(id, btn) {
+	if (!confirm('Cancel this appointment?')) return;
+	const prev = btn.innerHTML;
+	btn.disabled = true;
+	btn.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-pulse">hourglass_empty</span> Cancelling…';
+	function showCancelError(msg) { alert(msg || 'Could not cancel.'); btn.disabled = false; btn.innerHTML = prev; }
+	function detailFromPayload(data) {
+		if (!data || typeof data !== 'object') return null;
+		const d = data.detail;
+		if (typeof d === 'string') return d;
+		if (Array.isArray(d)) return d.join(' ');
+		if (d && typeof d === 'object') return Object.values(d).flat().map(String).join(' ');
+		return null;
+	}
+	fetch(`/api/appointments/${id}/cancel/`, {
+		method: 'POST', credentials: 'same-origin',
+		headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+	})
+	.then(async (r) => {
+		if (r.ok) { location.reload(); return; }
+		let msg = 'Could not cancel.';
+		try { const data = await r.json(); msg = detailFromPayload(data) || msg; } catch (e) { msg = r.statusText || msg; }
+		showCancelError(msg);
+	})
+	.catch(() => showCancelError('Network error. Try again.'));
+}
+</script>
+{% endblock %}
