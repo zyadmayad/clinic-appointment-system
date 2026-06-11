@@ -70,10 +70,6 @@
             <div class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 mb-6">
                 <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:justify-between">
                     <div class="flex items-center gap-2">
-                        <a href="{% url 'schedule:doctor_schedule' %}?week={{ prev_week }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f6f8] text-[#1b2f44] font-semibold rounded-[8px] hover:bg-[#e4ebf0] transition text-sm">
-                            <span class="material-symbols-outlined text-[16px]">chevron_left</span>
-                            Previous Week
-                        </a>
                         <a href="{% url 'schedule:doctor_schedule' %}?week={{ next_week }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f6f8] text-[#1b2f44] font-semibold rounded-[8px] hover:bg-[#e4ebf0] transition text-sm">
                             Next Week
                             <span class="material-symbols-outlined text-[16px]">chevron_right</span>
@@ -490,7 +486,14 @@ async function handleScheduleSubmit() {
         });
 
         if (!scheduleResponse.ok) {
-            throw new Error('Error creating schedule.');
+            let detail = 'Error creating schedule.';
+            try {
+                const errBody = await scheduleResponse.json();
+                detail = extractApiErrorMessage(errBody, detail);
+            } catch (e) {
+                // Keep fallback message if response body is not JSON.
+            }
+            throw new Error(detail);
         }
 
         const scheduleResult = await scheduleResponse.json();
@@ -540,6 +543,37 @@ function showScheduleError(message) {
     const errorDiv = document.getElementById('scheduleError');
     errorDiv.textContent = message;
     errorDiv.classList.remove('hidden');
+}
+
+function extractApiErrorMessage(payload, fallbackMessage) {
+    if (!payload || typeof payload !== 'object') {
+        return fallbackMessage;
+    }
+
+    if (payload.errors && typeof payload.errors === 'object') {
+        const lines = [];
+        Object.entries(payload.errors).forEach(([field, fieldErrors]) => {
+            if (Array.isArray(fieldErrors)) {
+                fieldErrors.forEach((err) => lines.push(`${err}`));
+            } else if (typeof fieldErrors === 'string') {
+                lines.push(`${fieldErrors}`);
+            }
+        });
+
+        if (lines.length) {
+            return lines.join(' | ');
+        }
+    }
+
+    if (typeof payload.detail === 'string' && payload.detail) {
+        return payload.detail;
+    }
+
+    if (typeof payload.message === 'string' && payload.message) {
+        return payload.message;
+    }
+
+    return fallbackMessage;
 }
 
 function getCookie(name) {
