@@ -1,4 +1,5 @@
 from datetime import date, datetime, time
+from django.utils import timezone
 
 from django.utils.dateparse import parse_time
 
@@ -35,6 +36,14 @@ def book_slot(doctor_id, date, start_time, end_time):
         raise ValueError("Requested slot not found. Please pick a valid slot.")
     if slot.status != 'available':
         raise ValueError("This slot is already booked.")
+
+    now = timezone.localtime()
+    slot_start = timezone.make_aware(
+        datetime.combine(date, start_time),
+        timezone.get_current_timezone(),
+    )
+    if slot_start <= now:
+        raise ValueError("Cannot book a slot in the past.")
 
     slot.status = 'booked'
     slot.save(update_fields=['status'])
