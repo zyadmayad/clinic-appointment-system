@@ -61,8 +61,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['profile', 'email'],
         'EMAIL_AUTHENTICATION': True,
         'APP': {
-            'client_id': env('GOOGLE_CLIENT_ID'),
-            'secret': env('GOOGLE_CLIENT_SECRET'),
+            'client_id': env('GOOGLE_CLIENT_ID', default='dummy_client_id'),
+            'secret': env('GOOGLE_CLIENT_SECRET', default='dummy_client_secret'),
             'key': ''
         }
     }
@@ -114,7 +114,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default= env("DATABASE_URL")
+        default=env("DATABASE_URL", default="mysql://clinicuser:ClinicUser@2026!@localhost:3306/clinic_system")
     )
 }
 
