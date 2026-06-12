@@ -130,9 +130,7 @@ block page_title %}Book Appointment{% endblock %} {% block page_subheader %}
           <div
             class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container grid place-items-center font-bold text-sm shrink-0"
           >
-            {{
-            doc.get_full_name|slice:":1"|upper|default:doc.username|slice:":1"|upper
-            }}
+            {{ doc.get_full_name|default:doc.username|slice:":1"|upper }}
           </div>
 
           <div>
