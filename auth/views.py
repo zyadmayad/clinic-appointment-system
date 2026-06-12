@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from .utils import _redirect_for_logged_in_user
 
@@ -32,6 +34,21 @@ def register(request):
 
         if User.objects.filter(email__iexact=email).exists():
             return render(request, 'register.html', {"error": "Email already exists"})
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            # Normalize messages; provide a clearer message for "too common" case
+            msgs = list(e.messages) if hasattr(e, 'messages') else [str(e)]
+            normalized = []
+            for m in msgs:
+                low = m.lower()
+                if 'too common' in low or 'too similar' in low:
+                    normalized.append('Password is too common, choose a less common password')
+                else:
+                    normalized.append(m)
+            msg = "; ".join(normalized)
+            return render(request, 'register.html', {"error": msg})
 
         user = User.objects.create_user(username=username, password=password, email=email)
 
