@@ -1,0 +1,3 @@
+# Django templates use {% %} tags that Prettier breaks across lines
+**/templates/**
+**/*.html
