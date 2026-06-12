@@ -1,121 +1,68 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}Doctor Schedules | MediCare{% endblock %}
-
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
-
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-	<aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-		<div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-			<div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-				<span class="material-symbols-outlined text-[20px]">stethoscope</span>
-			</div>
-			<div>
-				<h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-				<p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-			</div>
-		</div>
-
-		<nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Admin navigation">
-			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:admin_dashboard' %}">
-				<span class="material-symbols-outlined text-[19px]">dashboard</span>
-				Dashboard
-			</a>
-			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:admin_appointments' %}">
-				<span class="material-symbols-outlined text-[19px]">event</span>
-				Appointments
-			</a>
-			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'managements:doctor_schedule' %}">
-				<span class="material-symbols-outlined text-[19px]">calendar_month</span>
-				Doctor Schedules
-			</a>
-			<a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:user_managements' %}">
-				<span class="material-symbols-outlined text-[19px]">group</span>
-				User Management
-			</a>
-		</nav>
-
-		<div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-			<div class="flex items-center gap-3">
-				<div class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-				<div>
-					<h3 class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-					<p class="m-0 text-xs text-[#9fc7c7]">{{ user_role|title }}</p>
-				</div>
-			</div>
-			<a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-				<span class="material-symbols-outlined text-[18px]">logout</span>
-				Sign Out
-			</a>
-		</div>
-	</aside>
-
-	<section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-		<div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-			<div class="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-				<div>
-					<h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Doctor Schedules</h2>
-					<p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Weekly availability & exceptions</p>
-				</div>
-				<div class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{{ user_role|title }}</div>
-			</div>
-
-			<div class="flex flex-wrap gap-2.5 mb-4">
-				{% for doctor in doctors %}
-				<a href="?doctor={{ doctor.id }}" class="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-[15px] font-semibold transition {% if selected_doctor and selected_doctor.id == doctor.id %}border-[#71d4cb] bg-[#effcf9] text-[#158d81]{% else %}border-[#d9e4ea] bg-white text-[#5d6b78] hover:border-[#71d4cb] hover:text-[#158d81]{% endif %}">
-					Dr. {{ doctor.name }}
-				</a>
-				{% empty %}
-				<div class="rounded-xl border border-dashed border-[#d6e0e6] bg-white px-4 py-3 text-[#6f7b88]">No doctors available.</div>
-				{% endfor %}
-			</div>
-
-			<div class="grid grid-cols-1 gap-4">
-				<article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-					<h3 class="m-0 mb-4 text-[17px] text-[#1c2d40] font-bold">Weekly Schedule {% if selected_doctor %}<span class="font-normal text-[#6f7b88]">— Dr. {{ selected_doctor.name }}</span>{% endif %}</h3>
-					<div class="grid gap-3">
-						{% for day in weekly_schedule %}
-						<div class="rounded-2xl border border-[#edf2f6] bg-[#fbfdff] px-4 py-3">
-							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-								<div class="flex items-center gap-3 min-w-0">
-									<div class="w-24 shrink-0 text-[15px] font-semibold text-[#13253a]">{{ day.name }}</div>
-									<div class="text-[13px] text-[#7f8b97]">{{ day.date }}</div>
-								</div>
-								<div class="flex flex-wrap items-center gap-2">
-									{% if day.shifts %}
-										{% for shift in day.shifts %}
-										<span class="inline-flex items-center gap-1.5 rounded-full bg-[#e5fbf8] px-3 py-1 text-[13px] font-semibold text-[#1a9b8e]"><span class="material-symbols-outlined text-[14px]">schedule</span>{{ shift.time_range }}</span>
-										{% endfor %}
-									{% else %}
-										<span class="text-[13px] italic text-[#9ca8b3]">{{ day.status }}</span>
-									{% endif %}
-								</div>
-							</div>
-						</div>
-						{% endfor %}
-					</div>
-				</article>
-
-				<article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-					<h3 class="m-0 mb-4 text-[17px] text-[#1c2d40] font-bold">Schedule Exceptions</h3>
-					<div class="grid gap-3">
-						{% for exception in schedule_exceptions %}
-						<div class="rounded-2xl border px-4 py-3 {% if exception.tone == 'danger' %}border-[#f5d1d1] bg-[#fff7f7]{% else %}border-[#e6edf2] bg-[#fbfdff]{% endif %}">
-							<div class="flex items-start justify-between gap-3">
-								<div>
-									<div class="text-[15px] font-semibold text-[#13253a]">{{ exception.date }}</div>
-									<div class="text-[13px] text-[#7f8b97]">{{ exception.detail }}</div>
-								</div>
-								<span class="rounded-full px-3 py-1 text-[13px] font-semibold {% if exception.tone == 'danger' %}bg-[#ffe3e3] text-[#d04e4e]{% else %}bg-[#edf2f6] text-[#6d7a87]{% endif %}">{{ exception.title }}</span>
-							</div>
-						</div>
-						{% endfor %}
-					</div>
-				</article>
-			</div>
-		</div>
-	</section>
-</div>
-{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}Doctor Schedules | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:admin_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Admin Console{% endblock %}
+{% block dashboard_breadcrumb %}Admin{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_admin.html" with active="schedules" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_admin_mobile.html" with active="schedules" %}{% endblock %}
+
+{% block page_title %}Doctor Schedules{% endblock %}
+
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">Weekly availability &amp; exceptions</p>
+{% endblock %}
+
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex flex-wrap gap-sm mb-lg">
+	{% for doctor in doctors %}
+	<a href="?doctor={{ doctor.id }}" class="inline-flex items-center gap-xs rounded-xl border px-md py-sm font-body-sm text-body-sm font-semibold transition {% if selected_doctor and selected_doctor.id == doctor.id %}border-secondary-container/40 bg-secondary-container/20 text-secondary{% else %}border-outline-variant/30 bg-surface-container text-on-surface-variant hover:border-primary/30 hover:text-primary hover:bg-surface-container-high{% endif %}">
+		Dr. {{ doctor.name }}
+	</a>
+	{% empty %}
+	<div class="rounded-xl border border-dashed border-outline-variant/30 bg-surface-container px-md py-sm font-body-sm text-body-sm text-on-surface-variant">No doctors available.</div>
+	{% endfor %}
+</div>
+
+<div class="mb-lg">
+	<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-md">Weekly Schedule {% if selected_doctor %}<span class="font-normal text-on-surface-variant">— Dr. {{ selected_doctor.name }}</span>{% endif %}</h3>
+	<div class="flex gap-md overflow-x-auto pb-sm snap-x snap-mandatory">
+		{% for day in weekly_schedule %}
+		<article class="snap-start shrink-0 w-[220px] rounded-xl border border-outline-variant/30 bg-surface-container p-md rim-light">
+			<div class="mb-sm pb-sm border-b border-outline-variant/30">
+				<p class="font-body-md text-body-md font-semibold text-on-surface m-0">{{ day.name }}</p>
+				<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">{{ day.date }}</p>
+			</div>
+			<div class="flex flex-col gap-xs min-h-[80px]">
+				{% if day.shifts %}
+					{% for shift in day.shifts %}
+					<span class="inline-flex items-center gap-xs rounded-full bg-primary/10 px-md py-xs font-label-md text-label-md font-semibold text-primary"><span class="material-symbols-outlined text-[14px]">schedule</span>{{ shift.time_range }}</span>
+					{% endfor %}
+				{% else %}
+					<span class="font-label-md text-label-md italic text-on-surface-variant">{{ day.status }}</span>
+				{% endif %}
+			</div>
+		</article>
+		{% endfor %}
+	</div>
+</div>
+
+<article class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+	<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-md">Schedule Exceptions</h3>
+	<div class="grid gap-sm">
+		{% for exception in schedule_exceptions %}
+		<div class="rounded-lg border px-md py-sm {% if exception.tone == 'danger' %}border-error/30 bg-error-container/10{% else %}border-outline-variant/30 bg-surface-container-high/50{% endif %}">
+			<div class="flex items-start justify-between gap-sm">
+				<div>
+					<div class="font-body-sm text-body-sm font-semibold text-on-surface">{{ exception.date }}</div>
+					<div class="font-label-md text-label-md text-on-surface-variant">{{ exception.detail }}</div>
+				</div>
+				<span class="rounded-full px-md py-xs font-label-md text-label-md font-semibold {% if exception.tone == 'danger' %}bg-error/10 text-error{% else %}bg-surface-container-high text-on-surface-variant{% endif %}">{{ exception.title }}</span>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</article>
+{% endblock %}

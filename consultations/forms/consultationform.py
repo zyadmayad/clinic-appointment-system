@@ -2,7 +2,7 @@ from django import forms
 
 from consultations.models import Consultation
 
-FIELD_CLASS = "w-full px-3 py-2 border border-[#dde5eb] rounded-[10px] text-[#1b2f44] focus:outline-none focus:border-[#31b2a3]"
+FIELD_CLASS = "w-full bg-surface text-on-surface border border-outline-variant rounded-lg px-md py-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-colors outline-none resize-y"
 
 
 class ConsultationForm(forms.ModelForm):

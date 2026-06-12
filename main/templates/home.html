@@ -1,257 +1,237 @@
 {% extends "base.html" %}
-
-{% block title %}MediCare Clinic | Modern Clinic Management{% endblock %}
+{% block title %}ClinixCare | Precision Healthcare Systems{% endblock %}
 
 {% block content %}
-<div class="space-y-14">
-    <section class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-4 py-8 sm:px-6 md:px-10 md:py-12">
-        <div class="absolute -left-24 top-10 h-80 w-80 rounded-full bg-[#d9f7f4] blur-3xl"></div>
-        <div class="absolute -right-24 top-24 h-96 w-96 rounded-full bg-[#dbf1ed] blur-3xl"></div>
+<div class="space-y-xl">
+	<section class="relative overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container p-lg lg:p-xl">
+		<div class="absolute -left-24 top-10 h-80 w-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+		<div class="absolute -right-24 top-24 h-96 w-96 rounded-full bg-secondary-container/10 blur-3xl pointer-events-none"></div>
 
-        <div class="relative grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <div>
-                <div class="inline-flex items-center gap-2 rounded-full border border-[#bde6e2] bg-[#f2fbfa] px-4 py-1.5 text-[#16998f]">
-                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
-                    <span class="text-xs font-semibold uppercase tracking-[0.14em]">Modern Clinic Management</span>
-                </div>
+		<div class="relative grid items-center gap-xl lg:grid-cols-2">
+			<div>
+				<div class="inline-flex items-center gap-xs rounded-full border border-primary/20 bg-primary/10 px-md py-xs">
+					<span class="material-symbols-outlined text-sm text-primary">auto_awesome</span>
+					<span class="font-label-md text-label-md text-primary uppercase">Precision Healthcare</span>
+				</div>
 
-                <h1 class="mt-6 max-w-xl text-5xl font-extrabold leading-[0.95] tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-                    Healthcare,
-                    <span class="text-[#44bfb3]">organized.</span>
-                </h1>
+				<h1 class="mt-lg max-w-xl font-display-lg text-headline-lg-mobile lg:text-display-lg text-on-surface m-0">
+					Clinical care,
+					<span class="text-primary">orchestrated.</span>
+				</h1>
 
-                <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 sm:text-xl">
-                    The complete platform for clinics - appointment booking, queue management, consultations and analytics. Built for patients, doctors, receptionists and admins.
-                </p>
+				<p class="mt-md max-w-2xl font-body-lg text-body-lg text-on-surface-variant">
+					The complete platform for clinics — appointment booking, queue management, consultations and analytics. Built for patients, doctors, receptionists and admins.
+				</p>
 
-                <div class="mt-8 flex flex-wrap gap-4">
-                    <a href="{% url 'auth:register' %}" class="inline-flex h-14 items-center gap-2 rounded-xl bg-[#1ea79c] px-7 text-base font-bold text-white shadow-lg shadow-[#1ea79c]/30 transition-colors hover:bg-[#17978d]">
-                        Start free
-                        <span class="material-symbols-outlined text-base">arrow_forward</span>
-                    </a>
-                    <a href="{% url 'auth:login' %}" class="inline-flex h-14 items-center gap-2 rounded-xl border border-slate-200 bg-white px-7 text-base font-bold text-slate-900 transition-colors hover:bg-slate-50">
-                        See it in action
-                    </a>
-                </div>
+				<div class="mt-lg flex flex-wrap gap-md">
+					<a href="{% url 'auth:register' %}" class="inline-flex items-center gap-xs rounded-lg bg-primary-container text-on-primary-container px-xl py-md font-body-md font-bold border border-primary/20 shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:bg-primary hover:shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all">
+						Start free
+						<span class="material-symbols-outlined text-base">arrow_forward</span>
+					</a>
+					<a href="{% url 'auth:login' %}" class="inline-flex items-center gap-xs rounded-lg border border-outline-variant px-xl py-md font-body-md font-bold text-on-surface hover:border-primary/40 hover:text-primary transition-colors">
+						Sign in
+					</a>
+				</div>
 
-                <div class="mt-8 flex flex-wrap items-center gap-6">
-                    <div class="flex -space-x-2">
-                        <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-[#7fded3] to-[#2caea1]"></div>
-                        <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-[#96dbd0] to-[#58c9bc]"></div>
-                        <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-[#b6e8e1] to-[#85d8cc]"></div>
-                        <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-[#67cfc0] to-[#3eb7a8]"></div>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-1 text-[#f4b23e]">
-                            <span class="material-symbols-outlined text-sm">star</span>
-                            <span class="material-symbols-outlined text-sm">star</span>
-                            <span class="material-symbols-outlined text-sm">star</span>
-                            <span class="material-symbols-outlined text-sm">star</span>
-                            <span class="material-symbols-outlined text-sm">star</span>
-                        </div>
-                        <p class="text-sm text-slate-500">Trusted by 200+ clinics worldwide</p>
-                    </div>
-                </div>
-            </div>
+				<div class="mt-lg flex flex-wrap items-center gap-lg">
+					<div class="flex -space-x-2">
+						<div class="h-10 w-10 rounded-full border-2 border-surface-container bg-gradient-to-br from-primary to-primary-container"></div>
+						<div class="h-10 w-10 rounded-full border-2 border-surface-container bg-gradient-to-br from-secondary to-secondary-container"></div>
+						<div class="h-10 w-10 rounded-full border-2 border-surface-container bg-gradient-to-br from-tertiary to-tertiary-container"></div>
+						<div class="h-10 w-10 rounded-full border-2 border-surface-container bg-gradient-to-br from-primary-fixed-dim to-inverse-primary"></div>
+					</div>
+					<div>
+						<div class="flex items-center gap-0.5 text-tertiary">
+							{% for i in "12345" %}
+							<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+							{% endfor %}
+						</div>
+						<p class="font-body-sm text-body-sm text-on-surface-variant m-0">Trusted by 200+ clinics worldwide</p>
+					</div>
+				</div>
+			</div>
 
-            <div class="relative">
-                <div class="absolute -inset-4 rounded-[2rem] bg-[#89e0d2]/30 blur-3xl"></div>
-                <div class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-100 shadow-[0px_35px_60px_-35px_rgba(15,44,61,0.55)]">
-                    <img src="/media/image.png" alt="Clinic hero visual" class="h-[320px] w-full object-cover sm:h-[420px] lg:h-[520px]" />
-                    <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent"></div>
-                </div>
+			<div class="relative">
+				<div class="absolute -inset-4 rounded-xl bg-primary/5 blur-3xl pointer-events-none"></div>
+				<div class="relative overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-2xl">
+					<img src="/media/image.png" alt="Clinical environment" class="h-[280px] w-full object-cover sm:h-[380px] lg:h-[460px] opacity-90" />
+					<div class="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"></div>
+				</div>
 
-                <div class="absolute left-4 top-8 rounded-2xl bg-white/95 p-4 shadow-xl shadow-slate-300/30 backdrop-blur sm:left-8">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e6f6ed] text-[#2ab167]">
-                            <span class="material-symbols-outlined">check_circle</span>
-                        </div>
-                        <div>
-                            <p class="text-base font-bold text-slate-900 sm:text-lg">Appointment confirmed</p>
-                            <p class="text-sm text-slate-500 sm:text-base">Dr. Sarah · 10:30 AM</p>
-                        </div>
-                    </div>
-                </div>
+				<div class="absolute left-md top-lg rounded-xl bg-surface-container-high/95 p-md shadow-xl border border-outline-variant/30 backdrop-blur">
+					<div class="flex items-center gap-sm">
+						<div class="flex h-11 w-11 items-center justify-center rounded-lg bg-primary-container/20 text-primary">
+							<span class="material-symbols-outlined">check_circle</span>
+						</div>
+						<div>
+							<p class="font-body-sm text-body-sm font-bold text-on-surface m-0">Appointment confirmed</p>
+							<p class="font-label-md text-label-md text-on-surface-variant m-0">Dr. Sarah · 10:30 AM</p>
+						</div>
+					</div>
+				</div>
 
-                <div class="absolute -bottom-6 right-0 rounded-2xl bg-white/95 p-4 shadow-xl shadow-slate-300/30 backdrop-blur sm:right-6">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf8f6] text-[#149d91]">
-                            <span class="material-symbols-outlined">schedule</span>
-                        </div>
-                        <div>
-                            <p class="text-base font-bold text-slate-900 sm:text-lg">Avg. wait: 6 min</p>
-                            <p class="text-sm text-slate-500 sm:text-base">Live queue today</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+				<div class="absolute -bottom-md right-0 rounded-xl bg-surface-container-high/95 p-md shadow-xl border border-outline-variant/30 backdrop-blur sm:right-md">
+					<div class="flex items-center gap-sm">
+						<div class="flex h-11 w-11 items-center justify-center rounded-lg bg-secondary-container/20 text-secondary">
+							<span class="material-symbols-outlined">schedule</span>
+						</div>
+						<div>
+							<p class="font-body-sm text-body-sm font-bold text-on-surface m-0">Avg. wait: 6 min</p>
+							<p class="font-label-md text-label-md text-on-surface-variant m-0">Live queue today</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 
-    <section class="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-            <p class="text-3xl font-extrabold text-[#1f4ba0]">10k+</p>
-            <p class="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">Appointments handled</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-            <p class="text-3xl font-extrabold text-[#1f4ba0]">98%</p>
-            <p class="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">On-time consultations</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-            <p class="text-3xl font-extrabold text-[#1f4ba0]">4.9/5</p>
-            <p class="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">Patient satisfaction</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-            <p class="text-3xl font-extrabold text-[#1f4ba0]">24/7</p>
-            <p class="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">Booking availability</p>
-        </div>
-    </section>
+	<section class="grid grid-cols-2 gap-md md:grid-cols-4">
+		{% for stat in stats %}
+		<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md text-center">
+			<p class="font-headline-lg text-headline-lg-mobile text-primary m-0">{{ stat.value }}</p>
+			<p class="mt-xs font-label-md text-label-md text-on-surface-variant uppercase m-0">{{ stat.label }}</p>
+		</div>
+		{% empty %}
+		<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md text-center"><p class="font-headline-lg text-headline-lg-mobile text-primary m-0">10k+</p><p class="mt-xs font-label-md text-label-md text-on-surface-variant uppercase m-0">Appointments handled</p></div>
+		<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md text-center"><p class="font-headline-lg text-headline-lg-mobile text-primary m-0">98%</p><p class="mt-xs font-label-md text-label-md text-on-surface-variant uppercase m-0">On-time consultations</p></div>
+		<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md text-center"><p class="font-headline-lg text-headline-lg-mobile text-primary m-0">4.9/5</p><p class="mt-xs font-label-md text-label-md text-on-surface-variant uppercase m-0">Patient satisfaction</p></div>
+		<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md text-center"><p class="font-headline-lg text-headline-lg-mobile text-primary m-0">24/7</p><p class="mt-xs font-label-md text-label-md text-on-surface-variant uppercase m-0">Booking availability</p></div>
+		{% endfor %}
+	</section>
 
-    <section id="features">
-        <div class="max-w-2xl">
-            <p class="text-sm font-extrabold uppercase tracking-[0.14em] text-[#168e87]">Features</p>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">Everything your clinic team needs</h2>
-            <p class="mt-4 text-lg font-medium leading-relaxed text-slate-600">Designed around real clinical workflows, not generic admin tools.</p>
-        </div>
+	<section id="features">
+		<div class="max-w-2xl">
+			<p class="font-label-md text-label-md text-primary uppercase m-0">Features</p>
+			<h2 class="mt-xs font-headline-lg text-headline-lg-mobile lg:text-headline-lg text-on-surface m-0">Everything your clinic team needs</h2>
+			<p class="mt-sm font-body-md text-body-md text-on-surface-variant m-0">Designed around real clinical workflows, not generic admin tools.</p>
+		</div>
 
-        <div class="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8f6ff] text-[#3b82f6]">
-                    <span class="material-symbols-outlined">calendar_month</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">Smart Booking</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">Real-time slot availability with conflict prevention and configurable buffer windows.</p>
-            </article>
+		<div class="mt-lg grid grid-cols-1 gap-md md:grid-cols-2 xl:grid-cols-3">
+			{% for feature in features %}
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg transition-transform hover:-translate-y-1 hover:border-primary/20">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+					<span class="material-symbols-outlined">{{ feature.icon }}</span>
+				</div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">{{ feature.title }}</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">{{ feature.desc }}</p>
+			</article>
+			{% empty %}
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-secondary-container/20 text-secondary"><span class="material-symbols-outlined">calendar_month</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">Smart Booking</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Real-time slot availability with conflict prevention and configurable buffer windows.</p>
+			</article>
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary"><span class="material-symbols-outlined">stethoscope</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">Doctor Workspace</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Daily queue, consultation records, prescriptions and test requests in one fast interface.</p>
+			</article>
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined">groups</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">Receptionist Toolkit</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Manage schedule changes, check-ins, and queue balancing with complete audit history.</p>
+			</article>
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-secondary-container/20 text-secondary"><span class="material-symbols-outlined">admin_panel_settings</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">Role-Based Access</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Strict role permissions keep patient data private while every team member sees exactly what they need.</p>
+			</article>
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary"><span class="material-symbols-outlined">schedule</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">Live Queue Visibility</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">See check-in time, live queue position, and wait duration so doctors stay aligned to schedule.</p>
+			</article>
+			<article class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg hover:border-primary/20 transition-colors">
+				<div class="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary-container/20 text-primary-container"><span class="material-symbols-outlined">description</span></div>
+				<h3 class="mt-md font-headline-md text-headline-md text-on-surface m-0">EMR Lite</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Clinical notes, diagnoses, prescriptions and summary history for smoother follow-up care.</p>
+			</article>
+			{% endfor %}
+		</div>
+	</section>
 
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#e9fbf8] text-[#0da18f]">
-                    <span class="material-symbols-outlined">stethoscope</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">Doctor Workspace</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">Daily queue, consultation records, prescriptions and test requests in one fast interface.</p>
-            </article>
+	<section id="workflow" class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-lg lg:p-xl">
+		<div class="max-w-2xl">
+			<p class="font-label-md text-label-md text-primary uppercase m-0">Workflow</p>
+			<h2 class="mt-xs font-headline-lg text-headline-lg-mobile lg:text-headline-lg text-on-surface m-0">From booking to consultation in four steps</h2>
+		</div>
+		<div class="mt-lg grid gap-md md:grid-cols-2 xl:grid-cols-4">
+			<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md">
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase m-0">Step 01</p>
+				<h3 class="mt-xs font-headline-md text-headline-md text-on-surface m-0">Patient books slot</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Smart availability prevents overlap and keeps clinician calendars clean.</p>
+			</div>
+			<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md">
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase m-0">Step 02</p>
+				<h3 class="mt-xs font-headline-md text-headline-md text-on-surface m-0">Reception confirms</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Check-in and queue priority are handled instantly at the front desk.</p>
+			</div>
+			<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md">
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase m-0">Step 03</p>
+				<h3 class="mt-xs font-headline-md text-headline-md text-on-surface m-0">Doctor consults</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Diagnoses, prescriptions, and follow-up recommendations are logged in one view.</p>
+			</div>
+			<div class="rounded-xl border border-outline-variant/30 bg-surface-container p-md">
+				<p class="font-label-md text-label-md text-on-surface-variant uppercase m-0">Step 04</p>
+				<h3 class="mt-xs font-headline-md text-headline-md text-on-surface m-0">Admin tracks KPIs</h3>
+				<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">Monitor wait times, throughput, and operational trends for better service quality.</p>
+			</div>
+		</div>
+	</section>
 
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#fff6e8] text-[#d48a22]">
-                    <span class="material-symbols-outlined">groups</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">Receptionist Toolkit</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">Manage schedule changes, check-ins, and queue balancing with complete audit history.</p>
-            </article>
+	<section id="roles" class="rounded-xl border border-outline-variant/30 bg-surface-container p-lg lg:p-xl">
+		<div class="max-w-2xl">
+			<p class="font-label-md text-label-md text-primary uppercase m-0">Built For Everyone</p>
+			<h2 class="mt-xs font-headline-lg text-headline-lg-mobile lg:text-headline-lg text-on-surface m-0">One platform, tailored to every role</h2>
+		</div>
+		<div class="mt-lg grid gap-md md:grid-cols-2 xl:grid-cols-4">
+			<article class="rounded-xl border border-primary/20 bg-primary/5 p-md">
+				<h3 class="font-headline-md text-headline-md text-primary m-0">Patients</h3>
+				<ul class="mt-sm space-y-xs font-body-sm text-body-sm text-on-surface-variant list-none p-0 m-0">
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary">check_circle</span>Book appointments in seconds</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary">check_circle</span>Track upcoming visits</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary">check_circle</span>View consultation summaries</li>
+				</ul>
+			</article>
+			<article class="rounded-xl border border-secondary/20 bg-secondary/5 p-md">
+				<h3 class="font-headline-md text-headline-md text-secondary m-0">Doctors</h3>
+				<ul class="mt-sm space-y-xs font-body-sm text-body-sm text-on-surface-variant list-none p-0 m-0">
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-secondary">check_circle</span>Daily queue dashboard</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-secondary">check_circle</span>Consultation records</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-secondary">check_circle</span>Schedule exceptions management</li>
+				</ul>
+			</article>
+			<article class="rounded-xl border border-tertiary/20 bg-tertiary/5 p-md">
+				<h3 class="font-headline-md text-headline-md text-tertiary m-0">Receptionists</h3>
+				<ul class="mt-sm space-y-xs font-body-sm text-body-sm text-on-surface-variant list-none p-0 m-0">
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-tertiary">check_circle</span>Manage availability</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-tertiary">check_circle</span>Patient check-in operations</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-tertiary">check_circle</span>Reschedule with audit trail</li>
+				</ul>
+			</article>
+			<article class="rounded-xl border border-primary-container/20 bg-primary-container/5 p-md">
+				<h3 class="font-headline-md text-headline-md text-primary-container m-0">Admins</h3>
+				<ul class="mt-sm space-y-xs font-body-sm text-body-sm text-on-surface-variant list-none p-0 m-0">
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary-container">check_circle</span>User and role administration</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary-container">check_circle</span>Operational analytics</li>
+					<li class="flex items-start gap-xs"><span class="material-symbols-outlined text-base text-primary-container">check_circle</span>Performance reporting</li>
+				</ul>
+			</article>
+		</div>
+	</section>
 
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#eef1ff] text-[#5f75e8]">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">Role-Based Access</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">Strict role permissions keep patient data private while every team member sees exactly what they need.</p>
-            </article>
-
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8fbff] text-[#1f83a6]">
-                    <span class="material-symbols-outlined">schedule</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">Live Queue Visibility</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">See check-in time, live queue position, and wait duration so doctors stay aligned to schedule.</p>
-            </article>
-
-            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#f0f9ef] text-[#439259]">
-                    <span class="material-symbols-outlined">description</span>
-                </div>
-                <h3 class="mt-5 text-xl font-bold text-slate-900">EMR Lite</h3>
-                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-600">Clinical notes, diagnoses, prescriptions and summary history for smoother follow-up care.</p>
-            </article>
-        </div>
-    </section>
-
-    <section id="workflow" class="rounded-3xl border border-slate-200 bg-white p-7 md:p-10">
-        <div class="max-w-2xl">
-            <p class="text-sm font-extrabold uppercase tracking-[0.14em] text-[#168e87]">Workflow</p>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">From booking to consultation in four steps</h2>
-        </div>
-
-        <div class="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">Step 01</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Patient books slot</h3>
-                <p class="mt-2 text-sm font-medium text-slate-600">Smart availability prevents overlap and keeps clinician calendars clean.</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">Step 02</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Reception confirms</h3>
-                <p class="mt-2 text-sm font-medium text-slate-600">Check-in and queue priority are handled instantly at the front desk.</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">Step 03</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Doctor consults</h3>
-                <p class="mt-2 text-sm font-medium text-slate-600">Diagnoses, prescriptions, and follow-up recommendations are logged in one view.</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-400">Step 04</p>
-                <h3 class="mt-2 text-lg font-bold text-slate-900">Admin tracks KPIs</h3>
-                <p class="mt-2 text-sm font-medium text-slate-600">Monitor wait times, throughput, and operational trends for better service quality.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="roles" class="rounded-3xl border border-slate-200 bg-[linear-gradient(160deg,#f8fbff_0%,#f6faff_38%,#f2fcf9_100%)] p-7 md:p-10">
-        <div class="max-w-2xl">
-            <p class="text-sm font-extrabold uppercase tracking-[0.14em] text-[#168e87]">Built For Everyone</p>
-            <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">One platform, tailored to every role</h2>
-        </div>
-
-        <div class="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <article class="rounded-2xl border border-[#8ed5cf]/45 bg-[#8ed5cf]/16 p-5">
-                <h3 class="text-xl font-extrabold text-[#227f78]">Patients</h3>
-                <ul class="mt-3 space-y-2 text-sm font-semibold text-[#2f8e87]">
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Book appointments in seconds</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Track upcoming visits</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>View consultation summaries</span></li>
-                </ul>
-            </article>
-
-            <article class="rounded-2xl border border-[#9cc5f8]/45 bg-[#9cc5f8]/16 p-5">
-                <h3 class="text-xl font-extrabold text-[#2e66b6]">Doctors</h3>
-                <ul class="mt-3 space-y-2 text-sm font-semibold text-[#4477bf]">
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Daily queue dashboard</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Consultation records</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Schedule exceptions management</span></li>
-                </ul>
-            </article>
-
-            <article class="rounded-2xl border border-[#f6d39a]/50 bg-[#f6d39a]/18 p-5">
-                <h3 class="text-xl font-extrabold text-[#bd7c21]">Receptionists</h3>
-                <ul class="mt-3 space-y-2 text-sm font-semibold text-[#b37c2d]">
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Manage availability</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Patient check-in operations</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Reschedule with audit trail</span></li>
-                </ul>
-            </article>
-
-            <article class="rounded-2xl border border-[#9dd9b4]/45 bg-[#9dd9b4]/18 p-5">
-                <h3 class="text-xl font-extrabold text-[#3b8f5d]">Admins</h3>
-                <ul class="mt-3 space-y-2 text-sm font-semibold text-[#458265]">
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>User and role administration</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Operational analytics</span></li>
-                    <li class="flex items-start gap-2"><span class="material-symbols-outlined text-base">check_circle</span><span>Performance reporting</span></li>
-                </ul>
-            </article>
-        </div>
-    </section>
-
-    <section id="cta" class="overflow-hidden rounded-3xl bg-[linear-gradient(145deg,#0b3c47_0%,#0e5b66_45%,#1c6ea8_100%)] px-6 py-10 text-center md:px-10 md:py-14">
-        <h2 class="mx-auto max-w-3xl text-3xl font-extrabold tracking-tight text-white md:text-5xl">Ready to transform your clinic operations?</h2>
-        <p class="mx-auto mt-4 max-w-2xl text-lg font-medium text-white/85">Create your account and start delivering faster, smoother patient experiences from day one.</p>
-        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a href="{% url 'auth:register' %}" class="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-extrabold uppercase tracking-wide text-[#146f9f] transition-colors hover:bg-slate-100">
-                Create Account
-                <span class="material-symbols-outlined text-base">arrow_forward</span>
-            </a>
-            <a href="{% url 'auth:login' %}" class="inline-flex items-center gap-2 rounded-xl border border-white/35 bg-transparent px-7 py-3 text-sm font-extrabold uppercase tracking-wide text-white transition-colors hover:bg-white/10">
-                Sign In
-            </a>
-        </div>
-    </section>
+	<section id="cta" class="overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-surface-container-low via-surface-container to-secondary-container/10 px-lg py-xl text-center">
+		<h2 class="mx-auto max-w-3xl font-headline-lg text-headline-lg-mobile lg:text-headline-lg text-on-surface m-0">Ready to transform your clinic operations?</h2>
+		<p class="mx-auto mt-md max-w-2xl font-body-lg text-body-lg text-on-surface-variant m-0">Create your account and start delivering faster, smoother patient experiences from day one.</p>
+		<div class="mt-lg flex flex-wrap items-center justify-center gap-sm">
+			<a href="{% url 'auth:register' %}" class="inline-flex items-center gap-xs rounded-lg bg-primary-container text-on-primary-container px-xl py-md font-body-sm text-body-sm font-bold uppercase tracking-wide hover:bg-primary transition-colors border border-primary/20">
+				Create Account
+				<span class="material-symbols-outlined text-base">arrow_forward</span>
+			</a>
+			<a href="{% url 'auth:login' %}" class="inline-flex items-center gap-xs rounded-lg border border-outline-variant px-xl py-md font-body-sm text-body-sm font-bold uppercase tracking-wide text-on-surface hover:border-primary/40 hover:text-primary transition-colors">
+				Sign In
+			</a>
+		</div>
+	</section>
 </div>
 {% endblock %}
