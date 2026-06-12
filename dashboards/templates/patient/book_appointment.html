@@ -1,12 +1,26 @@
-{% extends "dashboard_base.html" %} {% block title %}Book Appointment |
-ClinixCare{% endblock %} {% block dashboard_home_url %}{% url
-'appointment:patient_dashboard' %}{% endblock %} {% block dashboard_role_label
-%}Patient Portal{% endblock %} {% block dashboard_breadcrumb %}Patient{%
-endblock %} {% block dashboard_user_role %}Patient{% endblock %} {% block
-dashboard_nav %}{% include "components/nav_patient.html" with active="book" %}{%
-endblock %} {% block dashboard_mobile_nav %}{% include
-"components/nav_patient_mobile.html" with active="book" %}{% endblock %} {%
-block page_title %}Book Appointment{% endblock %} {% block page_subheader %}
+{% extends "dashboard_base.html" %}
+
+{% block title %}Book Appointment | ClinixCare{% endblock %}
+
+{% block dashboard_home_url %}{% url 'appointment:patient_dashboard' %}{% endblock %}
+
+{% block dashboard_role_label %}Patient Portal{% endblock %}
+
+{% block dashboard_breadcrumb %}Patient{% endblock %}
+
+{% block dashboard_user_role %}Patient{% endblock %}
+
+{% block dashboard_nav %}
+    {% include "components/nav_patient.html" with active="book" %}
+{% endblock %}
+
+{% block dashboard_mobile_nav %}
+    {% include "components/nav_patient_mobile.html" with active="book" %}
+{% endblock %}
+
+{% block page_title %}Book Appointment{% endblock %}
+
+{% block page_subheader %}
 
 <p
   class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full"
