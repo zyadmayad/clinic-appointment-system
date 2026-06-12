@@ -74,8 +74,10 @@ def login(request):
         user = authenticate(request, username=username, password=password)
 
         if user:
+            # creates a session cookie in browser.
             django_login(request, user)
-
+            
+            # Get the first group user belongs to
             role_group = user.groups.first()
             role = role_group.name if role_group else 'patient'
 
@@ -83,7 +85,8 @@ def login(request):
             request.session['user_role'] = role
             request.session['user_name'] = user.username
             request.session['user_email'] = user.email
-
+            
+            # Redirect based on role
             return _redirect_for_logged_in_user(request)
 
         return render(request, 'login.html', {"error": "Invalid credentials"})
