@@ -1,156 +1,107 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}Doctor Schedules | MediCare{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}Doctor Schedules | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:receptionist_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Reception Desk{% endblock %}
+{% block dashboard_breadcrumb %}Receptionist{% endblock %}
+{% block dashboard_user_role %}Receptionist{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_receptionist.html" with active="schedules" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_receptionist_mobile.html" with active="schedules" %}{% endblock %}
 
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
+{% block page_title %}Doctor Schedules{% endblock %}
 
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">support_agent</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">Weekly calendar view for doctor availability and exceptions.</p>
+{% endblock %}
 
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Receptionist navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:receptionist_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">home</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'receptionist:appointments_list' %}">
-                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
-                Appointments
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'receptionist:checkin_queue' %}">
-                <span class="material-symbols-outlined text-[19px]">airport_shuttle</span>
-                Check-in Queue
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'receptionist:doctor_schedules' %}">
-                <span class="material-symbols-outlined text-[19px]">schedule</span>
-                Doctor Schedules
-            </a>
-        </nav>
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
 
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Receptionist</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
-
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div>
-                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Doctor Schedules</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Weekly calendar view for doctor availability and exceptions.</p>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
-                    {% for doctor in doctors %}
-                        <a href="?doctor={{ doctor.id }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition {% if doctor.id == selected_doctor.id %}border-[#31b2a3] bg-[#31b2a3] text-white shadow-[0_10px_24px_-16px_rgba(49,178,163,0.45)]{% else %}border-[#dfe7ed] bg-white text-[#475569] hover:border-[#b1c7d4] hover:bg-[#f8fcfe]{% endif %}">{{ doctor.name }}</a>
-                    {% endfor %}
-                </div>
-
-                <div class="rounded-[22px] border border-[#e4ebf0] bg-white p-5 shadow-[0_25px_80px_-50px_rgba(15,45,75,0.15)]">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-[#64748b]">Weekly Schedule</p>
-                            <h3 class="mt-2 text-[1.6rem] font-extrabold text-[#111f2a]">{{ selected_doctor.name }}</h3>
-                            <p class="mt-1 text-sm text-[#6f7b88]">{{ week_range }}</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 space-y-3" id="weeklySchedule" data-doctor-id="{{ selected_doctor.id|default:'' }}">
-                        {% for day in schedule_days %}
-                            <div data-day-card class="rounded-[20px] border border-[#e7eef4] bg-[#f8fafc] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p class="text-sm font-semibold text-[#111f2a]">{{ day.name }}</p>
-                                        <p class="text-sm text-[#64748b]">{{ day.date }}</p>
-                                    </div>
-                                    <div class="inline-flex items-center gap-2">
-                                        <span
-                                            data-day-status-badge
-                                            class="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition {% if day.status|lower == 'exception' %}bg-[#ffedd5] text-[#9a3412]{% elif day.status|lower == 'off' %}bg-[#fef3c7] text-[#92400e]{% else %}bg-[#dbeafe] text-[#1d4ed8]{% endif %}"
-                                        >
-                                            {{ day.status }}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            data-day-exception-btn
-                                            data-day-date="{{ day.iso_date }}"
-                                            onclick="toggleDayException(this, '{{ day.iso_date }}')"
-                                            title="Toggle day exception"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition"
-                                        >
-                                            <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="mt-4 flex flex-wrap gap-3" data-slot-container data-date="{{ day.iso_date }}" data-day-status="{{ day.status|lower }}">
-                                    <span class="text-sm text-[#81909c] italic">Loading slots...</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+{% block dashboard_content %}
+<div class="sticky top-0 z-20 -mx-margin-mobile lg:-mx-lg px-margin-mobile lg:px-lg py-sm mb-md bg-background/90 backdrop-blur-md border-b border-outline-variant/20">
+	<div class="flex flex-wrap gap-xs overflow-x-auto pb-xs max-w-[1440px] mx-auto">
+		{% for doctor in doctors %}
+		<a href="?doctor={{ doctor.id }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-full border px-md py-sm font-body-sm text-body-sm font-semibold transition {% if doctor.id == selected_doctor.id %}border-primary bg-primary-container text-on-primary-container{% else %}border-outline-variant/30 bg-surface-container text-on-surface-variant hover:border-primary/30 hover:bg-surface-container-high{% endif %}">{{ doctor.name }}</a>
+		{% endfor %}
+	</div>
 </div>
 
-<div id="exceptionModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[18px] max-w-md w-full shadow-2xl">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-[#ecf0f4]">
-            <h3 class="m-0 text-[18px] font-bold text-[#1c2d40]">Confirm Exception</h3>
-            <button type="button" onclick="closeExceptionModal()" class="text-[#81909c] hover:text-[#1b2f44]">
-                <span class="material-symbols-outlined text-[24px]">close</span>
-            </button>
-        </div>
+<div class="rounded-xl border border-outline-variant/30 bg-surface-container overflow-hidden shadow-sm">
+	<div class="px-lg py-md border-b border-outline-variant/30 bg-surface-container-high">
+		<p class="font-label-md text-label-md font-semibold uppercase tracking-wide text-on-surface-variant m-0">Weekly Schedule</p>
+		<h3 class="mt-xs font-headline-md text-headline-md text-on-surface m-0">{{ selected_doctor.name }}</h3>
+		<p class="mt-xs font-body-sm text-body-sm text-on-surface-variant m-0">{{ week_range }}</p>
+	</div>
 
-        <div class="p-6 space-y-4">
-            <div>
-                <p class="text-[12px] font-semibold text-[#81909c] mb-2">SELECTED SLOT</p>
-                <p id="exceptionSlotTime" class="text-[16px] font-semibold text-[#1b2f44]"></p>
-                <p id="exceptionSlotStatus" class="text-sm text-[#64748b] mt-1"></p>
-            </div>
+	<div class="p-lg space-y-sm max-h-[600px] overflow-y-auto" id="weeklySchedule" data-doctor-id="{{ selected_doctor.id|default:'' }}">
+			{% for day in schedule_days %}
+			<div data-day-card class="rounded-xl border border-outline-variant/30 bg-surface-container-high p-md">
+				<div class="flex flex-col gap-sm sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<p class="font-body-sm text-body-sm font-semibold text-on-surface m-0">{{ day.name }}</p>
+						<p class="font-body-sm text-body-sm text-on-surface-variant m-0">{{ day.date }}</p>
+					</div>
+					<div class="inline-flex items-center gap-xs">
+						<span
+							data-day-status-badge
+							class="inline-flex rounded-full px-md py-xs font-label-md text-label-md font-semibold transition {% if day.status|lower == 'exception' %}bg-tertiary/10 text-tertiary{% elif day.status|lower == 'off' %}bg-tertiary/20 text-tertiary{% else %}bg-secondary-container/20 text-secondary{% endif %}"
+						>
+							{{ day.status }}
+						</span>
+						<button
+							type="button"
+							data-day-exception-btn
+							data-day-date="{{ day.iso_date }}"
+							onclick="toggleDayException(this, '{{ day.iso_date }}')"
+							title="Toggle day exception"
+							class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+						>
+							<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+						</button>
+					</div>
+				</div>
+				<div class="mt-md flex flex-wrap gap-sm" data-slot-container data-date="{{ day.iso_date }}" data-day-status="{{ day.status|lower }}">
+					<span class="font-body-sm text-body-sm text-on-surface-variant italic">Loading slots...</span>
+				</div>
+			</div>
+			{% endfor %}
+	</div>
+</div>
 
-            <p class="text-sm text-[#334155] leading-relaxed">
-                Marking as exception will set this slot to exception. Choosing not exception will set it to available.
-            </p>
+<div id="exceptionModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-md">
+	<div class="bg-surface-container border border-outline-variant/30 rounded-xl max-w-md w-full shadow-2xl">
+		<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant/30">
+			<h3 class="m-0 font-headline-md text-headline-md text-on-surface">Confirm Exception</h3>
+			<button type="button" onclick="closeExceptionModal()" class="text-on-surface-variant hover:text-on-surface transition">
+				<span class="material-symbols-outlined text-[24px]">close</span>
+			</button>
+		</div>
 
-            <div id="exceptionError" class="hidden bg-[#ffebee] text-[#c62828] px-3 py-2 rounded-[8px] text-[12px]"></div>
+		<div class="p-lg space-y-md">
+			<div>
+				<p class="font-label-md text-label-md font-semibold text-on-surface-variant m-0 mb-xs">SELECTED SLOT</p>
+				<p id="exceptionSlotTime" class="font-body-md text-body-md font-semibold text-on-surface m-0"></p>
+				<p id="exceptionSlotStatus" class="font-body-sm text-body-sm text-on-surface-variant m-0 mt-xs"></p>
+			</div>
 
-            <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                <button type="button" onclick="closeExceptionModal()" class="flex-1 px-4 py-2 bg-[#ecf0f4] text-[#1b2f44] font-semibold rounded-[10px] hover:bg-[#dce9ff] transition">
-                    Cancel
-                </button>
-                <button type="button" id="setAvailableBtn" onclick="updateSlotStatus('available')" class="flex-1 px-4 py-2 bg-[#e8f5f2] text-[#166d60] font-semibold rounded-[10px] hover:bg-[#d2ece7] transition">
-                    Not Exception
-                </button>
-                <button type="button" id="setExceptionBtn" onclick="updateSlotStatus('exception')" class="flex-1 px-4 py-2 bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white font-semibold rounded-[10px] hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">
-                    Confirm Exception
-                </button>
-            </div>
-        </div>
-    </div>
+			<p class="font-body-sm text-body-sm text-on-surface-variant m-0 leading-relaxed">
+				Marking as exception will set this slot to exception. Choosing not exception will set it to available.
+			</p>
+
+			<div id="exceptionError" class="hidden bg-error-container/20 text-error px-md py-sm rounded-lg font-body-sm text-body-sm"></div>
+
+			<div class="flex flex-col sm:flex-row gap-sm pt-xs">
+				<button type="button" onclick="closeExceptionModal()" class="flex-1 px-md py-sm bg-surface-container-high text-on-surface font-semibold rounded-lg hover:bg-surface-container-highest transition font-body-sm text-body-sm">
+					Cancel
+				</button>
+				<button type="button" id="setAvailableBtn" onclick="updateSlotStatus('available')" class="flex-1 px-md py-sm bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary/20 transition font-body-sm text-body-sm">
+					Not Exception
+				</button>
+				<button type="button" id="setExceptionBtn" onclick="updateSlotStatus('exception')" class="flex-1 px-md py-sm bg-primary-container text-on-primary-container font-semibold rounded-lg hover:bg-primary transition font-body-sm text-body-sm border border-primary/20">
+					Confirm Exception
+				</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -204,20 +155,20 @@ function formatSlotStatus(status) {
 function slotTone(status) {
     if (status === 'exception') {
         return {
-            wrapper: 'bg-[#fff7ed] text-[#9a3412] hover:bg-[#ffedd5] border border-[#fed7aa]',
+            wrapper: 'bg-tertiary/10 text-tertiary hover:bg-tertiary/20 border border-tertiary/30',
             icon: 'warning',
         };
     }
 
     if (status === 'booked') {
         return {
-            wrapper: 'bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0] border border-[#dbe3eb]',
+            wrapper: 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest border border-outline-variant/30',
             icon: 'event_busy',
         };
     }
 
     return {
-        wrapper: 'bg-[#e8f9f2] text-[#0f5a4f] hover:bg-[#d9f3ea] border border-[#cdeade]',
+        wrapper: 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30',
         icon: 'schedule',
     };
 }
@@ -260,18 +211,18 @@ function groupSchedulesByDate(schedules) {
 
 function updateDayExceptionButton(button, dayStatus) {
     if (dayStatus === 'exception') {
-        button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#ffedd5] text-[#9a3412] hover:bg-[#fed7aa]';
+        button.className = 'inline-flex rounded-full px-md py-xs font-label-md text-label-md font-semibold transition bg-tertiary/10 text-tertiary hover:bg-tertiary/20';
         button.textContent = 'Exception';
         return;
     }
 
     if (dayStatus === 'off') {
-        button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]';
+        button.className = 'inline-flex rounded-full px-md py-xs font-label-md text-label-md font-semibold transition bg-tertiary/20 text-tertiary hover:bg-tertiary/30';
         button.textContent = 'Off';
         return;
     }
 
-    button.className = 'inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe]';
+    button.className = 'inline-flex rounded-full px-md py-xs font-label-md text-label-md font-semibold transition bg-secondary-container/20 text-secondary hover:bg-secondary-container/30';
     button.textContent = 'Working';
 }
 
@@ -287,7 +238,7 @@ function renderSlots() {
 
         if (dayStatus === 'off') {
             const dayOffLabel = document.createElement('span');
-            dayOffLabel.className = 'text-sm text-[#64748b] italic';
+            dayOffLabel.className = 'font-body-sm text-body-sm text-on-surface-variant italic';
             dayOffLabel.textContent = 'Day off (whole day)';
             container.appendChild(dayOffLabel);
             return;
@@ -295,14 +246,14 @@ function renderSlots() {
 
         if (dayStatus === 'exception') {
             const dayExceptionLabel = document.createElement('span');
-            dayExceptionLabel.className = 'text-sm text-[#9a3412] italic';
+            dayExceptionLabel.className = 'font-body-sm text-body-sm text-tertiary italic';
             dayExceptionLabel.textContent = 'Day marked as exception';
             container.appendChild(dayExceptionLabel);
         }
 
         if (!daySlots.length) {
             const empty = document.createElement('span');
-            empty.className = 'text-sm text-[#64748b] italic';
+            empty.className = 'font-body-sm text-body-sm text-on-surface-variant italic';
             empty.textContent = 'No slots';
             container.appendChild(empty);
             return;
@@ -312,7 +263,7 @@ function renderSlots() {
             const tone = slotTone(slot.status);
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition ${tone.wrapper}`;
+            button.className = `inline-flex items-center gap-xs rounded-full px-md py-sm font-body-sm text-body-sm font-medium shadow-sm transition ${tone.wrapper}`;
             button.innerHTML = `<span class="material-symbols-outlined text-[18px]">${tone.icon}</span>${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}`;
             button.addEventListener('click', () => openExceptionModal(slot));
             container.appendChild(button);
@@ -322,7 +273,7 @@ function renderSlots() {
 
 function renderLoadingError(message) {
     slotContainers.forEach((container) => {
-        container.innerHTML = `<span class="text-sm text-[#b91c1c]">${message}</span>`;
+        container.innerHTML = `<span class="font-body-sm text-body-sm text-error">${message}</span>`;
     });
 }
 
@@ -396,6 +347,8 @@ function setDayCardState(dayCard, dayStatus) {
     }
 }
 
+const DAY_EXCEPTION_BTN_CLASS = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition';
+
 function syncDayButtonsFromSchedules() {
     const buttons = Array.from(document.querySelectorAll('[data-day-exception-btn]'));
     buttons.forEach((button) => {
@@ -405,14 +358,14 @@ function syncDayButtonsFromSchedules() {
 
         if (!dayData || !dayData.ids.length) {
             button.disabled = false;
-            button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+            button.className = DAY_EXCEPTION_BTN_CLASS;
             button.title = 'Toggle day exception';
             button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
             return;
         }
 
         button.disabled = false;
-        button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+        button.className = DAY_EXCEPTION_BTN_CLASS;
         button.title = 'Toggle day exception';
         button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
         const dayStatus = dayData.hasException ? 'exception' : (dayData.hasOff ? 'off' : 'working');
@@ -581,7 +534,7 @@ async function loadDaySchedulesForWeek() {
         const buttons = Array.from(document.querySelectorAll('[data-day-exception-btn]'));
         buttons.forEach((button) => {
             button.disabled = false;
-            button.className = 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#e0f2f1] text-[#187a70] hover:bg-[#c8e6e5] transition';
+            button.className = DAY_EXCEPTION_BTN_CLASS;
             button.title = 'Toggle day exception';
             button.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit_calendar</span>';
         });

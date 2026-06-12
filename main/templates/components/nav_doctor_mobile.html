@@ -1,0 +1,16 @@
+<a href="{% url 'dashboards:doctor_dashboard' %}" class="dash-nav-mobile {% if active == 'dashboard' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">dashboard</span>
+	<span>Today</span>
+</a>
+<a href="{% url 'schedule:doctor_schedule' %}" class="dash-nav-mobile {% if active == 'schedule' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">schedule</span>
+	<span>Schedule</span>
+</a>
+<a href="{% url 'schedule:patient_queue' %}" class="dash-nav-mobile {% if active == 'queue' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">group</span>
+	<span>Queue</span>
+</a>
+<a href="{% url 'consultations:index' %}" class="dash-nav-mobile {% if active == 'consultations' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">clinical_notes</span>
+	<span>Notes</span>
+</a>

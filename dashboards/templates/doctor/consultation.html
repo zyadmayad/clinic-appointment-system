@@ -1,209 +1,153 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}Consultations | MediCare{% endblock %}
-
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
-
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
-
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Doctor navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'dashboards:doctor_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">dashboard</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:doctor_schedule' %}">
-                <span class="material-symbols-outlined text-[19px]">schedule</span>
-                My Schedule
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'schedule:patient_queue' %}">
-                <span class="material-symbols-outlined text-[19px]">group</span>
-                Patient Queue
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'consultations:index' %}">
-                <span class="material-symbols-outlined text-[19px]">clinical_notes</span>
-                Consultations
-            </a>
-        </nav>
-
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">Doctor</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
-
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="mb-4 flex sm:hidden items-center justify-between">
-            <div class="rounded-full bg-[#dbf5f3] text-[#0b6860] px-3 py-1 text-xs font-semibold tracking-wide">Consultations</div>
-            <div id="mobile-user-role" class="rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
-        </div>
-
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div>
-                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Consultations</h2>
-                    <p id="consultationCountText" class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">{{ appointment_items|length }} appointments found</p>
-                </div>
-                <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">Doctor</div>
-            </div>
-
-            <form id="consultationFilterForm" method="get" class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 mb-6">
-                <div class=""></div>
-                <div class="grid grid-cols-2 gap-3">
-                    <select id="consultationStatusFilter" name="status" class="w-full rounded-[14px] border border-[#e4ebf0] bg-white px-4 py-3 text-sm text-[#111f2f]">
-                        <option value="">All statuses</option>
-                        <option value="checked_in">Checked In</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="requested">Requested</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <button type="submit" class="rounded-[14px] bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] px-4 py-3 text-sm font-semibold text-white hover:shadow-[0_10px_24px_rgba(49,178,163,0.3)] transition">Apply</button>
-                </div>
-            </form>
-
-            <!-- Appointments List -->
-            <div id="consultationCards" class="space-y-3">
-                {% for item in appointment_items %}
-                    <div data-consultation-card data-appointment-status="{{ item.appointment.status }}" class="bg-white border border-[#e4ebf0] rounded-[14px] p-4 hover:shadow-[0_10px_24px_rgba(27,49,73,0.1)] transition">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#31b2a3] to-[#2a9e93] text-white grid place-items-center font-bold text-sm">{{ item.patient_initial }}</div>
-                                <div class="flex-1">
-                                    <h4 class="m-0 font-semibold text-[#1b2f44]">{{ item.patient_name }}</h4>
-                                    <p class="m-0 text-sm text-[#81909c]">{{ item.appointment.date }} · {{ item.appointment.start_time|time:"H:i" }}-{{ item.appointment.end_time|time:"H:i" }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap justify-end">
-                                {% if item.appointment.status == 'completed' %}
-                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e8f5e9] text-[#388e3c] text-[13px] font-semibold rounded-full">
-                                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                        {{ item.appointment.get_status_display }}
-                                    </span>
-                                {% elif item.appointment.status == 'checked_in' %}
-                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e0f2f1] text-[#00897b] text-[13px] font-semibold rounded-full">
-                                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                        {{ item.appointment.get_status_display }}
-                                    </span>
-                                {% elif item.appointment.status == 'confirmed' %}
-                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] text-[13px] font-semibold rounded-full">
-                                        <span class="material-symbols-outlined text-[16px]">event_available</span>
-                                        {{ item.appointment.get_status_display }}
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#fff3cd] text-[#856404] text-[13px] font-semibold rounded-full">
-                                        <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                        {{ item.appointment.get_status_display }}
-                                    </span>
-                                {% endif %}
-
-                                {% if item.appointment.status == 'checked_in' %}
-                                    <a href="{% url 'consultations:fill' item.appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e3f2fd] text-[#1976d2] font-semibold rounded-[8px] hover:bg-[#bbdefb] transition text-sm">
-                                        {% if item.consultation %}Edit{% else %}Fill Form{% endif %}
-                                    </a>
-                                {% endif %}
-
-                                {% if item.consultation %}
-                                    <a href="{% url 'consultations:summary' item.appointment.id %}" class="inline-flex items-center justify-center px-3 py-1.5 bg-[#e8f5e9] text-[#2e7d32] font-semibold rounded-[8px] hover:bg-[#c8e6c9] transition text-sm">
-                                        Summary
-                                    </a>
-                                {% endif %}
-
-                                <span class="text-[#81909c] text-sm font-semibold">APT-{{ item.appointment.id|stringformat:"03d" }}</span>
-                            </div>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="rounded-[12px] border border-[#ecf0f4] p-6 text-center text-sm text-[#6f7b88] bg-white">
-                        No appointments found for this filter.
-                    </div>
-                {% endfor %}
-
-                {% if appointment_items %}
-                    <div id="consultationFilterEmpty" class="hidden rounded-[12px] border border-[#ecf0f4] p-6 text-center text-sm text-[#6f7b88] bg-white">
-                        No appointments found for this filter.
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </section>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const filterForm = document.getElementById('consultationFilterForm');
-    const statusFilter = document.getElementById('consultationStatusFilter');
-    const cards = Array.from(document.querySelectorAll('[data-consultation-card]'));
-    const emptyState = document.getElementById('consultationFilterEmpty');
-    const countText = document.getElementById('consultationCountText');
-
-    function applyStatusFilter(status) {
-        let visibleCount = 0;
-
-        cards.forEach(function (card) {
-            const cardStatus = card.dataset.appointmentStatus || '';
-            const isVisible = !status || cardStatus === status;
-            card.classList.toggle('hidden', !isVisible);
-
-            if (isVisible) {
-                visibleCount += 1;
-            }
-        });
-
-        if (emptyState) {
-            emptyState.classList.toggle('hidden', visibleCount !== 0);
-        }
-
-        if (countText) {
-            countText.textContent = visibleCount + ' appointments found';
-        }
-
-        const params = new URLSearchParams(window.location.search);
-        if (status) {
-            params.set('status', status);
-        } else {
-            params.delete('status');
-        }
-
-        const newQuery = params.toString();
-        const newUrl = newQuery ? (window.location.pathname + '?' + newQuery) : window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-    }
-
-    const initialStatus = new URLSearchParams(window.location.search).get('status') || '';
-    if (statusFilter) {
-        statusFilter.value = initialStatus;
-    }
-
-    if (cards.length > 0) {
-        applyStatusFilter(initialStatus);
-    }
-
-    if (filterForm) {
-        filterForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-            applyStatusFilter(statusFilter ? statusFilter.value : '');
-        });
-    }
-});
-</script>
-{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}Consultations | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:doctor_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Doctor Workspace{% endblock %}
+{% block dashboard_breadcrumb %}Doctor{% endblock %}
+{% block dashboard_user_role %}Doctor{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_doctor.html" with active="consultations" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_doctor_mobile.html" with active="consultations" %}{% endblock %}
+
+{% block page_title %}Consultations{% endblock %}
+
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full"><span id="consultationCountText">{{ appointment_items|length }} appointments found</span></p>
+{% endblock %}
+
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
+
+{% block dashboard_content %}
+<form id="consultationFilterForm" method="get" class="flex flex-col sm:flex-row sm:items-center gap-sm mb-lg p-md rounded-xl border border-outline-variant/30 bg-surface-container">
+	<span class="font-label-md text-label-md font-semibold text-on-surface-variant uppercase shrink-0">Filter</span>
+	<select id="consultationStatusFilter" name="status" class="flex-1 rounded-lg border border-outline-variant/40 bg-surface-container-high px-md py-sm font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary/50">
+		<option value="">All statuses</option>
+		<option value="checked_in">Checked In</option>
+		<option value="confirmed">Confirmed</option>
+		<option value="requested">Requested</option>
+		<option value="completed">Completed</option>
+	</select>
+	<button type="submit" class="rounded-lg bg-primary-container text-on-primary-container px-lg py-sm font-body-sm text-body-sm font-bold hover:bg-primary transition-colors border border-primary/20 shrink-0">Apply</button>
+</form>
+
+<div id="consultationCards" class="grid grid-cols-1 md:grid-cols-2 gap-md">
+	{% for item in appointment_items %}
+	<div data-consultation-card data-appointment-status="{{ item.appointment.status }}" class="bg-surface-container border border-outline-variant/30 rounded-xl p-md hover:bg-surface-container-high/50 transition rim-light break-inside-avoid">
+		<div class="flex flex-col gap-md h-full">
+			<div class="flex items-center gap-sm">
+				<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container grid place-items-center font-bold text-sm shrink-0">{{ item.patient_initial }}</div>
+				<div class="flex-1 min-w-0">
+					<h4 class="font-body-md text-body-md font-semibold text-on-surface m-0 truncate">{{ item.patient_name }}</h4>
+					<p class="font-body-sm text-body-sm text-on-surface-variant m-0">{{ item.appointment.date }} · {{ item.appointment.start_time|time:"H:i" }}-{{ item.appointment.end_time|time:"H:i" }}</p>
+				</div>
+			</div>
+			<div class="flex flex-wrap items-center gap-sm mt-auto">
+				{% if item.appointment.status == 'completed' %}
+				<span class="inline-flex items-center gap-xs px-md py-xs bg-primary-container/20 text-primary-container font-label-md text-label-md rounded-full uppercase">
+					<span class="material-symbols-outlined text-[14px]">check_circle</span>
+					{{ item.appointment.get_status_display }}
+				</span>
+				{% elif item.appointment.status == 'checked_in' %}
+				<span class="inline-flex items-center gap-xs px-md py-xs bg-primary/10 text-primary font-label-md text-label-md rounded-full uppercase">
+					<span class="material-symbols-outlined text-[14px]">check_circle</span>
+					{{ item.appointment.get_status_display }}
+				</span>
+				{% elif item.appointment.status == 'confirmed' %}
+				<span class="inline-flex items-center gap-xs px-md py-xs bg-secondary-container/20 text-secondary font-label-md text-label-md rounded-full uppercase">
+					<span class="material-symbols-outlined text-[14px]">event_available</span>
+					{{ item.appointment.get_status_display }}
+				</span>
+				{% else %}
+				<span class="inline-flex items-center gap-xs px-md py-xs bg-tertiary/10 text-tertiary font-label-md text-label-md rounded-full uppercase">
+					<span class="material-symbols-outlined text-[14px]">schedule</span>
+					{{ item.appointment.get_status_display }}
+				</span>
+				{% endif %}
+
+				{% if item.appointment.status == 'checked_in' %}
+				<a href="{% url 'consultations:fill' item.appointment.id %}" class="inline-flex items-center justify-center px-md py-xs bg-primary/10 text-primary font-body-sm text-body-sm font-semibold rounded-lg hover:bg-primary/20 transition">
+					{% if item.consultation %}Edit{% else %}Fill Form{% endif %}
+				</a>
+				{% endif %}
+
+				{% if item.consultation %}
+				<a href="{% url 'consultations:summary' item.appointment.id %}" class="inline-flex items-center justify-center px-md py-xs bg-secondary-container/20 text-secondary font-body-sm text-body-sm font-semibold rounded-lg hover:bg-secondary-container/30 transition">
+					Summary
+				</a>
+				{% endif %}
+
+				<span class="font-label-md text-label-md text-on-surface-variant ml-auto">APT-{{ item.appointment.id|stringformat:"03d" }}</span>
+			</div>
+		</div>
+	</div>
+	{% empty %}
+	<div class="md:col-span-2 rounded-xl border border-outline-variant/30 p-lg text-center font-body-sm text-body-sm text-on-surface-variant bg-surface-container">
+		No appointments found for this filter.
+	</div>
+	{% endfor %}
+
+	{% if appointment_items %}
+	<div id="consultationFilterEmpty" class="hidden md:col-span-2 rounded-xl border border-outline-variant/30 p-lg text-center font-body-sm text-body-sm text-on-surface-variant bg-surface-container">
+		No appointments found for this filter.
+	</div>
+	{% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	const filterForm = document.getElementById('consultationFilterForm');
+	const statusFilter = document.getElementById('consultationStatusFilter');
+	const cards = Array.from(document.querySelectorAll('[data-consultation-card]'));
+	const emptyState = document.getElementById('consultationFilterEmpty');
+	const countText = document.getElementById('consultationCountText');
+
+	function applyStatusFilter(status) {
+		let visibleCount = 0;
+
+		cards.forEach(function (card) {
+			const cardStatus = card.dataset.appointmentStatus || '';
+			const isVisible = !status || cardStatus === status;
+			card.classList.toggle('hidden', !isVisible);
+
+			if (isVisible) {
+				visibleCount += 1;
+			}
+		});
+
+		if (emptyState) {
+			emptyState.classList.toggle('hidden', visibleCount !== 0);
+		}
+
+		if (countText) {
+			countText.textContent = visibleCount + ' appointments found';
+		}
+
+		const params = new URLSearchParams(window.location.search);
+		if (status) {
+			params.set('status', status);
+		} else {
+			params.delete('status');
+		}
+
+		const newQuery = params.toString();
+		const newUrl = newQuery ? (window.location.pathname + '?' + newQuery) : window.location.pathname;
+		window.history.replaceState({}, '', newUrl);
+	}
+
+	const initialStatus = new URLSearchParams(window.location.search).get('status') || '';
+	if (statusFilter) {
+		statusFilter.value = initialStatus;
+	}
+
+	if (cards.length > 0) {
+		applyStatusFilter(initialStatus);
+	}
+
+	if (filterForm) {
+		filterForm.addEventListener('submit', function (event) {
+			event.preventDefault();
+			applyStatusFilter(statusFilter ? statusFilter.value : '');
+		});
+	}
+});
+</script>
+{% endblock %}

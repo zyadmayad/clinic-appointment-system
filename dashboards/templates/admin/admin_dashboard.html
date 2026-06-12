@@ -1,198 +1,165 @@
-{% extends "base.html" %}
-{% block show_header %}{% endblock %}
-{% block show_footer %}{% endblock %}
-{% block title %}Admin Dashboard | MediCare{% endblock %}
-
-{% block main_classes %}p-0 m-0 max-w-none w-full{% endblock %}
-
-{% block content %}
-<div class="min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[radial-gradient(circle_at_top_right,_#fcffff_0%,_#eef3f7_65%)] lg:overflow-hidden">
-    <aside class="w-full lg:w-[260px] bg-gradient-to-b from-[#0d2f33] to-[#0a2529] text-[#d8eeef] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-screen lg:overflow-hidden shrink-0">
-        <div class="px-4 py-4 border-b border-white/10 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-[10px] grid place-items-center bg-gradient-to-br from-[#23c4b0] to-[#0d9d8e] text-[#eafffd] shadow-[0_10px_24px_rgba(23,172,154,0.3)]">
-                <span class="material-symbols-outlined text-[20px]">stethoscope</span>
-            </div>
-            <div>
-                <h1 class="m-0 text-[1.28rem] font-bold leading-none text-[#f2fffe]">MediCare</h1>
-                <p class="m-0 mt-0.5 text-xs text-[#add7d5]">Clinic System</p>
-            </div>
-        </div>
-
-        <nav class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1" aria-label="Admin navigation">
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold bg-[rgba(32,184,163,0.2)] text-[#cbfffa]" href="{% url 'dashboards:admin_dashboard' %}">
-                <span class="material-symbols-outlined text-[19px]">dashboard</span>
-                Dashboard
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:admin_appointments' %}">
-                <span class="material-symbols-outlined text-[19px]">event</span>
-                Appointments
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:doctor_schedule' %}">
-                <span class="material-symbols-outlined text-[19px]">calendar_month</span>
-                Doctor Schedules
-            </a>
-            <a class="rounded-xl flex items-center gap-3 px-3 py-2.5 text-[15px] font-semibold text-[#c4dcdf] hover:bg-white/10 hover:text-[#efffff] transition" href="{% url 'managements:user_managements' %}">
-                <span class="material-symbols-outlined text-[19px]">group</span>
-                User Management
-            </a>
-        </nav>
-
-        <div class="mt-0 lg:mt-auto border-t border-white/10 p-4 grid sm:grid-cols-[1fr_auto] lg:grid-cols-1 gap-3 items-center">
-            <div class="flex items-center gap-3">
-                <div id="sidebar-user-initial" class="w-[34px] h-[34px] rounded-full bg-[#1faea0] text-[#dbffff] grid place-items-center text-sm font-bold">{{ user_name|slice:":1"|upper }}</div>
-                <div>
-                    <h3 id="sidebar-user-name" class="m-0 text-[15px] leading-tight text-[#ebffff]">{{ user_name }}</h3>
-                    <p id="sidebar-user-role" class="m-0 text-xs text-[#9fc7c7]">{{ user_role|title }}</p>
-                </div>
-            </div>
-            <a class="inline-flex border-t-2 border-white/10 pt-3 items-center gap-1 text-[#c8e4e3] hover:text-white transition" href="{% url 'auth:logout' %}">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                Sign Out
-            </a>
-        </div>
-    </aside>
-
-    <section class="flex-1 p-3 sm:p-4 lg:p-5 lg:h-screen lg:overflow-y-auto">
-        <div class="mb-4 flex sm:hidden items-center justify-between">
-            <div class="rounded-full bg-[#dbf5f3] text-[#0b6860] px-3 py-1 text-xs font-semibold tracking-wide">Dashboard</div>
-            <div id="mobile-user-role" class="rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{{ user_role }}</div>
-        </div>
-
-        <div class="rounded-[18px] border border-[#dde5eb] bg-[#f3f6f8] p-4 sm:p-5 shadow-[0_22px_50px_-36px_rgba(27,49,73,0.35)]">
-            <div class="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div>
-                    <h2 class="m-0 text-[1.7rem] sm:text-[2rem] font-extrabold leading-tight text-[#112234]">Admin Dashboard</h2>
-                    <p class="m-0 mt-1 text-base sm:text-lg text-[#6f7b88]">Clinic overview and analytics</p>
-                </div>
-                <div id="desktop-user-role" class="hidden sm:inline-flex rounded-full bg-[#d9f0ec] text-[#1d6d66] px-3 py-1 text-xs font-semibold tracking-wide">{{ user_role }}</div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Total Users</div>
-                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e4f4f1] text-[#187a70] grid place-items-center">
-                            <span class="material-symbols-outlined text-[17px]">group</span>
-                        </div>
-                    </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ total_users }}</div>
-                    <div class="mt-1 text-[13px] text-[#81909c]">registered</div>
-                </article>
-
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Appointments</div>
-                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e4f4f1] text-[#187a70] grid place-items-center">
-                            <span class="material-symbols-outlined text-[17px]">event</span>
-                        </div>
-                    </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ total_appointments }}</div>
-                    <div class="mt-1 text-[13px] text-[#81909c]">all time</div>
-                </article>
-
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="text-[#6f7d8a] text-[15px] font-semibold">Completion Rate</div>
-                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e4f4f1] text-[#187a70] grid place-items-center">
-                            <span class="material-symbols-outlined text-[17px]">trending_up</span>
-                        </div>
-                    </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ completion_rate }}%</div>
-                    <div class="mt-1 text-[13px] text-[#81909c]">service flow</div>
-                </article>
-
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="text-[#6f7d8a] text-[15px] font-semibold">No-Show Rate</div>
-                        <div class="w-[34px] h-[34px] rounded-[10px] bg-[#e4f4f1] text-[#187a70] grid place-items-center">
-                            <span class="material-symbols-outlined text-[17px]">schedule</span>
-                        </div>
-                    </div>
-                    <div class="mt-1.5 text-[2rem] leading-none font-extrabold text-[#111f2f]">{{ no_show_rate }}%</div>
-                    <div class="mt-1 text-[13px] text-[#81909c]">monthly average</div>
-                </article>
-            </div>
-
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <h3 class="m-0 mb-4 text-[17px] text-[#1c2d40] font-bold">Weekly Appointments</h3>
-                    <div class="h-56 grid grid-rows-[1fr_auto] gap-2">
-                        <div class="flex items-end justify-between gap-2 border-l border-b border-[#d9e2e8] rounded-md bg-[linear-gradient(to_top,_transparent_24%,_#edf2f6_24%,_#edf2f6_25%,_transparent_25%,_transparent_49%,_#edf2f6_49%,_#edf2f6_50%,_transparent_50%,_transparent_74%,_#edf2f6_74%,_#edf2f6_75%,_transparent_75%)] p-2 pb-1 pl-3" aria-hidden="true">
-                            {% for day in weekly_appointment_chart %}
-                            <div class="w-[14%] rounded-t-md bg-gradient-to-b from-[#31b2a3] to-[#2a9e93] shadow-[0_10px_20px_-12px_rgba(26,149,138,0.7)]" 
-                                style="height: {{ day.height }}%"; title="{{ day.label }}: {{ day.value }}"></div>
-                            {% endfor %}
-                        </div>
-                        <div class="flex justify-between text-[13px] text-[#7f8b97] px-1">
-                            {% for day in weekly_appointment_chart %}
-                            <span>{{ day.label }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </article>
-
-                <article class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                    <h3 class="m-0 mb-4 text-[17px] text-[#1c2d40] font-bold">Appointment Status Distribution</h3>
-                    <div class="min-h-[224px] flex flex-col items-center justify-center gap-4">
-                        <div class="relative h-44 w-44 rounded-full bg-[conic-gradient(#3183d5_0%_41.5%,_#29a79b_41.5%_56%,_#eba82e_56%_70%,_#738090_70%_84%,_#32b079_84%_100%)]">
-                            <div class="absolute inset-8 rounded-full bg-white ring-1 ring-[#ecf2f6]"></div>
-                        </div>
-                        <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-[13px] text-[#6f7d8a]">
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#32b079]"></i>Completed ({{ completed_count }})</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#3183d5]"></i>Confirmed ({{ confirmed_count }})</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#29a79b]"></i>Checked In ({{ checked_in_count }})</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#eba82e]"></i>Requested ({{ requested_count }})</span>
-                            <span class="inline-flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#738090]"></i>No Show ({{ no_show_count }})</span>
-                        </div>
-                    </div>
-                </article>
-            </div>
-
-            <section class="bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                <h3 class="m-0 mb-3 text-[17px] text-[#1b2f44] font-bold">User Breakdown</h3>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ patient_users }}</strong>
-                        <span class="text-[#6f7d8a] text-[15px] font-semibold">Patients</span>
-                    </div>
-                    <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ doctor_users }}</strong>
-                        <span class="text-[#6f7d8a] text-[15px] font-semibold">Doctors</span>
-                    </div>
-                    <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ receptionist_users }}</strong>
-                        <span class="text-[#6f7d8a] text-[15px] font-semibold">Receptionists</span>
-                    </div>
-                    <div class="border border-[#ebeff4] rounded-xl text-center py-3 px-1 bg-[#fbfdff]">
-                        <strong class="block text-[1.9rem] leading-none font-extrabold text-[#11253a] mb-1">{{ admin_users }}</strong>
-                        <span class="text-[#6f7d8a] text-[15px] font-semibold">Admins</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="mt-4 bg-white border border-[#e4ebf0] rounded-[14px] p-4">
-                <h3 class="m-0 mb-3 text-[17px] text-[#1b2f44] font-bold">Recent Appointments</h3>
-                <div class="space-y-3">
-                    {% for appointment in recent_appointments %}
-                    <div class="flex flex-col gap-2 rounded-xl border border-[#ebeff4] bg-[#fbfdff] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <div class="font-bold text-[#11253a]">{{ appointment.code }} - {{ appointment.patient_name }}</div>
-                            <div class="text-sm text-[#6f7d8a]">{{ appointment.doctor_name }} · {{ appointment.date }} · {{ appointment.time }}</div>
-                        </div>
-                        <div class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if appointment.status_key == 'completed' %}bg-[#e7f7ef] text-[#1b8b57]{% elif appointment.status_key == 'confirmed' %}bg-[#e8f1fb] text-[#2c6db2]{% elif appointment.status_key == 'checked_in' %}bg-[#e6faf8] text-[#1d8e84]{% elif appointment.status_key == 'requested' %}bg-[#fff4df] text-[#bb8425]{% elif appointment.status_key == 'no_show' %}bg-[#eef2f7] text-[#5e6b7c]{% else %}bg-[#f4f6f8] text-[#667485]{% endif %}">
-                            {{ appointment.status }}
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="rounded-xl border border-dashed border-[#d7e0e7] bg-[#fbfdff] px-4 py-6 text-center text-sm text-[#6f7d8a]">
-                        No appointments yet.
-                    </div>
-                    {% endfor %}
-                </div>
-            </section>
-        </div>
-    </section>
-</div>
-
-
-{% endblock %}
+{% extends "dashboard_base.html" %}
+{% block title %}Admin Dashboard | ClinixCare{% endblock %}
+{% block dashboard_home_url %}{% url 'dashboards:admin_dashboard' %}{% endblock %}
+{% block dashboard_role_label %}Admin Console{% endblock %}
+{% block dashboard_breadcrumb %}Admin{% endblock %}
+{% block dashboard_nav %}{% include "components/nav_admin.html" with active="dashboard" %}{% endblock %}
+{% block dashboard_mobile_nav %}{% include "components/nav_admin_mobile.html" with active="dashboard" %}{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block page_subheader %}
+<p class="px-margin-mobile lg:px-lg pt-sm pb-0 font-body-sm text-body-sm text-on-surface-variant m-0 max-w-[1440px] mx-auto w-full">Clinic overview and analytics</p>
+{% endblock %}
+
+{% block workspace_classes %}border-0 bg-transparent p-0{% endblock %}
+{% block workspace_padding %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-md">
+	<!-- Left KPI rail -->
+	<aside class="lg:col-span-3 flex flex-row lg:flex-col gap-sm overflow-x-auto lg:overflow-visible pb-xs lg:pb-0">
+		<article class="flex-1 min-w-[140px] lg:min-w-0 bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+			<div class="flex items-center justify-between gap-sm">
+				<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Total Users</span>
+				<div class="w-9 h-9 rounded-lg bg-primary/10 text-primary grid place-items-center">
+					<span class="material-symbols-outlined text-[18px]">group</span>
+				</div>
+			</div>
+			<p class="mt-sm font-headline-lg text-headline-lg-mobile text-on-surface m-0">{{ total_users }}</p>
+			<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">registered</p>
+		</article>
+
+		<article class="flex-1 min-w-[140px] lg:min-w-0 bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+			<div class="flex items-center justify-between gap-sm">
+				<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Appointments</span>
+				<div class="w-9 h-9 rounded-lg bg-secondary-container/20 text-secondary grid place-items-center">
+					<span class="material-symbols-outlined text-[18px]">event</span>
+				</div>
+			</div>
+			<p class="mt-sm font-headline-lg text-headline-lg-mobile text-on-surface m-0">{{ total_appointments }}</p>
+			<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">all time</p>
+		</article>
+
+		<article class="flex-1 min-w-[140px] lg:min-w-0 bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+			<div class="flex items-center justify-between gap-sm">
+				<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Completion Rate</span>
+				<div class="w-9 h-9 rounded-lg bg-primary-container/20 text-primary-container grid place-items-center">
+					<span class="material-symbols-outlined text-[18px]">trending_up</span>
+				</div>
+			</div>
+			<p class="mt-sm font-headline-lg text-headline-lg-mobile text-on-surface m-0">{{ completion_rate }}%</p>
+			<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">service flow</p>
+		</article>
+
+		<article class="flex-1 min-w-[140px] lg:min-w-0 bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+			<div class="flex items-center justify-between gap-sm">
+				<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">No-Show Rate</span>
+				<div class="w-9 h-9 rounded-lg bg-tertiary/10 text-tertiary grid place-items-center">
+					<span class="material-symbols-outlined text-[18px]">schedule</span>
+				</div>
+			</div>
+			<p class="mt-sm font-headline-lg text-headline-lg-mobile text-on-surface m-0">{{ no_show_rate }}%</p>
+			<p class="font-label-md text-label-md text-on-surface-variant m-0 mt-xs">monthly average</p>
+		</article>
+	</aside>
+
+	<!-- Right: charts + table -->
+	<div class="lg:col-span-9 flex flex-col gap-md min-w-0">
+		<div class="grid grid-cols-1 xl:grid-cols-2 gap-md">
+			<article class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+				<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-md">Weekly Appointments</h3>
+				<div class="h-56 grid grid-rows-[1fr_auto] gap-sm">
+					<div class="flex items-end justify-between gap-xs border-l border-b border-outline-variant/30 rounded-md bg-surface-container-high/50 p-sm pb-xs pl-md" aria-hidden="true">
+						{% for day in weekly_appointment_chart %}
+						<div class="w-[14%] rounded-t-md bg-gradient-to-b from-primary to-primary/70 shadow-lg shadow-primary/20"
+							style="height: {{ day.height }}%"; title="{{ day.label }}: {{ day.value }}"></div>
+						{% endfor %}
+					</div>
+					<div class="flex justify-between font-label-md text-label-md text-on-surface-variant px-xs">
+						{% for day in weekly_appointment_chart %}
+						<span>{{ day.label }}</span>
+						{% endfor %}
+					</div>
+				</div>
+			</article>
+
+			<article class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+				<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-md">Appointment Status Distribution</h3>
+				<div class="min-h-[224px] flex flex-col items-center justify-center gap-md">
+					<div class="relative h-44 w-44 rounded-full bg-[conic-gradient(#c0c1ff_0%_41.5%,_#4edea3_41.5%_56%,_#ffb95f_56%_70%,_#bbcabf_70%_84%,_#6ffbbe_84%_100%)]">
+						<div class="absolute inset-8 rounded-full bg-surface-container ring-1 ring-outline-variant/30"></div>
+					</div>
+					<div class="flex flex-wrap justify-center gap-x-md gap-y-sm font-label-md text-label-md text-on-surface-variant">
+						<span class="inline-flex items-center gap-xs"><i class="w-2.5 h-2.5 rounded-full bg-primary-container"></i>Completed ({{ completed_count }})</span>
+						<span class="inline-flex items-center gap-xs"><i class="w-2.5 h-2.5 rounded-full bg-secondary"></i>Confirmed ({{ confirmed_count }})</span>
+						<span class="inline-flex items-center gap-xs"><i class="w-2.5 h-2.5 rounded-full bg-primary"></i>Checked In ({{ checked_in_count }})</span>
+						<span class="inline-flex items-center gap-xs"><i class="w-2.5 h-2.5 rounded-full bg-tertiary"></i>Requested ({{ requested_count }})</span>
+						<span class="inline-flex items-center gap-xs"><i class="w-2.5 h-2.5 rounded-full bg-on-surface-variant"></i>No Show ({{ no_show_count }})</span>
+					</div>
+				</div>
+			</article>
+		</div>
+
+		<section class="bg-surface-container border border-outline-variant/30 rounded-xl p-lg rim-light">
+			<h3 class="font-headline-md text-headline-md text-on-surface m-0 mb-md">User Breakdown</h3>
+			<div class="grid grid-cols-2 lg:grid-cols-4 gap-sm">
+				<div class="border border-outline-variant/30 rounded-xl text-center py-md px-sm bg-surface-container-high/50">
+					<strong class="block font-headline-lg text-headline-lg-mobile text-on-surface mb-xs m-0">{{ patient_users }}</strong>
+					<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Patients</span>
+				</div>
+				<div class="border border-outline-variant/30 rounded-xl text-center py-md px-sm bg-surface-container-high/50">
+					<strong class="block font-headline-lg text-headline-lg-mobile text-on-surface mb-xs m-0">{{ doctor_users }}</strong>
+					<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Doctors</span>
+				</div>
+				<div class="border border-outline-variant/30 rounded-xl text-center py-md px-sm bg-surface-container-high/50">
+					<strong class="block font-headline-lg text-headline-lg-mobile text-on-surface mb-xs m-0">{{ receptionist_users }}</strong>
+					<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Receptionists</span>
+				</div>
+				<div class="border border-outline-variant/30 rounded-xl text-center py-md px-sm bg-surface-container-high/50">
+					<strong class="block font-headline-lg text-headline-lg-mobile text-on-surface mb-xs m-0">{{ admin_users }}</strong>
+					<span class="font-body-sm text-body-sm text-on-surface-variant font-semibold">Admins</span>
+				</div>
+			</div>
+		</section>
+
+		<section class="bg-surface-container border border-outline-variant/30 rounded-xl overflow-hidden rim-light">
+			<div class="p-lg pb-md border-b border-outline-variant/30">
+				<h3 class="font-headline-md text-headline-md text-on-surface m-0">Recent Appointments</h3>
+			</div>
+			<div class="overflow-x-auto max-h-[360px] overflow-y-auto">
+				<table class="w-full min-w-[640px] border-collapse">
+					<thead class="sticky top-0 z-10 bg-surface-container-high border-b border-outline-variant/30">
+						<tr class="font-label-md text-label-md uppercase tracking-wide font-bold text-on-surface-variant">
+							<th class="px-lg py-sm text-left">Appointment</th>
+							<th class="px-lg py-sm text-left">Doctor</th>
+							<th class="px-lg py-sm text-left">Date &amp; Time</th>
+							<th class="px-lg py-sm text-left">Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for appointment in recent_appointments %}
+						<tr class="border-b border-outline-variant/20 last:border-b-0 hover:bg-surface-container-high/50 transition">
+							<td class="px-lg py-sm">
+								<div class="font-body-md text-body-md font-semibold text-on-surface">{{ appointment.code }} — {{ appointment.patient_name }}</div>
+							</td>
+							<td class="px-lg py-sm font-body-sm text-body-sm text-on-surface-variant">{{ appointment.doctor_name }}</td>
+							<td class="px-lg py-sm font-body-sm text-body-sm text-on-surface-variant">{{ appointment.date }} · {{ appointment.time }}</td>
+							<td class="px-lg py-sm">
+								<span class="inline-flex items-center rounded-full px-md py-xs font-label-md text-label-md font-semibold {% if appointment.status_key == 'completed' %}bg-primary-container/20 text-primary-container{% elif appointment.status_key == 'confirmed' %}bg-secondary-container/20 text-secondary{% elif appointment.status_key == 'checked_in' %}bg-primary/10 text-primary{% elif appointment.status_key == 'requested' %}bg-tertiary/10 text-tertiary{% elif appointment.status_key == 'no_show' %}bg-on-surface-variant/10 text-on-surface-variant{% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+									{{ appointment.status }}
+								</span>
+							</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="4" class="px-lg py-xl text-center font-body-sm text-body-sm text-on-surface-variant">No appointments yet.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+<a href="{% url 'dashboards:receptionist_dashboard' %}" class="dash-nav-mobile {% if active == 'dashboard' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">home</span>
+	<span>Desk</span>
+</a>
+<a href="{% url 'receptionist:appointments_list' %}" class="dash-nav-mobile {% if active == 'appointments' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">calendar_month</span>
+	<span>Appts</span>
+</a>
+<a href="{% url 'receptionist:checkin_queue' %}" class="dash-nav-mobile {% if active == 'checkin' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">airport_shuttle</span>
+	<span>Check-in</span>
+</a>
+<a href="{% url 'receptionist:doctor_schedules' %}" class="dash-nav-mobile {% if active == 'schedules' %}dash-nav-mobile-active{% endif %}">
+	<span class="material-symbols-outlined text-[22px]">schedule</span>
+	<span>Schedules</span>
+</a>
